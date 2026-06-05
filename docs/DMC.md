@@ -1,7 +1,7 @@
 # Data Model Canvas
 
 ## 1. Users
-Who will use or benefit from the data/product:
+## Who will use or benefit from the data/product:
 
 - people wanting to counteract against the confirmation bias
 - essay **writers** incorporating multiple opinions and perspectives
@@ -13,9 +13,16 @@ Who will use or benefit from the data/product:
 Primary problem to solve or work on research question to answer:
 
 - How can one retrieve statements/opinions/arguments regarding the same topic, in a similar style but of different meaning (semantically different)?
+- How to achieve the goal in a less computationally expensive way than LLMs do?
 
 ## 3. Business / Scientific value
 Key expected value or contribution:
+
+### Scientific
+
+- multi-criteria retriever for [why not just a vector search]
+
+### Business
 
 - 
 
