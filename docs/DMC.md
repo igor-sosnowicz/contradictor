@@ -11,23 +11,37 @@
 - **entrepreneurs** looking for business ideas
 
 ## 2. Business problem / Research question
+Primary problems to solve or contribute to:
 
-Primary problem to solve or work on research question to answer:
+- Semantic Divergence vs. Stylistic/Contextual Similarity: How can one retrieve statements, opinions, or arguments regarding the same topic that share a similar linguistic style and context, but carry a fundamentally different or opposing semantic meaning (stance)?
 
-- How can one retrieve statements/opinions/arguments regarding the same topic, in a similar style but of different meaning (semantically different)?
-- How to achieve the goal in a less computationally expensive way than LLMs do?
+- Infrastructure & Computational Efficiency: How to achieve complex argument and stance mining in a significantly less computationally expensive way than relying on Large Language Models (LLMs) for brute-force generation or extraction?
+
+- Multi-Criteria Query Optimization & Search Space Maneuverability: How to enhance and improve the quality of information retrieval by combining multiple criteria (semantics, stylometrics, argument structures, and propaganda detection)? How can we leverage this multi-stage approach to dynamically adjust the search space, allowing the system to iterate on initial results and execute refined, multi-dimensional queries?
 
 ## 3. Business / Scientific value
+Key expected value or contribution: 
 
-Key expected value or contribution:
+### Scientific / Technical
+- Mitigating the Echo Chamber Effect in AI Retrieval: Traditional semantic search and vector embeddings are mathematically designed to minimize distance between similar texts. While efficient for finding identical contexts, this inherent nature of vector search inevitably retrieves similar opinions and perspectives, reinforcing the confirmation bias instead of counteracting it. This project introduces a method to separate topical similarity from argumentative stance, breaking the algorithmic echo chamber.
 
-### Scientific
+- High-Efficiency Algorithmic Alternative to LLMs: Providing a lighter, faster, and cheaper architectural alternative to LLMs for complex text analysis. By decomposing the task into multi-stage feature extraction (SLMs, binary classifiers, stylometry) and vector matching, we want to prove that high-level analytical retrieval does not require billions of parameters.
 
-- multi-criteria retriever
+- Unified Feature-Semantic Embedding Paradigm: Contributing a new framework to the field of Information Retrieval (IR) that shifts away from traditional text augmentation via discrete metadata tagging. Instead of appending external labels, the system constructs a unified joint vector representation (subject + features) using specialized embedding techniques (e.g., custom bi-encoders). This allows semantic context, argument structures, and framing dimensions to be intrinsically encoded within the same dense vector space, enabling multi-dimensional retrieval and stance discovery directly through native vector space mechanics.
+
 
 ### Business
+- Value Proposition & Market Adoption (How we drive usage): The system will be positioned as an API-first, framework-agnostic middleware that cuts operational costs and solves the "cognitive blindness" of modern search engines. We encourage adoption by offering an easily integrable micro-service that provides a immediate, measurable ROI: reducing infrastructure bills (API tokens/compute) while delivering multi-layered text analytics that standard search providers cannot offer.
 
-- To create and validate a multi-criteria search algorithm (Multi-Criteria Retriever) that effectively combines argument classification, frame classification, and vector matching without using large language models.
+- Core Architectural Validation: To create and validate a multi-criteria search algorithm (Multi-Criteria Retriever) that effectively combines argument classification, frame classification, and vector matching without using large language models.
+
+- Versatile, Domain-Agnostic Matching Infrastructure: While the baseline implementation focuses on a specific scenario—extracting opposing perspectives—the core architecture is decoupled from any single domain. It is designed as a highly adaptable, multi-purpose Matching Engine capable of operating in three distinct environments:
+
+   -  Standalone Transactional/Recommendation Systems: Can be deployed independently in commercial environments, such as e-commerce or publishing (e.g., cross-matching books in a bookstore based on complementary/opposing thematic frames, divergent narrative styles, or alternative ideological stances).
+
+    - Agentic AI & Autonomous Workflows: Serving as a lightweight routing and decision-making engine for AI agents that need to evaluate text properties without spinning up expensive LLM calls.
+
+    - Generative AI Context Optimization (Optional Layer): Acting as an advanced context-balancing pre-processor for RAG systems, ensuring that generative models receive structured and multi-dimensional inputs.
 
 ## 4. Data
 
