@@ -24,7 +24,7 @@ Key expected value or contribution:
 
 ### Business
 
-- 
+-
 
 ## 4. Data
 
@@ -52,10 +52,10 @@ Search was performed with: https://huggingface.co/search/full-text?q=argument+mi
 Planned analytical or ML model, approach, algorithms:
 
 1. Argument mining.
-   1. claim extraction – 
-   2. non-binary stance classification – 
-   3. argument extraction – extract spans of text being arguments via argument/no argument classification 
-   4. argument-claim pairs matching – 
+   1. claim extraction –
+   2. non-binary stance classification –
+   3. argument extraction – extract spans of text being arguments via argument/no argument classification
+   4. argument-claim pairs matching –
    5. retrieve claims/arguments regarding the same topic, in a similar style but of different meaning (semantically different)
 2. Argument representation – vectorisation, metadata encoding, graph-based argument map creation.
 3. Information retrieval and re-ranking – hybrid search: semantic similarity search, keyword search, BM25-based search.
@@ -65,7 +65,7 @@ Metrics, validation strategy, success criteria
 
 ### Metrics
 
-- 
+-
 
 ### Validation strategy
 
@@ -105,4 +105,4 @@ Risks, mitigations, potential upsides:
 
 ### Opportunities
 
-- Use LLMs to 
+- Use LLMs to
