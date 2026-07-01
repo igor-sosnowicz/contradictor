@@ -12,11 +12,13 @@ class Configuration(BaseModel):
     # Forbid extra parameters absent from the configuration.
     model_config = ConfigDict(extra="forbid")
 
+    cache_directory: Path = Path("./.cache")
     data_directory: Path = Path("./data")
 
     # A sub-directory of the data directory storing raw versions of downloaded datasets.
     raw_dataset_subdirectory: str = "raw_datasets"
     preprocessed_dataset_subdirectory: str = "processed_dataset"
+    model_subdirectory: str = "models"
 
     # In seconds.
     dataset_download_timeout: int = 300
