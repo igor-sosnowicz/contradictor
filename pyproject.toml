@@ -17,12 +17,14 @@ dependencies = [
 [dependency-groups]
 dev = [
     "mypy>=2.1.0",
+    "pandas-stubs>=3.0.3.260530",
     "pre-commit>=4.6.0",
+    "pylint>=4.0.6",
     "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",
     "ruff>=0.15.20",
 ]
-
 
 [project.scripts]
 app = "src.main:main"
@@ -34,6 +36,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
 
+[tool.mypy]
+ignore_missing_imports = true
+explicit_package_bases = true
+mypy_path = ["."]
+python_version = "3.13"
 
 [tool.ruff]
 line-length = 88

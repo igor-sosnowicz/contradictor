@@ -1,0 +1,58 @@
+name: CI/CD Pipeline
+
+env:
+  MIN_COVERAGE: 60
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Run a primary linter
+        run: uv run ruff check .
+
+      - name: Run a secondary linter
+        run: uv run pylint ./src
+
+  code_formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Run code formatting
+        run: uv run ruff format --check .
+
+  type_checking:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Run type checking
+        run: uv run mypy ./src
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Run tests
+        run: uv run pytest --cov=src tests/ --cov-fail-under=$MIN_COVERAGE
+
+      - name: Store coverage report as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage
