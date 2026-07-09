@@ -3,11 +3,14 @@
 import tomllib
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Configuration(BaseModel):
     """The project-wide configuration."""
+
+    # Forbid extra parameters absent from the configuration.
+    model_config = ConfigDict(extra="forbid")
 
     data_directory: Path = Path("./data")
 

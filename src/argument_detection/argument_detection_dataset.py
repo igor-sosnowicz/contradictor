@@ -24,15 +24,16 @@ class ArgumentDetectionDataset(Dataset):
     @staticmethod
     def _clean_sentence(sentence: str) -> str:
         """Clean sentence by removing newlines and normalizing whitespace."""
-        # Replace all newlines with spaces
+        # Replace all newlines with spaces.
         cleaned = sentence.replace("\n", " ").replace("\r", " ")
-        # Replace multiple consecutive spaces with a single space
+        # Replace multiple consecutive spaces with a single space.
         return " ".join(cleaned.split())
 
     def __init__(self) -> None:
         """Define raw databases to be transformed."""
         # PubMed RCT: https://github.com/Franck-Dernoncourt/pubmed-rct
-        # Persuade 1.0: https://www.kaggle.com/datasets/julesking/tla-lab-persuade-dataset?select=persuade2_train_srctexts.csv
+        # Persuade 1.0:
+        # https://www.kaggle.com/datasets/julesking/tla-lab-persuade-dataset?select=persuade2_train_srctexts.csv
 
         # Data:
         # Add Persuade 2.0 exists: https://github.com/scrosseye/persuade_corpus_2.0 and
@@ -40,12 +41,24 @@ class ArgumentDetectionDataset(Dataset):
         # Add AAE: https://tudatalib.ulb.tu-darmstadt.de/items/9177c48c-8bd5-4881-9cb4-0632b5941464
         self._datasets = {
             to_raw_dataset_path("persuade"): [
-                "https://www.kaggle.com/api/v1/datasets/download/julesking/tla-lab-persuade-dataset",
+                (
+                    "https://www.kaggle.com/api/v1/datasets/download/"
+                    "julesking/tla-lab-persuade-dataset"
+                ),
             ],
             to_raw_dataset_path("pubmed-rct"): [
-                "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/train.7z",
-                "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/dev.txt",
-                "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/test.txt",
+                (
+                    "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/"
+                    "17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/train.7z"
+                ),
+                (
+                    "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/"
+                    "17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/dev.txt"
+                ),
+                (
+                    "https://raw.githubusercontent.com/Franck-Dernoncourt/pubmed-rct/"
+                    "17ed2cb0590decfca0266add0c76f254f67232b4/PubMed_200k_RCT/test.txt"
+                ),
             ],
         }
 
@@ -70,7 +83,7 @@ class ArgumentDetectionDataset(Dataset):
                 local_path.mkdir(parents=True, exist_ok=True)
 
                 for url in urls:
-                    file_name = url.split("/")[-1]
+                    file_name = url.rsplit("/", maxsplit=1)[-1]
                     file_path = local_path / file_name
 
                     if file_path.exists() and file_path.stat().st_size > 0:
@@ -100,7 +113,7 @@ class ArgumentDetectionDataset(Dataset):
     def _merge_datasets(
         self, extracted_data: dict[Path, dict[SubsetName, pd.DataFrame]]
     ) -> Path:
-        merged_subsets = {
+        merged_subsets: dict[SubsetName, list] = {
             SubsetName.TRAINING: [],
             SubsetName.VALIDATION: [],
             SubsetName.TESTING: [],
@@ -141,19 +154,24 @@ class ArgumentDetectionDataset(Dataset):
             subset_file = processed_dataset_path / f"{subset_name.value}.csv"
             df.to_csv(subset_file, index=False)
 
-        # Log statistics
+        self._log_dataset_statistics(merged_data, processed_dataset_path)
+        return processed_dataset_path
+
+    def _log_dataset_statistics(
+        self, merged_data: dict[SubsetName, pd.DataFrame], processed_dataset_path: Path
+    ) -> None:
         total_sentences = 0
         total_evidence = 0
         for subset_name, df in merged_data.items():
             evidence_count = df["is_argument"].sum()
-            non_evidence_count = (~df["is_argument"]).sum()
             evidence_pct = (evidence_count / len(df)) * 100 if len(df) > 0 else 0
             total_sentences += len(df)
             total_evidence += evidence_count
             logger.debug(f"{subset_name.value}: {len(df)} sentences")
             logger.debug(f"  Evidence: {evidence_count} ({evidence_pct:.1f}%)")
             logger.debug(
-                f"  Non-Evidence: {non_evidence_count} ({100 - evidence_pct:.1f}%)"
+                f"  Non-Evidence: {(~df['is_argument']).sum()} "
+                f"({100 - evidence_pct:.1f}%)"
             )
 
         overall_evidence_pct = (
@@ -165,18 +183,14 @@ class ArgumentDetectionDataset(Dataset):
         )
         logger.debug(f"Dataset saved to: {processed_dataset_path}")
 
-        return processed_dataset_path
-
     def _load_pubmed_rct(self) -> dict[SubsetName, pd.DataFrame]:
         dataset_path = to_raw_dataset_path("pubmed-rct")
-
         archive_path = dataset_path / "train.7z"
-        extract_path = dataset_path
 
         # Extract the 7z file.
         if archive_path.exists():
             with py7zr.SevenZipFile(archive_path, "r") as archive:
-                archive.extractall(path=extract_path)
+                archive.extractall(path=dataset_path)
 
         # PubMed RCT has several classes.
         # Classes with True are considered arguments.
@@ -278,13 +292,23 @@ class ArgumentDetectionDataset(Dataset):
             sentences.append(sentence)
             is_arguments.append(is_arg)
 
-        final_df = pd.DataFrame(
+        df = pd.DataFrame(
             {
                 "sentence": sentences,
                 "is_argument": is_arguments,
             }
         )
 
+        train_df, val_df, test_df = self._split_with_stratification(df)
+        return {
+            SubsetName.TRAINING: train_df.reset_index(drop=True),
+            SubsetName.VALIDATION: val_df.reset_index(drop=True),
+            SubsetName.TESTING: test_df.reset_index(drop=True),
+        }
+
+    def _split_with_stratification(
+        self, final_df: pd.DataFrame
+    ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         # Split into training (70%), validation (15%), and testing (15%) with
         # stratification.
         train_df, temp_df = train_test_split(
@@ -298,11 +322,7 @@ class ArgumentDetectionDataset(Dataset):
             stratify=temp_df["is_argument"],
         )
 
-        return {
-            SubsetName.TRAINING: train_df.reset_index(drop=True),
-            SubsetName.VALIDATION: val_df.reset_index(drop=True),
-            SubsetName.TESTING: test_df.reset_index(drop=True),
-        }
+        return train_df, val_df, test_df
 
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:
         pubmed_rct = self._load_pubmed_rct()

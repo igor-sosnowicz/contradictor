@@ -13,5 +13,9 @@ wheels/
 .*_cache
 .python-version
 
+# Test coverage
+htmlcov/
+.coverage
+
 # Data
 data/
