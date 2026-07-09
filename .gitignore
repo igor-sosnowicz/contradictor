@@ -12,3 +12,6 @@ wheels/
 # Python tools
 .*_cache
 .python-version
+
+# Data
+data/
