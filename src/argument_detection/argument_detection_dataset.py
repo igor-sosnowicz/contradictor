@@ -1,26 +1,28 @@
 """Module with an argument detection dataset."""
 
-import asyncio
-import shutil
 import zipfile
 from pathlib import Path
 from typing import override
 
-import httpx
 import pandas as pd
 import py7zr
 from loguru import logger
 from sklearn.model_selection import train_test_split
 
 from src.configuration import config
-from src.data_models.abstract.dataset import Dataset
+from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import to_raw_dataset_path
 from src.utils.errors import DatasetError
 
 
-class ArgumentDetectionDataset(Dataset):
+class ArgumentDetectionDataset(UrlDataset):
     """Dataset for argument detection."""
+
+    @property
+    def processed_folder_name(self) -> str:
+        """Get the name of the folder where processed dataset splits are stored."""
+        return "argument_detection"
 
     @staticmethod
     def _clean_sentence(sentence: str) -> str:
@@ -40,6 +42,7 @@ class ArgumentDetectionDataset(Dataset):
         # Add Persuade 2.0 exists: https://github.com/scrosseye/persuade_corpus_2.0 and
         # Remove Persuade 1.0
         # Add AAE: https://tudatalib.ulb.tu-darmstadt.de/items/9177c48c-8bd5-4881-9cb4-0632b5941464
+        super().__init__()
         self._datasets = {
             to_raw_dataset_path("persuade"): [
                 (
@@ -62,140 +65,42 @@ class ArgumentDetectionDataset(Dataset):
                 ),
             ],
         }
-        self._splits_path: Path | None = None
 
     @override
-    async def prepare(self) -> None:
-        await self._download_raw_datasets_if_missing()
-        datasets = self._transform()
-        if not datasets:
-            self._splits_path = (
-                config.data_directory
-                / config.preprocessed_dataset_subdirectory
-                / "argument_detection"
-            )
-            return
-        self._splits_path = self._merge_datasets(datasets)
+    def _combine_subsets(
+        self,
+        extracted_data: dict[Path, dict[SubsetName, pd.DataFrame]],
+    ) -> dict[SubsetName, pd.DataFrame]:
+        merged = super()._combine_subsets(extracted_data)
 
-    @override
-    def clear(self) -> None:
-        for dataset in self._datasets:
-            shutil.rmtree(dataset)
-
-    async def _download_raw_datasets_if_missing(self) -> None:
-        """Download raw datasets if missing."""
-        logger.debug("Starting raw datasets download check")
-        tasks = []
-
-        async with httpx.AsyncClient() as client:
-            for local_path, urls in self._datasets.items():
-                local_path.mkdir(parents=True, exist_ok=True)
-
-                for url in urls:
-                    file_name = url.rsplit("/", maxsplit=1)[-1]
-                    file_path = local_path / file_name
-
-                    if file_path.exists() and file_path.stat().st_size > 0:
-                        logger.debug(f"Using cached version: {file_path}")
-                        continue
-
-                    logger.debug(f"Downloading: {url}")
-                    tasks.append(
-                        (
-                            file_path,
-                            client.get(
-                                url=url,
-                                timeout=config.dataset_download_timeout,
-                                follow_redirects=True,
-                            ),
-                        )
-                    )
-
-            results = await asyncio.gather(*(request for _, request in tasks))
-
-        for (file_path, _), response in zip(tasks, results, strict=True):
-            response.raise_for_status()
-            logger.debug(f"Downloaded {len(response.content)} bytes to: {file_path}")
-            with file_path.open("wb") as file:
-                file.write(response.content)
-
-    def _merge_datasets(
-        self, extracted_data: dict[Path, dict[SubsetName, pd.DataFrame]]
-    ) -> Path:
-        merged_subsets: dict[SubsetName, list] = {
-            SubsetName.TRAINING: [],
-            SubsetName.VALIDATION: [],
-            SubsetName.TESTING: [],
-        }
-
-        # Collect all dataframes for each subset from all datasets.
-        for subsets in extracted_data.values():
-            for subset_name, df in subsets.items():
-                if len(df) > 0:  # Only add non-empty dataframes.
-                    merged_subsets[subset_name].append(df)
-
-        # Merge and shuffle each subset.
-        merged_data = {}
-        for subset_name, dfs in merged_subsets.items():
-            if dfs:
-                # Concatenate all dataframes for this subset.
-                merged_df = pd.concat(dfs, ignore_index=True)
-                # Shuffle the data while maintaining stratification.
-                merged_df = merged_df.sample(frac=1, random_state=42).reset_index(
-                    drop=True
-                )
-                # Drop rows with empty or NaN sentences.
-                merged_df = merged_df.dropna(subset=["sentence"])
-                merged_df = merged_df[
-                    merged_df["sentence"].astype(str).str.strip() != ""
+        for subset_name, dataframe in merged.items():
+            if not dataframe.empty:
+                cleaned_df = dataframe.dropna(subset=["sentence"])
+                cleaned_df = cleaned_df[
+                    cleaned_df["sentence"].astype(str).str.strip() != ""
                 ]
-                merged_data[subset_name] = merged_df
-            else:
-                merged_data[subset_name] = pd.DataFrame(
-                    {"sentence": [], "is_argument": []}
-                )
+                merged[subset_name] = cleaned_df
 
-        # Save merged dataset to a processed dataset location.
-        processed_dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "argument_detection"
-        )
-        processed_dataset_path.mkdir(parents=True, exist_ok=True)
+        return merged
 
-        # Save each subset as a CSV file
-        for subset_name, df in merged_data.items():
-            subset_file = processed_dataset_path / f"{subset_name.value}.csv"
-            df.to_csv(subset_file, index=False)
-
-        self._log_dataset_statistics(merged_data, processed_dataset_path)
-        return processed_dataset_path
-
-    def _log_dataset_statistics(
-        self, merged_data: dict[SubsetName, pd.DataFrame], processed_dataset_path: Path
+    @override
+    def _log_statistics(
+        self,
+        merged_data: dict[SubsetName, pd.DataFrame],
     ) -> None:
         total_sentences = 0
-        total_evidence = 0
-        for subset_name, df in merged_data.items():
-            evidence_count = df["is_argument"].sum()
-            evidence_pct = (evidence_count / len(df)) * 100 if len(df) > 0 else 0
-            total_sentences += len(df)
-            total_evidence += evidence_count
-            logger.debug(f"{subset_name.value}: {len(df)} sentences")
-            logger.debug(f"  Evidence: {evidence_count} ({evidence_pct:.1f}%)")
-            logger.debug(
-                f"  Non-Evidence: {(~df['is_argument']).sum()} "
-                f"({100 - evidence_pct:.1f}%)"
-            )
+        total_arguments = 0
 
-        overall_evidence_pct = (
-            (total_evidence / total_sentences) * 100 if total_sentences > 0 else 0
-        )
-        logger.debug(f"Total: {total_sentences} sentences")
-        logger.debug(
-            f"Overall Evidence: {total_evidence} ({overall_evidence_pct:.1f}%)"
-        )
-        logger.debug(f"Dataset saved to: {processed_dataset_path}")
+        for subset_name, df in merged_data.items():
+            arguments = df["is_argument"].sum()
+
+            logger.debug(f"{subset_name.value}: {len(df)}")
+            logger.debug(f"Arguments: {arguments}")
+
+            total_sentences += len(df)
+            total_arguments += arguments
+
+        logger.debug(f"Total: {total_sentences}")
 
     def _load_pubmed_rct(self) -> dict[SubsetName, pd.DataFrame]:
         dataset_path = to_raw_dataset_path("pubmed-rct")

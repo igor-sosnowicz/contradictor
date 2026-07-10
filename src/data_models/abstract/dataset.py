@@ -1,6 +1,7 @@
 """Module with an interface for a dataset."""
 
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 import pandas as pd
 
@@ -25,7 +26,7 @@ class Dataset(ABC):
         """
 
     @abstractmethod
-    async def prepare(self) -> None:
+    async def prepare(self) -> Path:
         """
         Prepare a dataset by extracting raw datasets and transforming it into
         a usable dataset.

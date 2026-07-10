@@ -7,3 +7,7 @@ class ContradictorError(Exception):
 
 class DatasetError(ContradictorError):
     """General issue with a dataset."""
+
+
+class ModelNotTrainedError(ContradictorError):
+    """Raised when a trained model or vectorizer is missing."""
