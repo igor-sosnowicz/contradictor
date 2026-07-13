@@ -19,3 +19,6 @@ htmlcov/
 
 # Data
 data/
+
+# Cache
+.cache

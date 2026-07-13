@@ -3,8 +3,10 @@ name = "contradictor"
 version = "0.1.0"
 description = "Contradictors is an NLP counterargument finding system."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<3.14"
 dependencies = [
+    "click>=8.4.2",
+    "diskcache>=5.6.3",
     "gitpython>=3.1.50",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
@@ -12,6 +14,10 @@ dependencies = [
     "py7zr>=1.1.3",
     "pydantic>=2.13.4",
     "scikit-learn>=1.9.0",
+    "spacy>=3.8.14",
+    "tiktoken>=0.13.0",
+    "tqdm>=4.68.3",
+    "xgboost>=3.3.0",
 ]
 
 [dependency-groups]
@@ -46,6 +52,12 @@ python_version = "3.13"
 line-length = 88
 target-version = "py313"
 
+[tool.pylint."messages control"]
+disable = [
+    "invalid-name", # Variable name "X"  is a valid name in data science.
+]
+
+
 [tool.ruff.format]
 indent-style = "space"
 line-ending = "auto"
@@ -69,7 +81,7 @@ ignore = [
     "EM102",   # Allow for f-strings in exception constructors.
     "PLC0415", # Let local imports be used, e.g. for lazy loading.
     "TRY003",  # Also, allow for raising exceptions with long literal messages.
-
+    "N806",    # Allow variables beginning with uppercase, e.g. X - features vector.
 ]
 
 [tool.ruff.lint.per-file-ignores]

@@ -16,6 +16,7 @@ from src.configuration import config
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import to_raw_dataset_path
+from src.utils.errors import DatasetError
 
 
 class ArgumentDetectionDataset(Dataset):
@@ -61,12 +62,20 @@ class ArgumentDetectionDataset(Dataset):
                 ),
             ],
         }
+        self._splits_path: Path | None = None
 
     @override
-    async def prepare(self) -> Path:
+    async def prepare(self) -> None:
         await self._download_raw_datasets_if_missing()
         datasets = self._transform()
-        return self._merge_datasets(datasets)
+        if not datasets:
+            self._splits_path = (
+                config.data_directory
+                / config.preprocessed_dataset_subdirectory
+                / "argument_detection"
+            )
+            return
+        self._splits_path = self._merge_datasets(datasets)
 
     @override
     def clear(self) -> None:
@@ -119,22 +128,27 @@ class ArgumentDetectionDataset(Dataset):
             SubsetName.TESTING: [],
         }
 
-        # Collect all dataframes for each subset from all datasets
+        # Collect all dataframes for each subset from all datasets.
         for subsets in extracted_data.values():
             for subset_name, df in subsets.items():
-                if len(df) > 0:  # Only add non-empty dataframes
+                if len(df) > 0:  # Only add non-empty dataframes.
                     merged_subsets[subset_name].append(df)
 
-        # Merge and shuffle each subset
+        # Merge and shuffle each subset.
         merged_data = {}
         for subset_name, dfs in merged_subsets.items():
             if dfs:
-                # Concatenate all dataframes for this subset
+                # Concatenate all dataframes for this subset.
                 merged_df = pd.concat(dfs, ignore_index=True)
-                # Shuffle the data while maintaining stratification
+                # Shuffle the data while maintaining stratification.
                 merged_df = merged_df.sample(frac=1, random_state=42).reset_index(
                     drop=True
                 )
+                # Drop rows with empty or NaN sentences.
+                merged_df = merged_df.dropna(subset=["sentence"])
+                merged_df = merged_df[
+                    merged_df["sentence"].astype(str).str.strip() != ""
+                ]
                 merged_data[subset_name] = merged_df
             else:
                 merged_data[subset_name] = pd.DataFrame(
@@ -311,6 +325,7 @@ class ArgumentDetectionDataset(Dataset):
     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         # Split into training (70%), validation (15%), and testing (15%) with
         # stratification.
+        final_df = final_df[final_df["sentence"].map(lambda x: isinstance(x, str))]
         train_df, temp_df = train_test_split(
             final_df,
             test_size=0.3,
@@ -325,9 +340,41 @@ class ArgumentDetectionDataset(Dataset):
         return train_df, val_df, test_df
 
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:
+        processed_dataset_path = (
+            config.data_directory
+            / config.preprocessed_dataset_subdirectory
+            / "argument_detection"
+        )
+        if (
+            processed_dataset_path.exists()
+            and len(list(processed_dataset_path.iterdir())) > 0
+        ):
+            logger.debug(
+                "Skipping transforming raw datasets into preprocessed dataset. "
+                "It already exists."
+            )
+            return {}
+
         pubmed_rct = self._load_pubmed_rct()
         persuade = self._load_persuade()
         return {
             to_raw_dataset_path("pubmed-rct"): pubmed_rct,
             to_raw_dataset_path("persuade"): persuade,
         }
+
+    @override
+    def get_split(
+        self, split: SubsetName, max_samples: int | None = None
+    ) -> pd.DataFrame:
+        if self._splits_path is None:
+            raise DatasetError(
+                "You have to prepare a dataset before getting one of its splits."
+            )
+
+        subset_file = self._splits_path / f"{split.value}.csv"
+        df = pd.read_csv(subset_file)
+        # Ensure no NaN values remain after reading from CSV.
+        df = df.dropna(subset=["sentence"])
+        if max_samples is not None:
+            df = df.iloc[:max_samples]
+        return df

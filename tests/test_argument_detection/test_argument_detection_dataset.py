@@ -5,8 +5,12 @@ from pathlib import Path
 
 import pytest
 
-import src.argument_detection.argument_detection_dataset
-from src.argument_detection.argument_detection_dataset import ArgumentDetectionDataset
+# `config` is imported from `argument_detection_dataset` to be monkeypatched.
+from src.argument_detection.argument_detection_dataset import (
+    ArgumentDetectionDataset,
+    config,
+)
+from src.data_models.data_models import SubsetName
 
 
 @pytest.mark.parametrize(
@@ -33,13 +37,24 @@ async def test_preparing_dataset(monkeypatch: pytest.MonkeyPatch) -> None:
 
         # Monkeypatch to a temporary directory.
         monkeypatch.setattr(
-            src.argument_detection.argument_detection_dataset.config,
+            config,
             "data_directory",
             temp_dir,
         )
 
         dataset = ArgumentDetectionDataset()
-        dataset_path = await dataset.prepare()
+        await dataset.prepare()
 
-        assert dataset_path
-        assert dataset_path.exists()
+        columns = ["sentence", "is_argument"]
+        for subset in SubsetName:
+            split_df = dataset.get_split(split=subset)
+            assert split_df.shape[1] == len(columns)
+            for column in columns:
+                assert column in split_df, f"Missing `{column}` in the {subset} split."
+                missing_values = split_df[column].isna().sum()
+                assert missing_values == 0, (
+                    f"Column `{column}` in the {subset} split has {missing_values} "
+                    "missing values. Expected no missing values."
+                )
+
+            assert split_df.shape[1] > 0
