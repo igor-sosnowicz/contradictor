@@ -10,6 +10,7 @@ dependencies = [
     "gitpython>=3.1.50",
     "httpx>=0.28.1",
     "loguru>=0.7.3",
+    "optuna>=4.9.0",
     "pandas>=3.0.3",
     "py7zr>=1.1.3",
     "pydantic>=2.13.4",
@@ -92,3 +93,7 @@ ignore = [
     "ARG",    # Ignore unused function arguments, because fixtures are not ordinary arguments.
     "SLF001", # Private members may be accessed in tests.
 ]
+
+[tool.typos.default.extend-words]
+TPESampler = "TPESampler"
+tpe = "tpe"

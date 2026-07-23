@@ -21,4 +21,4 @@ htmlcov/
 data/
 
 # Cache
-.cache
+.cache/
