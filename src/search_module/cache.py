@@ -1,0 +1,66 @@
+"""Disk based cache implementation."""
+
+import logging
+
+from diskcache import Cache
+
+from src.search_module.config import CacheConfig
+from src.search_module.interfaces import CacheBackend
+from src.search_module.models import Document
+
+logger = logging.getLogger(__name__)
+
+
+class DiskCacheBackend(CacheBackend):
+    """
+    Persistent cache using diskcache.
+
+    Stores search results on disk with expiration time.
+    """
+
+    def __init__(
+        self,
+        config: CacheConfig,
+    ) -> None:
+        """Initialize disk cache backend with provided configuration."""
+        self.config = config
+
+        self.cache = Cache(
+            directory=config.directory,
+        )
+
+    def get(
+        self,
+        key: str,
+    ) -> list[Document] | None:
+        """Retrieve cached documents by key."""
+        if not self.config.enabled:
+            return None
+
+        cached = self.cache.get(key)
+
+        if cached is None:
+            return None
+
+        return [Document.model_validate(item) for item in cached]
+
+    def set(
+        self,
+        key: str,
+        value: list[Document],
+    ) -> None:
+        """Store documents in cache with expiration time."""
+        if not self.config.enabled:
+            return
+
+        serialized = [document.model_dump() for document in value]
+
+        self.cache.set(
+            key,
+            serialized,
+            expire=self.config.ttl_seconds,
+        )
+
+    def clear(self) -> None:
+        """Remove all cached entries."""
+        self.cache.clear()
