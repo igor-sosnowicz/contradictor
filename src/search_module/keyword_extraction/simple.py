@@ -24,7 +24,11 @@ class SimpleKeywordExtractor(KeywordExtractor):
         text: str,
     ) -> SearchQuery:
         """Keyword extractor based on heuristic rules."""
-        words = self._tokenize(text)
+        words = tokenize(
+            text,
+            min_word_length=3,
+            stop_words=self.stop_words,
+        )
 
         keywords = [word for word, _ in Counter(words).most_common(self.max_keywords)]
 
@@ -32,14 +36,4 @@ class SimpleKeywordExtractor(KeywordExtractor):
             original_text=text,
             keywords=tuple(keywords),
             normalized=" ".join(keywords),
-        )
-
-    def _tokenize(
-        self,
-        text: str,
-    ) -> list[str]:
-        return tokenize(
-            text,
-            min_word_length=3,
-            stop_words=self.stop_words,
         )

@@ -60,6 +60,7 @@ target-version = "py313"
 [tool.pylint."messages control"]
 disable = [
     "invalid-name", # Variable name "X"  is a valid name in data science.
+    "too-few-public-methods",
 ]
 
 

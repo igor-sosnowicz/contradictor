@@ -26,7 +26,11 @@ class NGramKeywordExtractor(KeywordExtractor):
         text: str,
     ) -> SearchQuery:
         """Extract keywords from text using n-gram frequency analysis."""
-        tokens = self._tokenize(text)
+        tokens = tokenize(
+            text,
+            min_word_length=self.config.min_word_length,
+            stop_words=self.config.stop_words,
+        )
 
         candidates = self._create_ngrams(tokens)
 
@@ -39,16 +43,6 @@ class NGramKeywordExtractor(KeywordExtractor):
             original_text=text,
             keywords=tuple(keywords),
             normalized=" ".join(keywords),
-        )
-
-    def _tokenize(
-        self,
-        text: str,
-    ) -> list[str]:
-        return tokenize(
-            text,
-            min_word_length=self.config.min_word_length,
-            stop_words=self.config.stop_words,
         )
 
     def _create_ngrams(
