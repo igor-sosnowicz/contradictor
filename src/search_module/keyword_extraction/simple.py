@@ -1,10 +1,10 @@
 """Simple keyword extraction."""
 
-import re
 from collections import Counter
 
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
+from src.search_module.utils.utils import tokenize
 
 
 class SimpleKeywordExtractor(KeywordExtractor):
@@ -38,10 +38,8 @@ class SimpleKeywordExtractor(KeywordExtractor):
         self,
         text: str,
     ) -> list[str]:
-
-        words = re.findall(
-            r"\b[a-zA-Z]{3,}\b",
-            text.lower(),
+        return tokenize(
+            text,
+            min_word_length=3,
+            stop_words=self.stop_words,
         )
-
-        return [word for word in words if word not in self.stop_words]

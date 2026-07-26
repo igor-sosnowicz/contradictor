@@ -85,4 +85,3 @@ class LLMClient(Protocol):
         limit: int,
     ) -> list[str]:
         """Extract keywords from text."""
-        ...

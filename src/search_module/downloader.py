@@ -50,5 +50,4 @@ class RequestsDownloader(Downloader):
             )
             return ""
 
-        else:
-            return response.text
+        return response.text

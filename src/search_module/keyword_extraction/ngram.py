@@ -1,11 +1,11 @@
 """N-gram keyword extraction."""
 
-import re
 from collections import Counter
 
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
+from src.search_module.utils.utils import tokenize
 
 
 class NGramKeywordExtractor(KeywordExtractor):
@@ -45,13 +45,11 @@ class NGramKeywordExtractor(KeywordExtractor):
         self,
         text: str,
     ) -> list[str]:
-
-        words = re.findall(
-            rf"\b[a-zA-Z]{{{self.config.min_word_length},}}\b",
-            text.lower(),
+        return tokenize(
+            text,
+            min_word_length=self.config.min_word_length,
+            stop_words=self.config.stop_words,
         )
-
-        return [word for word in words if word not in self.config.stop_words]
 
     def _create_ngrams(
         self,
