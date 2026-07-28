@@ -1,14 +1,10 @@
 """Disk based cache implementation."""
 
-import logging
-
 from diskcache import Cache
 
 from src.search_module.config import CacheConfig
 from src.search_module.interfaces import CacheBackend
 from src.search_module.models import Document
-
-logger = logging.getLogger(__name__)
 
 
 class DiskCacheBackend(CacheBackend):
@@ -24,7 +20,6 @@ class DiskCacheBackend(CacheBackend):
     ) -> None:
         """Initialize disk cache backend with provided configuration."""
         self.config = config
-
         self.cache = Cache(
             directory=config.directory,
         )
@@ -41,7 +36,6 @@ class DiskCacheBackend(CacheBackend):
 
         if cached is None:
             return None
-
         return [Document.model_validate(item) for item in cached]
 
     def set(
@@ -54,7 +48,6 @@ class DiskCacheBackend(CacheBackend):
             return
 
         serialized = [document.model_dump() for document in value]
-
         self.cache.set(
             key,
             serialized,

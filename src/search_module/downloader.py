@@ -1,13 +1,10 @@
 """Web page downloader implementation."""
 
-import logging
-
 import requests
+from loguru import logger
 
 from src.search_module.config import DownloadConfig
 from src.search_module.interfaces import Downloader
-
-logger = logging.getLogger(__name__)
 
 
 class RequestsDownloader(Downloader):
@@ -42,7 +39,6 @@ class RequestsDownloader(Downloader):
                 allow_redirects=True,
             )
             response.raise_for_status()
-
         except requests.RequestException:
             logger.exception(
                 "Failed downloading URL: %s",

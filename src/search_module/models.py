@@ -26,13 +26,10 @@ class Document(BaseModel):
 
     url: str
     text: str
-
     title: str = ""
     source: str = ""
     query: str = ""
-
     retrieved_at: datetime = Field(default_factory=datetime.utcnow)
-
     status_code: int = 200
     content_type: str = ""
     language: str = "en"

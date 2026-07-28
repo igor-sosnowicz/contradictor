@@ -7,7 +7,7 @@ class SearchConfig(BaseModel):
     """Search engine configuration."""
 
     max_results: int = Field(default=5, ge=1)
-    region: str = "wt-wt"  # aleternatively: "us-en"
+    region: str = "wt-wt"  # alt: "us-en"
     safesearch: str = "moderate"
 
 
@@ -33,7 +33,7 @@ class CleaningConfig(BaseModel):
     """HTML cleaning configuration."""
 
     min_text_length: int = Field(default=300, ge=0)  # to be adjusted
-    max_text_length: int = Field(default=10000, ge=0)  # to be adjusted
+    max_text_length: int = Field(default=10_000, ge=0)  # to be adjusted
     min_word_count: int = Field(default=50, ge=0)  # to be adjusted
     min_sentence_count: int = Field(default=3, ge=0)  # to be adjusted
     remove_empty_lines: bool = True
@@ -50,6 +50,16 @@ class CleaningConfig(BaseModel):
         "form",
         "iframe",
         "button",
+    )
+    noise_penalty_factor: float = Field(default=0.15, ge=0.0, le=1.0)
+    noise_penalty_words: tuple[str, ...] = (
+        "subscribe",
+        "newsletter",
+        "cookie",
+        "privacy",
+        "related",
+        "share",
+        "login",
     )
     unwanted_keywords: tuple[str, ...] = (
         "cookie",
@@ -86,7 +96,8 @@ class KeywordConfig(BaseModel):
 
     max_keywords: int = Field(default=5, ge=1)
     min_word_length: int = Field(default=3, ge=1)
-    ngram_sizes: tuple[int, ...] = (1, 2)
+    min_ngram_size: int = Field(default=2, ge=1)
+    max_ngram_size: int = Field(default=3, ge=1)
     stop_words: set[str] = Field(
         default_factory=lambda: {
             "the",

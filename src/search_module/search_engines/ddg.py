@@ -1,15 +1,12 @@
 """DuckDuckGo search engine implementation."""
 
-import logging
-
 from ddgs import DDGS
+from loguru import logger
 
 from src.search_module.config import SearchConfig
 from src.search_module.interfaces import SearchEngine
 from src.search_module.models import SearchQuery, SearchResult
 from src.utils.errors import ContradictorError
-
-logger = logging.getLogger(__name__)
 
 
 class DDGSearchEngine(SearchEngine):
@@ -36,12 +33,10 @@ class DDGSearchEngine(SearchEngine):
             "DuckDuckGo search: %s",
             query.normalized,
         )
-
         if not query.normalized.strip():
             return []
 
         max_results = limit if limit is not None else self.config.max_results
-
         results: list[SearchResult] = []
 
         try:
@@ -50,9 +45,7 @@ class DDGSearchEngine(SearchEngine):
                     query.normalized,
                     max_results=max_results,
                 )
-
                 logger.info("DuckDuckGo returned results")
-
                 results = [
                     SearchResult(
                         url=item["href"],

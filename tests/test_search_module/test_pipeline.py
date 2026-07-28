@@ -6,6 +6,7 @@ from src.search_module.models import (
     SearchResult,
 )
 from src.search_module.pipeline import SearchPipeline
+from src.search_module.utils.cache_keys import create_cache_key
 
 
 class FakeKeywordExtractor:
@@ -130,8 +131,6 @@ def test_pipeline_uses_cache() -> None:
             text="Cached document",
         )
     ]
-
-    from src.search_module.utils.cache_keys import create_cache_key
 
     cache.set(
         create_cache_key("cats"),

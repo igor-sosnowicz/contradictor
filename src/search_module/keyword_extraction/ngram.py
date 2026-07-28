@@ -1,39 +1,35 @@
-"""N-gram keyword extraction."""
+"""N-gram keyword extractor implementation."""
 
+import logging
 from collections import Counter
 
+from src.data_models.abstract.tokeniser import Tokeniser
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
-from src.search_module.utils.utils import tokenize
+
+logger = logging.getLogger(__name__)
 
 
 class NGramKeywordExtractor(KeywordExtractor):
-    """
-    Keyword extractor using stop words
-    and n-gram frequency analysis.
-    """
+    """Keyword extractor using n-gram frequency analysis."""
 
     def __init__(
         self,
         config: KeywordConfig,
+        tokeniser: Tokeniser,
     ) -> None:
-        """Initialize n-gram keyword extractor with configuration."""
+        """Initialize the extractor with configuration and a tokeniser."""
         self.config = config
+        self.tokeniser = tokeniser
 
     def extract(
         self,
         text: str,
     ) -> SearchQuery:
         """Extract keywords from text using n-gram frequency analysis."""
-        tokens = tokenize(
-            text,
-            min_word_length=self.config.min_word_length,
-            stop_words=self.config.stop_words,
-        )
-
+        tokens = self.tokeniser.tokenise(text)
         candidates = self._create_ngrams(tokens)
-
         keywords = [
             phrase
             for phrase, _ in Counter(candidates).most_common(self.config.max_keywords)
@@ -49,10 +45,11 @@ class NGramKeywordExtractor(KeywordExtractor):
         self,
         tokens: list[str],
     ) -> list[str]:
-
+        """Generate n-grams based on configured min and max sizes."""
         result: list[str] = []
+        ngram_range = range(self.config.min_ngram_size, self.config.max_ngram_size + 1)
 
-        for size in self.config.ngram_sizes:
+        for size in ngram_range:
             result.extend(
                 " ".join(tokens[i : i + size]) for i in range(len(tokens) - size + 1)
             )

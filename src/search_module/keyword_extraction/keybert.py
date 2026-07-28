@@ -17,7 +17,6 @@ class KeyBERTKeywordExtractor(KeywordExtractor):
     ) -> None:
         """Initialize keyword extractor with KeyBERT model configuration."""
         self.config = config
-
         self.model = KeyBERT(model=model_name)
 
     def extract(
@@ -28,8 +27,8 @@ class KeyBERTKeywordExtractor(KeywordExtractor):
         keywords = self.model.extract_keywords(
             text,
             keyphrase_ngram_range=(
-                1,
-                max(self.config.ngram_sizes),
+                self.config.min_ngram_size,
+                self.config.max_ngram_size,
             ),
             stop_words=list(self.config.stop_words),
             top_n=self.config.max_keywords,

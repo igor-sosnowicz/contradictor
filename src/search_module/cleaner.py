@@ -1,16 +1,16 @@
 """HTML cleaner implementation."""
 
-import logging
 import re
+from typing import ClassVar
 
 from bs4 import BeautifulSoup, Tag
+from loguru import logger
 
 from src.search_module.config import CleaningConfig
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
 from src.utils.errors import ContradictorError
 
-logger = logging.getLogger(__name__)
 MIN_CANDIDATE_LENGTH = 200
 
 
@@ -24,6 +24,8 @@ class BeautifulSoupCleaner(Cleaner):
     - select the most informative block,
     - normalize extracted text.
     """
+
+    MIN_CANDIDATE_LENGTH: ClassVar[int] = 200
 
     def __init__(
         self,
@@ -52,7 +54,6 @@ class BeautifulSoupCleaner(Cleaner):
         candidates = self._extract_candidates(soup)
         text = self._select_best_candidate(candidates)
         text = self._normalize_text(text)
-
         if not self._is_valid_content(text):
             logger.warning(
                 "Rejected low quality document: %s",
@@ -65,7 +66,6 @@ class BeautifulSoupCleaner(Cleaner):
                 "Text too short after cleaning: %s",
                 url,
             )
-
         return Document(
             url=url,
             text=text,
@@ -87,7 +87,6 @@ class BeautifulSoupCleaner(Cleaner):
         for tag_name in self.config.remove_tags:
             for tag in soup.find_all(tag_name):
                 tag.decompose()
-
         for element in soup.find_all(["div", "section", "aside"]):
             if not isinstance(element, Tag):
                 continue
@@ -98,7 +97,6 @@ class BeautifulSoupCleaner(Cleaner):
                 "",
             )
             classes = element.get("class")
-
             if classes is None:
                 classes = ""
             elif isinstance(classes, list):
@@ -154,7 +152,7 @@ class BeautifulSoupCleaner(Cleaner):
         )
         for element in preferred:
             text = self._element_text(element)
-            if len(text) >= MIN_CANDIDATE_LENGTH:
+            if len(text) >= self.MIN_CANDIDATE_LENGTH:
                 candidates.append(text)
         if not candidates:
             for element in soup.find_all("div"):
@@ -184,7 +182,6 @@ class BeautifulSoupCleaner(Cleaner):
                 "Failed extracting text from element",
                 exc_info=True,
             )
-
             return ""
 
     def _select_best_candidate(
@@ -203,23 +200,14 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         text: str,
     ) -> float:
-        score = len(text)
+        base_score = len(text) + (text.count(".") * 10)
         lowered = text.lower()
-        noise_penalty = (
-            "subscribe",
-            "newsletter",
-            "cookie",
-            "privacy",
-            "related",
-            "share",
-            "login",
-        )
-        for word in noise_penalty:
+        total_penalty_ratio = 0.0
+        for word in self.config.noise_penalty_words:
             if word in lowered:
-                score -= 500
-        score += text.count(".") * 10
-
-        return score
+                total_penalty_ratio += self.config.noise_penalty_factor
+        total_penalty_ratio = min(total_penalty_ratio, 1.0)
+        return base_score * (1.0 - total_penalty_ratio)
 
     def _normalize_text(
         self,
@@ -231,7 +219,6 @@ class BeautifulSoupCleaner(Cleaner):
                 " ",
                 text,
             )
-
         if self.config.remove_empty_lines:
             lines = [line.strip() for line in text.splitlines() if line.strip()]
             text = "\n".join(lines)
@@ -242,14 +229,10 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         text: str,
     ) -> bool:
-
         if len(text) < self.config.min_text_length:
             return False
         words = text.split()
-
         if len(words) < self.config.min_word_count:
             return False
-
         sentences = text.count(".")
-
         return sentences >= self.config.min_sentence_count

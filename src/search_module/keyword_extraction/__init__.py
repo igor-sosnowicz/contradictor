@@ -3,9 +3,6 @@
 from src.search_module.keyword_extraction.keybert import (
     KeyBERTKeywordExtractor,
 )
-from src.search_module.keyword_extraction.llm import (
-    LLMKeywordExtractor,
-)
 from src.search_module.keyword_extraction.ngram import (
     NGramKeywordExtractor,
 )
@@ -15,7 +12,6 @@ from src.search_module.keyword_extraction.simple import (
 
 __all__ = [
     "KeyBERTKeywordExtractor",
-    "LLMKeywordExtractor",
     "NGramKeywordExtractor",
     "SimpleKeywordExtractor",
 ]

@@ -2,9 +2,10 @@
 
 from collections import Counter
 
+from src.data_models.abstract.tokeniser import Tokeniser
+from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
-from src.search_module.utils.utils import tokenize
 
 
 class SimpleKeywordExtractor(KeywordExtractor):
@@ -12,25 +13,22 @@ class SimpleKeywordExtractor(KeywordExtractor):
 
     def __init__(
         self,
-        stop_words: set[str] | None = None,
-        max_keywords: int = 5,
+        config: KeywordConfig,
+        tokeniser: Tokeniser,
     ) -> None:
-        """Initialize keyword extractor with stop words and keyword limit."""
-        self.stop_words = stop_words or set()
-        self.max_keywords = max_keywords
+        """Initialize keyword extractor with configuration and a tokeniser."""
+        self.config = config
+        self.tokeniser = tokeniser
 
     def extract(
         self,
         text: str,
     ) -> SearchQuery:
         """Keyword extractor based on heuristic rules."""
-        words = tokenize(
-            text,
-            min_word_length=3,
-            stop_words=self.stop_words,
-        )
-
-        keywords = [word for word, _ in Counter(words).most_common(self.max_keywords)]
+        words = self.tokeniser.tokenise(text)
+        keywords = [
+            word for word, _ in Counter(words).most_common(self.config.max_keywords)
+        ]
 
         return SearchQuery(
             original_text=text,
