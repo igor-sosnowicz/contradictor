@@ -58,6 +58,9 @@ python_version = "3.13"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+exclude = [
+    "tests/test_search_module/html_files",
+]
 
 [tool.pylint."messages control"]
 disable = [
