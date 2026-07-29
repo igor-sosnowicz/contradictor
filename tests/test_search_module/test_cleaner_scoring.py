@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from src.search_module.cleaner import BeautifulSoupCleaner
 from src.search_module.config import CleaningConfig
 
-DATA_DIR = Path(__file__).parent / "data"
+DATA_DIR = Path(__file__).parent / "html_files"
 
 
 @pytest.fixture
