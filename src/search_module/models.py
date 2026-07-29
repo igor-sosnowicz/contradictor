@@ -1,8 +1,10 @@
 """Package with search module data models."""
 
-from datetime import datetime
+from datetime import UTC, datetime
+from typing import Annotated
 
 from pydantic import BaseModel, Field
+from pydantic_extra_types.language_code import LanguageAlpha2
 
 
 class SearchQuery(BaseModel):
@@ -29,7 +31,7 @@ class Document(BaseModel):
     title: str = ""
     source: str = ""
     query: str = ""
-    retrieved_at: datetime = Field(default_factory=datetime.utcnow)
+    retrieved_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     status_code: int = 200
     content_type: str = ""
-    language: str = "en"
+    language: Annotated[str, LanguageAlpha2] = "en"

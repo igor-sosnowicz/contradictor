@@ -1,14 +1,11 @@
 """N-gram keyword extractor implementation."""
 
-import logging
 from collections import Counter
 
 from src.data_models.abstract.tokeniser import Tokeniser
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
-
-logger = logging.getLogger(__name__)
 
 
 class NGramKeywordExtractor(KeywordExtractor):

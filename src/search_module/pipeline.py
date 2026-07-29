@@ -42,37 +42,37 @@ class SearchPipeline:
         """Run search pipeline and return cleaned documents."""
         logger.info("Starting search pipeline")
         query = self.keyword_extractor.extract(text)
-        logger.info("Extracted keywords: %s", query.keywords)
+        logger.info("Extracted keywords: {}", query.keywords)
 
         cache_key = create_cache_key(query.normalized)
-        logger.debug("Cache key: %s", cache_key)
+        logger.debug("Cache key: {}", cache_key)
         cached = self.cache.get(cache_key)
         if cached is not None:
-            logger.info("Cache hit: %s", cache_key)
+            logger.info("Cache hit: {}", cache_key)
             return cached
 
-        logger.info("Searching: %s", query.normalized)
+        logger.info("Searching: {}", query.normalized)
         results = self.search_engine.search(query)
-        logger.info("Search returned %d results", len(results))
+        logger.info("Search returned {} results", len(results))
 
         documents: list[Document] = []
         for result in results:
-            logger.debug("Processing URL: %s", result.url)
+            logger.debug("Processing URL: {}", result.url)
             try:
                 html = self.downloader.download(result.url)
-                logger.debug("Downloaded %d characters from %s", len(html), result.url)
+                logger.debug("Downloaded {} characters from {}", len(html), result.url)
 
                 document = self.cleaner.clean(html, result.url)
                 if not document.text:
-                    logger.warning("Empty document after cleaning: %s", result.url)
+                    logger.warning("Empty document after cleaning: {}", result.url)
                     continue
                 documents.append(document)
-                logger.info("Accepted document: %s", result.url)
+                logger.info("Accepted document: {}", result.url)
 
             except ContradictorError:
-                logger.exception("Failed processing %s", result.url)
+                logger.exception("Failed processing {}", result.url)
 
-        logger.info("Cleaning finished. Documents: %d", len(documents))
+        logger.info("Cleaning finished. Documents: {}", len(documents))
         self.cache.set(cache_key, documents)
         logger.info("Saved results to cache")
 

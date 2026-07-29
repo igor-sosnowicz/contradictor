@@ -1,7 +1,7 @@
 """HTML cleaner implementation."""
 
 import re
-from typing import ClassVar
+from typing import ClassVar, override
 
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
@@ -10,8 +10,6 @@ from src.search_module.config import CleaningConfig
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
 from src.utils.errors import ContradictorError
-
-MIN_CANDIDATE_LENGTH = 200
 
 
 class BeautifulSoupCleaner(Cleaner):
@@ -26,6 +24,7 @@ class BeautifulSoupCleaner(Cleaner):
     """
 
     MIN_CANDIDATE_LENGTH: ClassVar[int] = 200
+    SENTENCE_SCORE_WEIGHT: ClassVar[int] = 10
 
     def __init__(
         self,
@@ -34,12 +33,12 @@ class BeautifulSoupCleaner(Cleaner):
         """Initialize HTML cleaner with provided configuration."""
         self.config = config
 
+    @override
     def clean(
         self,
         html: str,
         url: str,
     ) -> Document:
-        """Clean HTML content and return extracted document text."""
         if not html.strip():
             return Document(
                 url=url,
@@ -56,14 +55,14 @@ class BeautifulSoupCleaner(Cleaner):
         text = self._normalize_text(text)
         if not self._is_valid_content(text):
             logger.warning(
-                "Rejected low quality document: %s",
+                "Rejected low quality document: {}",
                 url,
             )
             text = ""
 
         if len(text) < self.config.min_text_length:
             logger.warning(
-                "Text too short after cleaning: %s",
+                "Text too short after cleaning: {}",
                 url,
             )
         return Document(
@@ -85,28 +84,43 @@ class BeautifulSoupCleaner(Cleaner):
         soup: BeautifulSoup,
     ) -> None:
         for tag_name in self.config.remove_tags:
-            for tag in soup.find_all(tag_name):
+            for tag in list(soup.find_all(tag_name)):
                 tag.decompose()
-        for element in soup.find_all(["div", "section", "aside"]):
-            if not isinstance(element, Tag):
+
+        to_decompose = [
+            element
+            for element in soup.find_all(["div", "section", "aside"])
+            if self._should_decompose(element)
+        ]
+
+        for element in to_decompose:
+            try:
+                element.decompose()
+            except AttributeError:
                 continue
 
-            attrs = element.attrs or {}
-            element_id = attrs.get(
-                "id",
-                "",
-            )
-            classes = element.get("class")
-            if classes is None:
-                classes = ""
-            elif isinstance(classes, list):
-                classes = " ".join(classes)
-            else:
-                classes = str(classes)
+    def _should_decompose(self, element: Tag) -> bool:
+        """Check if a structural element qualifies as removable noise."""
+        if not isinstance(element, Tag) or element.attrs is None:
+            return False
 
-            identifier = (f"{element_id} {classes}").lower()
-            if self._is_noise_element(identifier):
-                element.decompose()
+        attrs = element.attrs
+        element_id = attrs.get("id", "")
+        classes = attrs.get("class")
+
+        if classes is None:
+            classes = ""
+        elif isinstance(classes, list):
+            classes = " ".join(classes)
+        else:
+            classes = str(classes)
+
+        identifier = f"{element_id} {classes}".lower()
+        if not self._is_noise_element(identifier):
+            return False
+
+        element_text = self._element_text(element)
+        return len(element_text) < self.MIN_CANDIDATE_LENGTH
 
     def _is_noise_element(
         self,
@@ -157,7 +171,7 @@ class BeautifulSoupCleaner(Cleaner):
         if not candidates:
             for element in soup.find_all("div"):
                 text = self._element_text(element)
-                if len(text) >= MIN_CANDIDATE_LENGTH:
+                if len(text) >= self.MIN_CANDIDATE_LENGTH:
                     candidates.append(text)
         return candidates
 
@@ -200,7 +214,7 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         text: str,
     ) -> float:
-        base_score = len(text) + (text.count(".") * 10)
+        base_score = len(text) + (text.count(".") * self.SENTENCE_SCORE_WEIGHT)
         lowered = text.lower()
         total_penalty_ratio = 0.0
         for word in self.config.noise_penalty_words:

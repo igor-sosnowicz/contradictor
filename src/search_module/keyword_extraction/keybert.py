@@ -1,5 +1,7 @@
 """KeyBERT based keyword extraction."""
 
+from typing import override
+
 from keybert import KeyBERT
 
 from src.search_module.config import KeywordConfig
@@ -19,11 +21,11 @@ class KeyBERTKeywordExtractor(KeywordExtractor):
         self.config = config
         self.model = KeyBERT(model=model_name)
 
+    @override
     def extract(
         self,
         text: str,
     ) -> SearchQuery:
-        """Extract keywords from text and create a normalized search query."""
         keywords = self.model.extract_keywords(
             text,
             keyphrase_ngram_range=(

@@ -1,5 +1,7 @@
 """Web page downloader implementation."""
 
+from typing import override
+
 import requests
 from loguru import logger
 
@@ -27,11 +29,11 @@ class RequestsDownloader(Downloader):
             }
         )
 
+    @override
     def download(
         self,
         url: str,
     ) -> str:
-        """Download raw HTML content from a URL."""
         try:
             response = self.session.get(
                 url,
@@ -41,7 +43,7 @@ class RequestsDownloader(Downloader):
             response.raise_for_status()
         except requests.RequestException:
             logger.exception(
-                "Failed downloading URL: %s",
+                "Failed downloading URL: {}",
                 url,
             )
             return ""

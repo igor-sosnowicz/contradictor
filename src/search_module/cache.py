@@ -1,5 +1,7 @@
 """Disk based cache implementation."""
 
+from typing import override
+
 from diskcache import Cache
 
 from src.search_module.config import CacheConfig
@@ -24,11 +26,11 @@ class DiskCacheBackend(CacheBackend):
             directory=config.directory,
         )
 
+    @override
     def get(
         self,
         key: str,
     ) -> list[Document] | None:
-        """Retrieve cached documents by key."""
         if not self.config.enabled:
             return None
 
@@ -38,12 +40,12 @@ class DiskCacheBackend(CacheBackend):
             return None
         return [Document.model_validate(item) for item in cached]
 
+    @override
     def set(
         self,
         key: str,
         value: list[Document],
     ) -> None:
-        """Store documents in cache with expiration time."""
         if not self.config.enabled:
             return
 

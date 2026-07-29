@@ -1,5 +1,7 @@
 """DuckDuckGo search engine implementation."""
 
+from typing import override
+
 from ddgs import DDGS
 from loguru import logger
 
@@ -23,14 +25,14 @@ class DDGSearchEngine(SearchEngine):
         """Initialize DuckDuckGo search engine with configuration."""
         self.config = config
 
+    @override
     def search(
         self,
         query: SearchQuery,
-        limit: int | None = None,
+        limit: int = 10,
     ) -> list[SearchResult]:
-        """Search DuckDuckGo and return matching results."""
         logger.info(
-            "DuckDuckGo search: %s",
+            "DuckDuckGo search: {}",
             query.normalized,
         )
         if not query.normalized.strip():
@@ -38,11 +40,11 @@ class DDGSearchEngine(SearchEngine):
 
         max_results = limit if limit is not None else self.config.max_results
         results: list[SearchResult] = []
-
         try:
             with DDGS() as ddgs:
                 search_results = ddgs.text(
                     query.normalized,
+                    region=self.config.region,
                     max_results=max_results,
                 )
                 logger.info("DuckDuckGo returned results")
@@ -54,12 +56,10 @@ class DDGSearchEngine(SearchEngine):
                     )
                     for item in search_results
                 ]
-
         except ContradictorError:
             logger.exception(
-                "DuckDuckGo search failed: %s",
+                "DuckDuckGo search failed: {}",
                 query.normalized,
             )
             return []
-
         return results

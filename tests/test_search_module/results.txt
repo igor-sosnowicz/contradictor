@@ -1,0 +1,10 @@
+=== NOISE PENALTY FACTOR OPTIMIZATION ANALYSIS ===
+Factor: 0.00 -> Article Score: 324.0 | Noise Score: 172.0 | Selection Margin:  152.0 | Correct Winner? True
+Factor: 0.05 -> Article Score: 324.0 | Noise Score: 111.8 | Selection Margin:  212.2 | Correct Winner? True
+Factor: 0.10 -> Article Score: 324.0 | Noise Score:  51.6 | Selection Margin:  272.4 | Correct Winner? True
+Factor: 0.15 -> Article Score: 324.0 | Noise Score:   0.0 | Selection Margin:  324.0 | Correct Winner? True
+Factor: 0.20 -> Article Score: 324.0 | Noise Score:   0.0 | Selection Margin:  324.0 | Correct Winner? True
+Factor: 0.30 -> Article Score: 324.0 | Noise Score:   0.0 | Selection Margin:  324.0 | Correct Winner? True
+Factor: 0.40 -> Article Score: 324.0 | Noise Score:   0.0 | Selection Margin:  324.0 | Correct Winner? True
+Factor: 0.50 -> Article Score: 324.0 | Noise Score:   0.0 | Selection Margin:  324.0 | Correct Winner? True
+==============================================

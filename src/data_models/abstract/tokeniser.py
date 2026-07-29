@@ -33,7 +33,7 @@ class Tokeniser(ABC):
     @abstractmethod
     def tokenise(self, text: str) -> list[str]:
         """
-        Split text into individual string tokens (words).
+        Split text into individual string tokens.
 
         Used for text cleaning, keyword extraction and n-grams.
         """

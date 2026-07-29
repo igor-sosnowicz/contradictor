@@ -1,6 +1,7 @@
 """Simple keyword extraction."""
 
 from collections import Counter
+from typing import override
 
 from src.data_models.abstract.tokeniser import Tokeniser
 from src.search_module.config import KeywordConfig
@@ -20,11 +21,11 @@ class SimpleKeywordExtractor(KeywordExtractor):
         self.config = config
         self.tokeniser = tokeniser
 
+    @override
     def extract(
         self,
         text: str,
     ) -> SearchQuery:
-        """Keyword extractor based on heuristic rules."""
         words = self.tokeniser.tokenise(text)
         keywords = [
             word for word, _ in Counter(words).most_common(self.config.max_keywords)
