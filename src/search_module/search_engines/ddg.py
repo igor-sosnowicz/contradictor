@@ -13,9 +13,13 @@ from src.utils.errors import ContradictorError
 
 class DDGSearchEngine(SearchEngine):
     """
-    Search engine implementation using DuckDuckGo.
+    Initialize the DuckDuckGo search engine with configuration.
 
-    Responsible only for searching.
+    Args:
+        config (SearchConfig): Configuration for the search engine.
+
+    Returns:
+        None
     """
 
     def __init__(

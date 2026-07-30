@@ -15,7 +15,7 @@ class KeywordExtractor(ABC):
         Extract keywords and return a normalized search query.
 
         Args:
-            text: The raw input text from which keywords should be extracted.
+            text (str): The raw input text from which keywords should be extracted.
 
         Returns:
             A SearchQuery object containing the extracted and normalized keywords.
@@ -35,11 +35,11 @@ class SearchEngine(ABC):
         Execute a search query and fetch search results.
 
         Args:
-            query: The normalized search query object.
-            limit: The maximum number of results to return. Defaults to 10.
+            query (SearchQuery): The normalized search query object.
+            limit (int): The maximum number of results to return. Defaults to 10.
 
         Returns:
-            A list of SearchResult objects matching the query.
+            list[SearchResult]: A list of SearchResult objects matching the query.
         """
 
 
@@ -52,10 +52,10 @@ class Downloader(ABC):
         Download raw HTML content from the specified URL.
 
         Args:
-            url: The absolute HTTP/HTTPS URL of the target web page.
+            url (str): The absolute HTTP/HTTPS URL of the target web page.
 
         Returns:
-            The raw HTML content as a string.
+            str: The raw HTML content as a string.
         """
 
 
@@ -75,11 +75,11 @@ class Cleaner(ABC):
         and filter noise to isolate the primary textual content.
 
         Args:
-            html: The raw HTML content to be cleaned.
-            url: The origin URL of the processed HTML.
+            html (str): The raw HTML content to be cleaned.
+            url (str): The origin URL of the processed HTML.
 
         Returns:
-            A Document object containing clean text and metadata.
+            Document: A Document object containing clean text and metadata.
         """
 
 
@@ -95,10 +95,10 @@ class CacheBackend(ABC):
         Retrieve cached documents associated with the given key.
 
         Args:
-            key: The unique string identifier for the cached resource.
+            key (str): The unique string identifier for the cached resource.
 
         Returns:
-            A list of cached Document objects if found, otherwise None.
+            list[Document]: A list of cached Document objects if found, otherwise None.
         """
 
     @abstractmethod
@@ -111,13 +111,22 @@ class CacheBackend(ABC):
         Store documents in the cache under a specific key.
 
         Args:
-            key: The unique string identifier for the resource.
-            value: A list of Document objects to be serialized and stored.
+            key (str): The unique string identifier for the resource.
+            value (list[Document]): A list of Document objects to be
+                serialized and stored.
+
+        Returns:
+            None
         """
 
     @abstractmethod
     def clear(self) -> None:
-        """Remove all cached entries from the storage backend."""
+        """
+        Remove all cached entries from the storage backend.
+
+        Returns:
+            None
+        """
 
 
 class LLMClient(Protocol):
@@ -132,9 +141,9 @@ class LLMClient(Protocol):
         Extract a structured list of keywords from text using an LLM.
 
         Args:
-            text: The context or text data to analyze.
-            limit: The maximum number of keywords to extract.
+            text (str): The context or text data to analyze.
+            limit (int): The maximum number of keywords to extract.
 
         Returns:
-            A list of extracted keyword strings.
+            list[str]: A list of extracted keyword strings.
         """

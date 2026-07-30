@@ -17,7 +17,17 @@ class KeyBERTKeywordExtractor(KeywordExtractor):
         config: KeywordConfig,
         model_name: str = "all-MiniLM-L6-v2",
     ) -> None:
-        """Initialize keyword extractor with KeyBERT model configuration."""
+        """
+        Initialize the keyword extractor with a KeyBERT model.
+
+        Args:
+            config (KeywordConfig): Configuration for keyword extraction.
+            model_name (str): Name of the sentence-transformer model used by
+                KeyBERT. Defaults to "all-MiniLM-L6-v2".
+
+        Returns:
+            None
+        """
         self.config = config
         self.model = KeyBERT(model=model_name)
 

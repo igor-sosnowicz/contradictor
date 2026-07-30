@@ -17,7 +17,16 @@ class SimpleKeywordExtractor(KeywordExtractor):
         config: KeywordConfig,
         tokeniser: Tokeniser,
     ) -> None:
-        """Initialize keyword extractor with configuration and a tokeniser."""
+        """
+        Initialize the keyword extractor with configuration and a tokeniser.
+
+        Args:
+            config (KeywordConfig): Configuration for keyword extraction.
+            tokeniser (Tokeniser): Tokeniser used to split text into words.
+
+        Returns:
+            None
+        """
         self.config = config
         self.tokeniser = tokeniser
 

@@ -30,7 +30,15 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         config: CleaningConfig,
     ) -> None:
-        """Initialize HTML cleaner with provided configuration."""
+        """
+        Initialize the HTML cleaner.
+
+        Args:
+            config (CleaningConfig): Configuration for HTML cleaning.
+
+        Returns:
+            None
+        """
         self.config = config
 
     @override
@@ -75,6 +83,15 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         soup: BeautifulSoup,
     ) -> str:
+        """
+        Extract title from parsed HTML.
+
+        Args:
+            soup (BeautifulSoup): Parsed HTML tree.
+
+        Returns:
+            str: Page title or empty string.
+        """
         if soup.title:
             return soup.title.get_text(strip=True)
         return ""
@@ -83,6 +100,15 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         soup: BeautifulSoup,
     ) -> None:
+        """
+        Remove unwanted HTML elements from document.
+
+        Args:
+            soup (BeautifulSoup): Parsed HTML document to modify.
+
+        Returns:
+            None: This method modifies the document in place.
+        """
         for tag_name in self.config.remove_tags:
             for tag in list(soup.find_all(tag_name)):
                 tag.decompose()
@@ -100,7 +126,15 @@ class BeautifulSoupCleaner(Cleaner):
                 continue
 
     def _should_decompose(self, element: Tag) -> bool:
-        """Check if a structural element qualifies as removable noise."""
+        """
+        Check whether an HTML element should be removed.
+
+        Args:
+            element (Tag): HTML element to evaluate.
+
+        Returns:
+            bool: True if element should be removed, otherwise False.
+        """
         if not isinstance(element, Tag) or element.attrs is None:
             return False
 
@@ -214,6 +248,15 @@ class BeautifulSoupCleaner(Cleaner):
         self,
         text: str,
     ) -> float:
+        """
+        Calculate content quality score.
+
+        Args:
+            text (str): Extracted text candidate.
+
+        Returns:
+            float: Score representing estimated content quality.
+        """
         base_score = len(text) + (text.count(".") * self.SENTENCE_SCORE_WEIGHT)
         lowered = text.lower()
         total_penalty_ratio = 0.0

@@ -16,8 +16,11 @@ from src.utils.errors import ContradictorError
 
 class SearchPipeline:
     """
-    Complete search pipeline.
-    Responsible only for orchestration.
+    Orchestrates the complete document search workflow.
+
+    Coordinates keyword extraction, searching, downloading,
+    cleaning, and caching. This class does not implement the
+    individual processing steps; it only controls their execution.
     """
 
     def __init__(
@@ -28,7 +31,23 @@ class SearchPipeline:
         cleaner: Cleaner,
         cache: CacheBackend,
     ) -> None:
-        """Initialize search pipeline with required components."""
+        """
+        Initialize search pipeline dependencies.
+
+        Args:
+            keyword_extractor (KeywordExtractor): Component responsible for
+                extracting search keywords from user input.
+            search_engine (SearchEngine): Component responsible for executing
+                searches.
+            downloader (Downloader): Component responsible for downloading
+                web page content.
+            cleaner (Cleaner): Component responsible for extracting readable
+                content from downloaded pages.
+            cache (CacheBackend): Storage backend for cached search results.
+
+        Returns:
+            None: Initializes pipeline components.
+        """
         self.keyword_extractor = keyword_extractor
         self.search_engine = search_engine
         self.downloader = downloader

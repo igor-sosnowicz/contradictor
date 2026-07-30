@@ -20,7 +20,16 @@ class RequestsDownloader(Downloader):
         self,
         config: DownloadConfig,
     ) -> None:
-        """Initialize web page downloader with HTTP configuration."""
+        """
+        Initialize downloader with HTTP configuration.
+
+        Args:
+            config (DownloadConfig): Configuration containing HTTP settings,
+                such as timeout and user agent.
+
+        Returns:
+            None: Initializes downloader state.
+        """
         self.config = config
         self.session = requests.Session()
         self.session.headers.update(

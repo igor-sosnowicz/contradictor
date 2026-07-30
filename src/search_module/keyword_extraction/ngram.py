@@ -16,7 +16,16 @@ class NGramKeywordExtractor(KeywordExtractor):
         config: KeywordConfig,
         tokeniser: Tokeniser,
     ) -> None:
-        """Initialize the extractor with configuration and a tokeniser."""
+        """
+        Initialize the extractor with configuration and a tokeniser.
+
+        Args:
+            config (KeywordConfig): Configuration for keyword extraction.
+            tokeniser (Tokeniser): Tokeniser used to split text into tokens.
+
+        Returns:
+            None
+        """
         self.config = config
         self.tokeniser = tokeniser
 
@@ -24,7 +33,16 @@ class NGramKeywordExtractor(KeywordExtractor):
         self,
         text: str,
     ) -> SearchQuery:
-        """Extract keywords from text using n-gram frequency analysis."""
+        """
+        Extract keywords from text using n-gram frequency analysis.
+
+        Args:
+            text (str): The input text from which keywords should be extracted.
+
+        Returns:
+            SearchQuery: A normalized search query containing the extracted
+                keywords.
+        """
         tokens = self.tokeniser.tokenise(text)
         candidates = self._create_ngrams(tokens)
         keywords = [
@@ -42,7 +60,16 @@ class NGramKeywordExtractor(KeywordExtractor):
         self,
         tokens: list[str],
     ) -> list[str]:
-        """Generate n-grams based on configured min and max sizes."""
+        """
+        Generate n-grams based on configured minimum and maximum sizes.
+
+        Args:
+            tokens (list[str]): A sequence of tokens from which to generate
+                n-grams.
+
+        Returns:
+            list[str]: A list of generated n-gram phrases.
+        """
         result: list[str] = []
         ngram_range = range(self.config.min_ngram_size, self.config.max_ngram_size + 1)
 

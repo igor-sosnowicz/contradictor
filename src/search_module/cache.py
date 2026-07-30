@@ -20,7 +20,15 @@ class DiskCacheBackend(CacheBackend):
         self,
         config: CacheConfig,
     ) -> None:
-        """Initialize disk cache backend with provided configuration."""
+        """
+        Initialize the disk cache backend.
+
+        Args:
+            config (CacheConfig): Configuration for the cache backend.
+
+        Returns:
+            None
+        """
         self.config = config
         self.cache = Cache(
             directory=config.directory,
@@ -57,5 +65,10 @@ class DiskCacheBackend(CacheBackend):
         )
 
     def clear(self) -> None:
-        """Remove all cached entries."""
+        """
+        Remove all cached entries.
+
+        Returns:
+            None
+        """
         self.cache.clear()

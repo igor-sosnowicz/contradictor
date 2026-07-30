@@ -1,5 +1,6 @@
 """Tests for determining noise_penalty_factor in search module."""
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -36,13 +37,6 @@ def _load_html_file(filename: str) -> str:
     return file_path.read_text(encoding="utf-8")
 
 
-EXPECTED_CONTENT_WORDS = {
-    "wikipedia_python.html": "python",
-    "medium_engineering.html": "engineering",
-    "python_org_about.html": "python",
-}
-
-
 @pytest.mark.parametrize(
     "html_filename",
     [
@@ -77,9 +71,6 @@ def test_cleaner_scoring_with_real_html_fixtures(
 
 def test_grid_search_noise_penalty_factor_pure() -> None:
     """Mathematical verification of the noise penalty factor with file logging."""
-    import sys
-    from pathlib import Path
-
     clean_article = (
         "Python is an interpreted high-level programming language. "
         "Its design philosophy emphasizes code readability "
