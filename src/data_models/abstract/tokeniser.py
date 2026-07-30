@@ -29,3 +29,12 @@ class Tokeniser(ABC):
         Returns:
             The decoded texts, one per input token sequence.
         """
+
+    @abstractmethod
+    def tokenise(self, text: str) -> list[str]:
+        """
+        Split text into individual string tokens.
+
+        Used for text cleaning, keyword extraction and n-grams.
+        """
+        raise NotImplementedError
