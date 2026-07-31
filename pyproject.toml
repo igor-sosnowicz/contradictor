@@ -22,6 +22,7 @@ dependencies = [
     "scikit-learn>=1.9.0",
     "sentence-transformers>=5.6.1",
     "spacy>=3.8.14",
+    "textstat-rs>=1.0.0",
     "tiktoken>=0.13.0",
     "tqdm>=4.68.3",
     "xgboost>=3.3.0",
@@ -58,16 +59,16 @@ python_version = "3.13"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = [
-    "tests/test_search_module/html_files",
-]
+exclude = ["tests/test_search_module/html_files"]
 
 [tool.pylint."messages control"]
 disable = [
-    "invalid-name", # Variable name "X"  is a valid name in data science.
+    "invalid-name",           # Variable name "X"  is a valid name in data science.
     "too-few-public-methods",
 ]
 
+[tool.pylint.typecheck]
+extension-pkg-allow-list = ["textstat_rs"] # Complied Rust extension.
 
 [tool.ruff.format]
 indent-style = "space"
