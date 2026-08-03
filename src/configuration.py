@@ -3,7 +3,7 @@
 import tomllib
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Configuration(BaseModel):
@@ -22,6 +22,8 @@ class Configuration(BaseModel):
 
     # In seconds.
     dataset_download_timeout: int = 300
+
+    style_vector_dimensions: int = Field(5, ge=1)
 
 
 def load_configuration(file: Path) -> Configuration:

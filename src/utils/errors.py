@@ -11,3 +11,11 @@ class DatasetError(ContradictorError):
 
 class ModelNotTrainedError(ContradictorError):
     """Raised when a trained model or vectorizer is missing."""
+
+
+class NotPreparedError(ContradictorError):
+    """Raised if an entity is not prepared but was attempted to run."""
+
+
+class ConfigurationError(ContradictorError):
+    """Raised if an invalid value was set in the configuration."""
