@@ -5,6 +5,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.argument_detection.config import (
+    XGBoostExtractorConfig,
+)
+
 
 class Configuration(BaseModel):
     """The project-wide configuration."""
@@ -19,6 +23,10 @@ class Configuration(BaseModel):
     raw_dataset_subdirectory: str = "raw_datasets"
     preprocessed_dataset_subdirectory: str = "processed_dataset"
     model_subdirectory: str = "models"
+
+    xgboost_extractor: XGBoostExtractorConfig = Field(
+        default_factory=XGBoostExtractorConfig,
+    )
 
     # In seconds.
     dataset_download_timeout: int = 300

@@ -1,5 +1,6 @@
 """Module with project-wide data models."""
 
+from dataclasses import dataclass
 from enum import StrEnum, auto
 
 from pydantic import BaseModel, Field
@@ -78,3 +79,11 @@ class FramedArgument(BaseModel):
             "to its prediction probability."
         ),
     )
+
+
+@dataclass(slots=True, frozen=True)
+class ClaimEvidencePair:
+    """A claim and one sentence supporting it."""
+
+    claim: str
+    evidence: str
