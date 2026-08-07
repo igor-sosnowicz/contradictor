@@ -2,12 +2,14 @@
 
 import subprocess
 import sys
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import spacy
 from tqdm import tqdm
 
+if TYPE_CHECKING:
+    from src.argument_detection.config import SpacyConfig
 from src.configuration import config
 
 
@@ -16,7 +18,7 @@ class SpacyEmbedder:
 
     def __init__(self) -> None:
         """Initialize the embedder and load the configured spaCy pipeline."""
-        self._config = config.xgboost_extractor.spacy
+        self._config: SpacyConfig = config.xgboost_extractor.spacy
         self._nlp = self._load_pipeline()
 
     def _load_pipeline(

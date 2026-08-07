@@ -189,18 +189,10 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
             y,
         )
 
-        self._model = XGBClassifier(
-            objective=self._config.training.objective,
-            eval_metric=self._config.training.eval_metric,
-            tree_method=self._config.training.tree_method,
-            random_state=self._config.training.random_state,
-            n_jobs=self._config.training.n_jobs,
-            **best_params,
-        )
-
-        self._model.fit(
+        self._model = self._fit_xgboost_model(
             X,
             y,
+            best_params,
         )
 
         return {

@@ -2,7 +2,8 @@
 
 import pickle
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from pathlib import Path
+from typing import TYPE_CHECKING, TypeVar
 
 import numpy as np
 import optuna
@@ -18,6 +19,9 @@ from src.argument_detection.argument_detection_dataset import (
 from src.argument_detection.spacy_embedder import SpacyEmbedder
 from src.configuration import config
 from src.utils.sentence_splitter import SentenceSplitter
+
+if TYPE_CHECKING:
+    from src.argument_detection.config import XGBoostExtractorConfig
 
 ModelType = TypeVar(
     "ModelType",
@@ -51,25 +55,24 @@ class BaseXGBoostExtractor[ModelType](ABC):
             proof_of_concept_mode:
                 Whether to limit dataset size for faster experiments.
         """
-        self._config = config.xgboost_extractor
+        self._config: XGBoostExtractorConfig = config.xgboost_extractor
         self._dataset = dataset
         self._sentence_splitter = SentenceSplitter()
         self._model: ModelType | None = None
         self._embedder = SpacyEmbedder()
-        self._model_path = (
-            config.data_directory / config.model_subdirectory / model_name
-        )
+        self._model_name = model_name
 
-        self._model_path.parent.mkdir(
+        self._get_model_path().parent.mkdir(
             parents=True,
             exist_ok=True,
         )
 
         self._cache = Cache(config.cache_directory / cache_name)
-
-        self._threshold: float | None = self._cache.get("threshold")
-
         self._max_samples = self._get_max_samples() if proof_of_concept_mode else 0
+
+    def _get_model_path(self) -> Path:
+        """Generate path to the model file dynamically."""
+        return config.data_directory / config.model_subdirectory / self._model_name
 
     @abstractmethod
     def _get_max_samples(
@@ -135,10 +138,11 @@ class BaseXGBoostExtractor[ModelType](ABC):
         self,
     ) -> ModelType | None:
         """Load trained model."""
-        if not self._model_path.exists():
+        model_path = self._get_model_path()
+        if not model_path.exists():
             return None
 
-        with self._model_path.open("rb") as file:
+        with model_path.open("rb") as file:
             return pickle.load(file)  # noqa: S301
 
     def _save_model(
@@ -146,11 +150,26 @@ class BaseXGBoostExtractor[ModelType](ABC):
         model: ModelType,
     ) -> None:
         """Persist trained model."""
-        with self._model_path.open("wb") as file:
+        with self._get_model_path().open("wb") as file:
             pickle.dump(
                 model,
                 file,
             )
+
+    def _fit_xgboost_model(
+        self, x: np.ndarray, y: np.ndarray, best_params: dict
+    ) -> XGBClassifier:
+        """Shared method for initialization and training XGBoost model."""
+        model = XGBClassifier(
+            objective=self._config.training.objective,
+            eval_metric=self._config.training.eval_metric,
+            tree_method=self._config.training.tree_method,
+            random_state=self._config.training.random_state,
+            n_jobs=self._config.training.n_jobs,
+            **best_params,
+        )
+        model.fit(x, y)
+        return model
 
     async def _initialise_model(
         self,
@@ -208,8 +227,6 @@ class BaseXGBoostExtractor[ModelType](ABC):
         threshold: float,
     ) -> None:
         """Save selected threshold."""
-        self._threshold = threshold
-
         self._cache.set(
             "threshold",
             threshold,
@@ -283,14 +300,11 @@ class BaseXGBoostExtractor[ModelType](ABC):
 
         study = optuna.create_study(
             direction="maximize",
-            sampler=TPESampler(
-                seed=optuna_config.seed,
-            ),
+            sampler=TPESampler(seed=optuna_config.seed),
         )
-
         study.optimize(
             objective,
             n_trials=optuna_config.n_trials,
         )
 
-        return dict(study.best_params)
+        return study.best_params
