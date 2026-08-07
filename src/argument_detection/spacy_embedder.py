@@ -8,9 +8,10 @@ import numpy as np
 import spacy
 from tqdm import tqdm
 
+from src.configuration import config
+
 if TYPE_CHECKING:
     from src.argument_detection.config import SpacyConfig
-from src.configuration import config
 
 
 class SpacyEmbedder:

@@ -28,6 +28,7 @@ ModelType = TypeVar(
 )
 
 
+# pylint: disable=too-many-instance-attributes
 class BaseXGBoostExtractor[ModelType](ABC):
     """Base class for XGBoost-based extractors."""
 

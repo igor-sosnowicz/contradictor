@@ -50,4 +50,4 @@ def load_configuration(file: Path) -> Configuration:
     return Configuration(**config_data)
 
 
-config = load_configuration(Path("./config.toml"))
+config: Configuration = load_configuration(Path("./config.toml"))
