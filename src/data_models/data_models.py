@@ -96,11 +96,28 @@ class ArgumentWithCounterarguments(BaseModel):
 
 
 class NLIResult(Enum):
-    """Result of a natural language inference."""
+    """
+    Result of a natural language inference.
+
+    Attributes:
+        NEUTRAL: Two chunks of texts are independent of each other.
+            They address different issues and are not associated.
+        ENTAILMENT: One chunk of text confirms, proves, or agrees with
+            the other one. They are logically conformant.
+        CONTRADICTION: One chunks of texts contradicts the other one.
+            They disagree with each other.
+    """
 
     NEUTRAL = 0
     ENTAILMENT = 1
     CONTRADICTION = -1
+
+
+class NLIPrediction(BaseModel):
+    """Prediction of an NLI model with its decision (result) and confidence."""
+
+    result: NLIResult
+    confidence: float = Field(..., ge=0.0, le=1.0)
 
 
 class ComputingBackend(StrEnum):
@@ -139,7 +156,7 @@ class ArgumentExtractorImplementation(StrEnum):
 class NLIImplementation(StrEnum):
     """Name of natural language inference implementation."""
 
-    NOT_IMPLEMENTED = auto()
+    TRANSFORMERS_MODERNBERT = auto()
 
 
 class StyleExtractorImplementation(StrEnum):
