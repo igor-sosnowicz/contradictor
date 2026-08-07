@@ -2,10 +2,10 @@
 
 from collections import Counter
 
-from src.data_models.abstract.tokeniser import Tokeniser
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
+from src.utils.tokenisers.tokeniser import Tokeniser
 
 
 class NGramKeywordExtractor(KeywordExtractor):

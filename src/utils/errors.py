@@ -19,3 +19,7 @@ class NotPreparedError(ContradictorError):
 
 class ConfigurationError(ContradictorError):
     """Raised if an invalid value was set in the configuration."""
+
+
+class UnsupportedError(ContradictorError):
+    """Raised if a currently unsupported option or combination of options is used."""
