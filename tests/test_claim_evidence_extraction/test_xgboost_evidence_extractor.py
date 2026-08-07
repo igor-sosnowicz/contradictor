@@ -1,5 +1,7 @@
 """Tests for evidence extractor."""
 
+import asyncio
+
 import numpy as np
 import pytest
 
@@ -14,11 +16,7 @@ class FakeDataset:
     async def prepare(
         self,
     ) -> None:
-        """
-        Prepare fake dataset.
-
-        Used only for extractor tests.
-        """
+        """Prepare fake dataset."""
 
 
 class FakeModel:
@@ -43,8 +41,8 @@ class FakeModel:
                 [
                     0.1,
                     0.9,
-                ]
-            ]
+                ],
+            ],
         )
 
 
@@ -59,13 +57,20 @@ def test_evidence_extractor_returns_evidence(
 
     extractor._model = FakeModel()
 
+    async def fake_initialise_model() -> None:
+        """Skip model initialization."""
+
+    monkeypatch.setattr(
+        extractor,
+        "_initialise_model",
+        fake_initialise_model,
+    )
+
     monkeypatch.setattr(
         extractor,
         "_create_features",
         lambda claims, evidence: np.array([[1, 2]]),
     )
-
-    import asyncio
 
     result = asyncio.run(
         extractor.extract_evidence(
