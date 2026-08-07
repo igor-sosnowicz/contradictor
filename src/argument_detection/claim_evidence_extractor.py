@@ -11,27 +11,9 @@ processing flow:
       -> claim-evidence pairs
 """
 
-from dataclasses import dataclass
-
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import XGBoostEvidenceExtractor
-
-
-@dataclass
-class ClaimEvidencePair:
-    """
-    Data structure representing a claim-evidence pair.
-
-    Attributes:
-        claim (str):
-            Extracted claim statement.
-
-        evidence (str):
-            Supporting evidence associated with the claim.
-    """
-
-    claim: str
-    evidence: str
+from src.data_models.data_models import ClaimEvidencePair
 
 
 class ClaimEvidenceExtractor:

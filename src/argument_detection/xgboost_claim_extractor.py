@@ -157,6 +157,16 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         ]
 
     @override
+    async def extract_evidence(
+        self,
+        claim: str,
+        text: str,
+    ) -> list[str]:
+        raise NotImplementedError(
+            "Claim extractor does not support evidence extraction.",
+        )
+
+    @override
     async def perform_tuning(
         self,
     ) -> dict[str, float | int]:
