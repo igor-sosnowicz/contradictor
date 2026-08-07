@@ -45,6 +45,11 @@ class FakeDataset:
                     "Birds can fly.",
                     "Fish live underwater.",
                     "Horses are strong.",
+                    "Trees need water.",
+                    "Cars need fuel.",
+                    "Books contain information.",
+                    "Computers process data.",
+                    "Plants grow slowly.",
                 ],
                 "evidence": [
                     "Cats learn quickly.",
@@ -52,8 +57,24 @@ class FakeDataset:
                     "Birds use wings.",
                     "Fish breathe through gills.",
                     "Horses have powerful muscles.",
+                    "Trees absorb water.",
+                    "Cars use engines.",
+                    "Books have written pages.",
+                    "Computers execute instructions.",
+                    "Plants need sunlight.",
                 ],
-                "is_evidence": [1, 1, 1, 1, 1],
+                "is_evidence": [
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                ],
             },
         )
 
@@ -127,7 +148,7 @@ def test_evidence_extractor_returns_evidence(
         extractor.extract_evidence(
             "Cats are smart.",
             "Cats learn quickly.",
-        )
+        ),
     )
 
     assert result == ["Cats learn quickly."]
