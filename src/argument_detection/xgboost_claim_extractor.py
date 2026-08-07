@@ -178,23 +178,13 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
             max_samples=self._max_samples,
         )
 
-        X = self._embedder.embed(
+        x = self._embedder.embed(
             df["sentence"].astype(str).tolist(),
         )
 
         y = df["is_claim"].astype("int32").to_numpy()
 
-        best_params = self._tune_hyperparameters(
-            X,
+        return self._apply_tuned_parameters(
+            x,
             y,
         )
-
-        self._model = self._fit_xgboost_model(
-            X,
-            y,
-            best_params,
-        )
-
-        return {
-            **best_params,
-        }

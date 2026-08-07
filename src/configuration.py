@@ -24,9 +24,7 @@ class Configuration(BaseModel):
     preprocessed_dataset_subdirectory: str = "processed_dataset"
     model_subdirectory: str = "models"
 
-    xgboost_extractor: XGBoostExtractorConfig = Field(
-        default_factory=XGBoostExtractorConfig,
-    )
+    xgboost_extractor: XGBoostExtractorConfig = XGBoostExtractorConfig()
 
     # In seconds.
     dataset_download_timeout: int = 300

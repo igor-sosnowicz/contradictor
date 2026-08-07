@@ -155,8 +155,8 @@ class DatasetConfig(BaseModel):
 class XGBoostExtractorConfig(BaseModel):
     """Complete XGBoost claim extractor configuration."""
 
-    dataset: DatasetConfig = Field(default_factory=DatasetConfig)
-    spacy: SpacyConfig = Field(default_factory=SpacyConfig)
-    training: XGBoostTrainingConfig = Field(default_factory=XGBoostTrainingConfig)
-    threshold: ThresholdConfig = Field(default_factory=ThresholdConfig)
-    optuna: OptunaConfig = Field(default_factory=OptunaConfig)
+    dataset: DatasetConfig = DatasetConfig()
+    spacy: SpacyConfig = SpacyConfig()
+    training: XGBoostTrainingConfig = XGBoostTrainingConfig()
+    threshold: ThresholdConfig = ThresholdConfig()
+    optuna: OptunaConfig = OptunaConfig()

@@ -157,6 +157,27 @@ class BaseXGBoostExtractor[ModelType](ABC):
                 file,
             )
 
+    def _apply_tuned_parameters(
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
+    ) -> dict[str, float | int]:
+        """Tune and apply XGBoost parameters."""
+        best_params = self._tune_hyperparameters(
+            x,
+            y,
+        )
+
+        self._model = self._fit_xgboost_model(
+            x,
+            y,
+            best_params,
+        )
+
+        return {
+            **best_params,
+        }
+
     def _fit_xgboost_model(
         self, x: np.ndarray, y: np.ndarray, best_params: dict
     ) -> XGBClassifier:

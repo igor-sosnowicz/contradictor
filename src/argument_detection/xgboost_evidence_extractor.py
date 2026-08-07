@@ -227,24 +227,14 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             max_samples=self._max_samples,
         )
 
-        X = self._create_features(
+        x = self._create_features(
             df["claim"].astype(str).tolist(),
             df["evidence"].astype(str).tolist(),
         )
 
         y = df["is_evidence"].astype("int32").to_numpy()
 
-        best_params = self._tune_hyperparameters(
-            X,
+        return self._apply_tuned_parameters(
+            x,
             y,
         )
-
-        self._model = self._fit_xgboost_model(
-            X,
-            y,
-            best_params,
-        )
-
-        return {
-            **best_params,
-        }

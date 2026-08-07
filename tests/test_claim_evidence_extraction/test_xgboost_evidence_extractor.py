@@ -26,9 +26,6 @@ class FakeDataset:
         """
         Return a fake evidence extraction dataset split.
 
-        This method mimics the behavior of
-        ``ArgumentDetectionDataset.get_evidence_split`` for testing purposes.
-
         Args:
             split (SubsetName):
                 Dataset subset to retrieve.
@@ -38,14 +35,31 @@ class FakeDataset:
 
         Returns:
             pd.DataFrame:
-                DataFrame containing fake evidence extraction samples with
-                ``claim``, ``evidence``, and ``is_evidence`` columns.
+                Fake evidence extraction samples.
         """
         return pd.DataFrame(
             {
-                "claim": ["Cats are smart."],
-                "evidence": ["Cats learn quickly."],
-                "is_evidence": [1],
+                "claim": [
+                    "Cats are smart.",
+                    "Dogs are loyal.",
+                    "Birds can fly.",
+                    "Fish live underwater.",
+                    "Horses are strong.",
+                ],
+                "evidence": [
+                    "Cats learn quickly.",
+                    "Dogs help humans.",
+                    "Birds use wings.",
+                    "Fish breathe through gills.",
+                    "Horses have powerful muscles.",
+                ],
+                "is_evidence": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                ],
             },
         )
 
