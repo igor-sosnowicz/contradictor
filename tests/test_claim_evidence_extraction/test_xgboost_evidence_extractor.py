@@ -37,7 +37,7 @@ class FakeDataset:
             pd.DataFrame:
                 Fake evidence extraction samples.
         """
-        return pd.DataFrame(
+        df = pd.DataFrame(
             {
                 "claim": [
                     "Cats are smart.",
@@ -53,15 +53,14 @@ class FakeDataset:
                     "Fish breathe through gills.",
                     "Horses have powerful muscles.",
                 ],
-                "is_evidence": [
-                    1,
-                    1,
-                    1,
-                    1,
-                    1,
-                ],
+                "is_evidence": [1, 1, 1, 1, 1],
             },
         )
+
+        if max_samples is not None:
+            df = df.iloc[:max_samples]
+
+        return df.reset_index(drop=True)
 
 
 class FakeModel:
@@ -75,19 +74,23 @@ class FakeModel:
         Return fake prediction probabilities.
 
         Args:
-            x:
+            x (np.ndarray):
                 Input feature matrix.
 
         Returns:
-            Probability predictions.
+            np.ndarray:
+                Probability predictions.
         """
-        return np.array(
-            [
+        return np.tile(
+            np.array(
                 [
-                    0.1,
-                    0.9,
+                    [
+                        0.1,
+                        0.9,
+                    ],
                 ],
-            ],
+            ),
+            (len(x), 1),
         )
 
 
@@ -114,7 +117,10 @@ def test_evidence_extractor_returns_evidence(
     monkeypatch.setattr(
         extractor,
         "_create_features",
-        lambda claims, evidence: np.array([[1, 2]]),
+        lambda claims, evidence: np.tile(
+            np.array([[1, 2]]),
+            (len(evidence), 1),
+        ),
     )
 
     result = asyncio.run(
