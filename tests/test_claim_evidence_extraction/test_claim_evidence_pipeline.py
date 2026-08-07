@@ -1,4 +1,6 @@
-"""Tests for claim-evidence extraction pipeline."""
+"""Tests for claim extractor module."""
+
+import asyncio
 
 from src.argument_detection.claim_evidence_extractor import (
     ClaimEvidenceExtractor,
@@ -14,9 +16,7 @@ class FakeClaimExtractor:
         text: str,
     ) -> list[str]:
         """Return fake claims."""
-        return [
-            "Cats are intelligent animals.",
-        ]
+        return ["Cats are intelligent animals."]
 
 
 class FakeEvidenceExtractor:
@@ -28,9 +28,7 @@ class FakeEvidenceExtractor:
         text: str,
     ) -> list[str]:
         """Return fake evidence."""
-        return [
-            "Cats learn quickly.",
-        ]
+        return ["Cats learn quickly."]
 
 
 def test_pipeline_extracts_pairs() -> None:
@@ -40,38 +38,33 @@ def test_pipeline_extracts_pairs() -> None:
         evidence_extractor=FakeEvidenceExtractor(),
     )
 
-    import asyncio
-
-    result = asyncio.run(pipeline.extract_pairs("Cats are intelligent animals."))
-
-    assert len(result) == 1
-
-    assert isinstance(
-        result[0],
-        ClaimEvidencePair,
+    result = asyncio.run(
+        pipeline.extract_pairs("Cats are intelligent animals."),
     )
 
-    assert result[0].claim == ("Cats are intelligent animals.")
-
-    assert result[0].evidence == ["Cats learn quickly."]
+    assert len(result) == 1
+    assert isinstance(result[0], ClaimEvidencePair)
+    assert result[0].claim == "Cats are intelligent animals."
+    assert result[0].evidence == "Cats learn quickly."
 
 
 def test_pipeline_returns_empty_when_no_claims() -> None:
     """Verify empty result when claims are missing."""
 
     class EmptyClaimExtractor:
+        """Fake extractor returning no claims."""
+
         async def extract_claims(
             self,
             text: str,
         ) -> list[str]:
+            """Return no claims."""
             return []
 
     pipeline = ClaimEvidenceExtractor(
         claim_extractor=EmptyClaimExtractor(),
         evidence_extractor=FakeEvidenceExtractor(),
     )
-
-    import asyncio
 
     result = asyncio.run(pipeline.extract_pairs("text"))
 

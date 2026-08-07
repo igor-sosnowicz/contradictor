@@ -1,5 +1,7 @@
 """Tests for claim extractor."""
 
+import asyncio
+
 import numpy as np
 import pytest
 
@@ -14,12 +16,7 @@ class FakeDataset:
     async def prepare(
         self,
     ) -> None:
-        """
-        Prepare fake dataset.
-
-        Returns:
-            None.
-        """
+        """Prepare fake dataset."""
 
 
 class FakeModel:
@@ -40,14 +37,28 @@ class FakeModel:
             np.ndarray:
                 Prediction probabilities.
         """
-        return np.array(
-            [
-                [
-                    0.2,
-                    0.8,
-                ]
-            ]
-        )
+        return np.array([[0.2, 0.8]])
+
+
+class FakeEmbedder:
+    """Fake embedder."""
+
+    def embed(
+        self,
+        texts: list[str],
+    ) -> np.ndarray:
+        """
+        Return fake embeddings.
+
+        Args:
+            texts (list[str]):
+                Input texts.
+
+        Returns:
+            np.ndarray:
+                Fake embeddings.
+        """
+        return np.array([[1.0, 2.0, 3.0]])
 
 
 def test_claim_extractor_returns_claim(
@@ -60,15 +71,25 @@ def test_claim_extractor_returns_claim(
     )
 
     extractor._model = FakeModel()
+    extractor._embedder = FakeEmbedder()
 
     monkeypatch.setattr(
         extractor,
-        "_embed_texts",
-        lambda texts: np.array([[1, 2, 3]]),
+        "_sentence_splitter",
+        lambda text: ["Cats are intelligent."],
     )
 
-    import asyncio
+    async def fake_initialise_model() -> None:
+        """Skip model initialization."""
 
-    result = asyncio.run(extractor.extract_claims("Cats are intelligent."))
+    monkeypatch.setattr(
+        extractor,
+        "_initialise_model",
+        fake_initialise_model,
+    )
+
+    result = asyncio.run(
+        extractor.extract_claims("Cats are intelligent."),
+    )
 
     assert result == ["Cats are intelligent."]

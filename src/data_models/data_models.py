@@ -83,7 +83,16 @@ class FramedArgument(BaseModel):
 
 @dataclass(slots=True, frozen=True)
 class ClaimEvidencePair:
-    """A claim and one sentence supporting it."""
+    """
+    Data structure representing a claim-evidence pair.
+
+    Attributes:
+        claim (str):
+            Extracted claim statement.
+
+        evidence (str):
+            Supporting evidence associated with the claim.
+    """
 
     claim: str
     evidence: str
