@@ -3,17 +3,47 @@
 import asyncio
 
 import numpy as np
+import pandas as pd
 
 from src.argument_detection.xgboost_evidence_extractor import (
     XGBoostEvidenceExtractor,
 )
+from src.data_models.data_models import SubsetName
 
 
 class FakeDataset:
-    """Fake dataset."""
+    """Fake dataset for testing."""
 
     async def prepare(self) -> None:
         """Prepare fake dataset."""
+
+    def get_evidence_split(
+        self,
+        split: SubsetName,
+        max_samples: int | None = None,
+    ) -> pd.DataFrame:
+        """Return a fake evidence extraction dataset split."""
+        df = pd.DataFrame(
+            {
+                "claim": [
+                    "Cats are smart.",
+                    "Dogs are loyal.",
+                ],
+                "evidence": [
+                    "Cats learn quickly.",
+                    "Dogs help humans.",
+                ],
+                "is_evidence": [
+                    1,
+                    0,
+                ],
+            },
+        )
+
+        if max_samples is not None:
+            df = df.iloc[:max_samples]
+
+        return df.reset_index(drop=True)
 
 
 class FakeModel:
