@@ -46,110 +46,39 @@ class ThresholdConfig(BaseModel):
     max_threshold: float = 1.0
     num_thresholds: int = 101
 
-    claim: float = Field(
-        default=0.45,
-        ge=0,
-        le=1,
-    )
-
-    evidence: float = Field(
-        default=0.35,
-        ge=0,
-        le=1,
-    )
+    claim: float = Field(default=0.45, ge=0, le=1)
+    evidence: float = Field(default=0.35, ge=0, le=1)
 
 
 class OptunaConfig(BaseModel):
     """Optuna hyperparameter tuning configuration."""
 
-    n_trials: int = Field(
-        default=50,
-        ge=1,
-    )
-
-    cv_folds: int = Field(
-        default=5,
-        ge=2,
-    )
-
-    n_jobs: int = Field(
-        default=4,
-    )
-
+    n_trials: int = Field(default=50, ge=1)
+    cv_folds: int = Field(default=5, ge=2)
+    n_jobs: int = Field(default=4)
     seed: int = 42
-
-    n_estimators_min: int = Field(
-        default=100,
-        ge=1,
-    )
-
-    n_estimators_max: int = Field(
-        default=1000,
-        ge=1,
-    )
-
-    n_estimators_step: int = Field(
-        default=100,
-        ge=1,
-    )
-
-    max_depth_min: int = Field(
-        default=3,
-        ge=1,
-    )
-
-    max_depth_max: int = Field(
-        default=10,
-        ge=1,
-    )
-
-    learning_rate_min: float = Field(
-        default=0.01,
-        gt=0,
-    )
-
-    learning_rate_max: float = Field(
-        default=0.3,
-        gt=0,
-    )
-
-    subsample_min: float = Field(
-        default=0.6,
-        gt=0,
-        le=1,
-    )
-
-    subsample_max: float = Field(
-        default=1.0,
-        gt=0,
-        le=1,
-    )
-
-    colsample_bytree_min: float = Field(
-        default=0.4,
-        gt=0,
-        le=1,
-    )
-
-    colsample_bytree_max: float = Field(
-        default=1.0,
-        gt=0,
-        le=1,
-    )
+    n_estimators_min: int = Field(default=100, ge=1)
+    n_estimators_max: int = Field(default=1000, ge=1)
+    n_estimators_step: int = Field(default=100, ge=1)
+    max_depth_min: int = Field(default=3, ge=1)
+    max_depth_max: int = Field(default=10, ge=1)
+    learning_rate_min: float = Field(default=0.01, gt=0)
+    learning_rate_max: float = Field(default=0.3, gt=0)
+    subsample_min: float = Field(default=0.6, gt=0, le=1)
+    subsample_max: float = Field(default=1.0, gt=0, le=1)
+    colsample_bytree_min: float = Field(default=0.4, gt=0, le=1)
+    colsample_bytree_max: float = Field(default=1.0, gt=0, le=1)
 
 
 class DatasetConfig(BaseModel):
     """Dataset sampling configuration."""
 
-    claim_proof_of_concept_max_samples: int = Field(
-        default=5_000,
-        ge=1,
-    )
-
-    evidence_proof_of_concept_max_samples: int = Field(
-        default=1_000,
-        ge=1,
-    )
+    claim_proof_of_concept_max_samples: int = Field(default=5_000, ge=1)
+    evidence_proof_of_concept_max_samples: int = Field(default=1_000, ge=1)
+    test_size: float = Field(default=0.2, gt=0, lt=1)
+    val_size: float = Field(default=0.5, gt=0, lt=1)
+    random_state: int = Field(default=42)
+    negative_sample_frac: float = Field(default=1.0, gt=0, le=1)
 
 
 class XGBoostExtractorConfig(BaseModel):

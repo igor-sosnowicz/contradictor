@@ -8,13 +8,14 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import GroupShuffleSplit
 
+from src.argument_detection.config import XGBoostExtractorConfig
 from src.configuration import config
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
-from src.utils.dataset import to_raw_dataset_path
+from src.utils.dataset import filter_empty_rows, to_raw_dataset_path
 from src.utils.errors import DatasetError
 
-MIN_CLAIM_WORDS = 10
+MIN_CLAIM_WORDS = 4
 
 
 class ArgumentDetectionDataset(UrlDataset):
@@ -32,14 +33,12 @@ class ArgumentDetectionDataset(UrlDataset):
     to processed dataset splits.
     """
 
-    @property
-    def processed_folder_name(self) -> str:
-        """
-        Get the folder name used for storing processed dataset splits.
+    NUM_TRAIN_VAL_TEST_SPLITS = 1
+    SAMPLE_ALL_RECORDS = 1.0
 
-        Returns:
-            str: Name of the processed dataset directory.
-        """
+    @property
+    @override
+    def processed_folder_name(self) -> str:
         return "argument_detection"
 
     @staticmethod
@@ -47,28 +46,15 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Clean a sentence by normalizing whitespace.
 
-        Removes newline characters and replaces multiple consecutive whitespace
-        characters with a single space.
+        Args: sentence (str): Input sentence to clean.
 
-        Args:
-            sentence (str): Input sentence to clean.
-
-        Returns:
-            str: Cleaned sentence with normalized whitespace.
+        Returns: str: Cleaned sentence with normalized whitespace.
         """
         cleaned = sentence.replace("\n", " ").replace("\r", " ")
         return " ".join(cleaned.split())
 
     def __init__(self) -> None:
-        """
-        Initialize the argument detection dataset.
-
-        Configures the raw dataset sources used for downloading and processing.
-        Supported datasets include Persuade.
-
-        Returns:
-            None
-        """
+        """Initialize the argument detection dataset."""
         # Persuade 1.0:
         # https://www.kaggle.com/datasets/julesking/tla-lab-persuade-dataset
 
@@ -93,29 +79,13 @@ class ArgumentDetectionDataset(UrlDataset):
         for subset_name, dataframe in merged.items():
             if dataframe.empty:
                 continue
-
             if "sentence" in dataframe.columns:
-                cleaned_df = dataframe.dropna(
-                    subset=["sentence"],
-                )
-                cleaned_df = cleaned_df[
-                    cleaned_df["sentence"].astype(str).str.strip() != ""
-                ]
-
+                cleaned_df = filter_empty_rows(dataframe, "sentence")
             elif "claim" in dataframe.columns and "evidence" in dataframe.columns:
-                cleaned_df = dataframe.dropna(
-                    subset=["claim", "evidence"],
-                )
-                cleaned_df = cleaned_df[
-                    (cleaned_df["claim"].astype(str).str.strip() != "")
-                    & (cleaned_df["evidence"].astype(str).str.strip() != "")
-                ]
-
+                cleaned_df = filter_empty_rows(dataframe, ["claim", "evidence"])
             else:
                 cleaned_df = dataframe
-
             merged[subset_name] = cleaned_df.reset_index(drop=True)
-
         return merged
 
     @override
@@ -125,7 +95,7 @@ class ArgumentDetectionDataset(UrlDataset):
     ) -> None:
         for subset_name, df in merged_data.items():
             if df.empty:
-                logger.info(f"{subset_name}: empty dataset")
+                logger.warning(f"{subset_name}: empty dataset")
                 continue
 
             logger.info(f"Subset: {subset_name}")
@@ -135,7 +105,7 @@ class ArgumentDetectionDataset(UrlDataset):
                 positives = df["is_evidence"].sum()
                 negatives = len(df) - positives
 
-                logger.info(
+                logger.debug(
                     f"Evidence pairs: {positives}, Non-evidence pairs: {negatives}",
                 )
 
@@ -143,12 +113,17 @@ class ArgumentDetectionDataset(UrlDataset):
                 arguments = df["is_argument"].sum()
                 non_arguments = len(df) - arguments
 
-                logger.info(
+                logger.debug(
                     f"Arguments: {arguments}, Non-arguments: {non_arguments}",
                 )
 
     def _load_persuade(self) -> dict[str, dict[SubsetName, pd.DataFrame]]:
-        """Load Persuade and create datasets for claim-evidence extraction."""
+        """
+        Load PERSUADE 2.0 corpus and create datasets for claim-evidence extraction.
+
+        Processes the source essays and annotations to build distinct train,
+        validation, and test splits for both claim and evidence tasks.
+        """
         dataset_directory = to_raw_dataset_path("persuade")
         archive_path = dataset_directory / "tla-lab-persuade-dataset"
 
@@ -208,9 +183,9 @@ class ArgumentDetectionDataset(UrlDataset):
             )
 
         splitter = GroupShuffleSplit(
-            n_splits=1,
-            test_size=0.2,
-            random_state=42,
+            n_splits=self.NUM_TRAIN_VAL_TEST_SPLITS,
+            test_size=XGBoostExtractorConfig.dataset.test_size,
+            random_state=XGBoostExtractorConfig.dataset.random_state,
         )
 
         train_idx, temp_idx = next(
@@ -220,9 +195,9 @@ class ArgumentDetectionDataset(UrlDataset):
         train_df = df.iloc[train_idx].copy()
         temp_df = df.iloc[temp_idx].copy()
         splitter_temp = GroupShuffleSplit(
-            n_splits=1,
-            test_size=0.5,
-            random_state=42,
+            n_splits=self.NUM_TRAIN_VAL_TEST_SPLITS,
+            test_size=XGBoostExtractorConfig.dataset.val_size,
+            random_state=XGBoostExtractorConfig.dataset.random_state,
         )
 
         val_idx, test_idx = next(
@@ -308,8 +283,7 @@ class ArgumentDetectionDataset(UrlDataset):
         - 1: claim/position
         - 0: not a claim
 
-        Splitting should later be done by essay_id_comp
-        to avoid leakage.
+        Splitting should later be done by essay_id_comp to avoid leakage.
         """
         required_columns = {
             "essay_id_comp",
@@ -364,17 +338,11 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Create claim-evidence pairs from Persuade annotations.
 
-        Each evidence segment is assigned to the closest preceding
-        claim-like discourse segment within the same essay.
+        Args: df (pd.DataFrame): Raw Persuade dataframe.
 
-        Args:
-            df (pd.DataFrame): Raw Persuade dataframe.
+        Returns: pd.DataFrame: Dataset containing claim-evidence pairs.
 
-        Returns:
-            pd.DataFrame: Dataset containing claim-evidence pairs.
-
-        Raises:
-            DatasetError: If required columns are missing.
+        Raises: DatasetError: If required columns are missing.
         """
         required_columns = {
             "essay_id_comp",
@@ -440,20 +408,17 @@ class ArgumentDetectionDataset(UrlDataset):
         Negative examples are created by pairing claims with evidence
         from different arguments.
 
-        Args:
-            positive_pairs (pd.DataFrame):
-                DataFrame containing positive claim-evidence pairs.
+        Args: positive_pairs (pd.DataFrame):
+        DataFrame containing positive claim-evidence pairs.
 
-        Returns:
-            pd.DataFrame:
-                DataFrame containing positive and negative pairs.
+        Returns: pd.DataFrame: DataFrame containing positive and negative pairs.
         """
         negative_pairs = positive_pairs.copy()
         negative_pairs["claim"] = (
             negative_pairs["claim"]
             .sample(
-                frac=1,
-                random_state=42,
+                frac=XGBoostExtractorConfig.dataset.negative_sample_frac,
+                random_state=XGBoostExtractorConfig.dataset.random_state,
             )
             .reset_index(drop=True)
         )
@@ -471,8 +436,8 @@ class ArgumentDetectionDataset(UrlDataset):
                 ignore_index=True,
             )
             .sample(
-                frac=1,
-                random_state=42,
+                frac=self.SAMPLE_ALL_RECORDS,
+                random_state=XGBoostExtractorConfig.dataset.random_state,
             )
             .reset_index(drop=True)
         )
@@ -485,20 +450,12 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Get claim extraction dataset split.
 
-        Args:
-            split (SubsetName):
-                Dataset subset.
+        Args: split (SubsetName): Dataset subset.
+              max_samples (int | None): Optional maximum number of returned rows.
 
-            max_samples (int | None):
-                Optional maximum number of returned rows.
+        Returns: pd.DataFrame: Claim extraction dataframe.
 
-        Returns:
-            pd.DataFrame:
-                Claim extraction dataframe.
-
-        Raises:
-            DatasetError:
-                If dataset split does not exist or has invalid columns.
+        Raises: DatasetError: If dataset split does not exist or has invalid columns.
         """
         dataset_path = (
             config.data_directory
@@ -515,8 +472,7 @@ class ArgumentDetectionDataset(UrlDataset):
             raise DatasetError(
                 "Claim extraction dataset must contain 'sentence' column."
             )
-        df = df.dropna(subset=["sentence"])
-        df = df[df["sentence"].astype(str).str.strip() != ""]
+        df = filter_empty_rows(df, "sentence")
 
         if max_samples is not None:
             df = df.iloc[:max_samples]
@@ -530,21 +486,13 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Get evidence extraction dataset split.
 
-        Args:
-            split (SubsetName):
-                Dataset subset.
+        Args: split (SubsetName): Dataset subset.
+              max_samples (int | None): Optional maximum number of returned rows.
 
-            max_samples (int | None):
-                Optional maximum number of returned rows.
+        Returns: pd.DataFrame: Evidence extraction dataframe.
 
-        Returns:
-            pd.DataFrame:
-                Evidence extraction dataframe.
-
-        Raises:
-            DatasetError:
-                If dataset split does not exist or required columns
-                are missing.
+        Raises: DatasetError:
+        If dataset split does not exist or required columns are missing.
         """
         dataset_path = (
             config.data_directory

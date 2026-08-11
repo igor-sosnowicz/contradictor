@@ -49,26 +49,26 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         """
         Initialize the XGBoost evidence extractor.
 
-        Args:
-            dataset (ArgumentDetectionDataset):
+        Args: dataset (ArgumentDetectionDataset):
                 Dataset used for training and validation.
-
-            proof_of_concept_mode (bool):
+              proof_of_concept_mode (bool):
                 Whether to limit the number of samples during training
                 for faster experimentation.
-
-        Returns:
-            None.
         """
         super().__init__(
             dataset,
-            model_name="xgboost_evidence_extractor.pkl",
+            model_name="xgboost_evidence_extractor.json",
             cache_name="evidence_extractor",
             proof_of_concept_mode=proof_of_concept_mode,
         )
 
     def _get_max_samples(self) -> int:
-        """Return evidence extractor proof-of-concept limit."""
+        """
+        Retrieve the maximum sample size allowed for Proof-of-Concept runs.
+
+        This threshold prevents the evidence extractor from overloading system resources
+        when processing large datasets during quick validation or demo execution.
+        """
         return self._config.dataset.evidence_proof_of_concept_max_samples
 
     def _create_features(
@@ -82,16 +82,12 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         Claim and evidence embeddings are concatenated into a single feature
         representation used by the classifier.
 
-        Args:
-            claims (list[str]):
-                Claim sentences.
-
-            evidences (list[str]):
+        Args: claims (list[str]): Claim sentences.
+              evidences (list[str]):
                 Evidence sentences associated with claims.
 
-        Returns:
-            np.ndarray:
-                Feature matrix containing combined claim and evidence embeddings.
+        Returns: np.ndarray:
+                  Feature matrix containing combined claim and evidence embeddings.
         """
         claim_embeddings = self._embedder.embed(claims)
         evidence_embeddings = self._embedder.embed(evidences)
@@ -102,7 +98,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             ]
         )
 
-    async def _train(
+    async def _train_model(
         self,
     ) -> XGBClassifier:
         """Train evidence classifier."""
@@ -142,7 +138,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             )
         return model
 
-    @override
     async def extract_evidence(
         self,
         claim: str,
@@ -151,29 +146,19 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         """
         Extract evidence sentences supporting a claim.
 
-        The document is split into candidate sentences. Each candidate is
-        classified by the trained model and returned if it exceeds the selected
-        confidence threshold.
+        Args: claim (str): Claim for which supporting evidence should be found.
+              text (str): Full document containing candidate evidence sentences.
 
-        Args:
-            claim (str):
-                Claim for which supporting evidence should be found.
-
-            text (str):
-                Full document containing candidate evidence sentences.
-
-        Returns:
-            list[str]:
-                Sentences classified as supporting evidence.
+        Returns: list[str]: Sentences classified as supporting evidence.
         """
         await self._initialise_model()
         if self._model is None:
             raise RuntimeError("Model was not initialized.")
 
-        def normalize(sentence: str) -> str:
+        def normalise(sentence: str) -> str:
             return " ".join(sentence.lower().split())
 
-        normalized_claim = normalize(claim)
+        normalised_claim = normalise(claim)
         candidates = [
             sentence.strip()
             for sentence in self._sentence_splitter(text)
@@ -184,7 +169,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         candidates = [
             sentence
             for sentence in candidates
-            if normalize(sentence) != normalized_claim
+            if normalise(sentence) != normalised_claim
         ]
         if not candidates:
             return []
@@ -203,23 +188,13 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
                 probabilities,
                 strict=True,
             )
-            if (probability >= threshold and normalize(evidence) != normalized_claim)
+            if (probability >= threshold and normalise(evidence) != normalised_claim)
         ]
-
-    @override
-    async def extract_claims(
-        self,
-        text: str,
-    ) -> list[str]:
-        raise NotImplementedError(
-            "Evidence extractor does not support claim extraction.",
-        )
 
     @override
     async def perform_tuning(
         self,
     ) -> dict[str, float | int]:
-        """Tune evidence classifier."""
         await self._dataset.prepare()
 
         df = self._dataset.get_evidence_split(

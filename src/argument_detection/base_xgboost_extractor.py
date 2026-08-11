@@ -1,6 +1,5 @@
 """Base functionality for XGBoost extractors."""
 
-import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar
@@ -28,9 +27,11 @@ ModelType = TypeVar(
 )
 
 
-# pylint: disable=too-many-instance-attributes
-class BaseXGBoostExtractor[ModelType](ABC):
-    """Base class for XGBoost-based extractors."""
+# The extractor intentionally owns the state shared across concrete
+# XGBoost extractors: configuration, dataset, embeddings, model,
+# persistence, caching, and training limits.
+class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance-attributes
+    """XGBoost-based extractor with shared training and persistence state."""
 
     def __init__(
         self,
@@ -43,18 +44,10 @@ class BaseXGBoostExtractor[ModelType](ABC):
         """
         Initialize XGBoost extractor.
 
-        Args:
-            dataset:
-                Dataset used for training and validation.
-
-            model_name:
-                Name of the persisted model file.
-
-            cache_name:
-                Name of the cache directory used for storing metadata.
-
-            proof_of_concept_mode:
-                Whether to limit dataset size for faster experiments.
+        Args: dataset (ArgumentDetectionDataset): Dataset for training and validation.
+              model_name (str): Name of the persisted model file.
+              cache_name (str): Name of the cache directory used for storing metadata.
+              proof_of_concept_mode (bool): Limit of dataset size for fast experiments.
         """
         self._config: XGBoostExtractorConfig = config.xgboost_extractor
         self._dataset = dataset
@@ -82,80 +75,38 @@ class BaseXGBoostExtractor[ModelType](ABC):
         """Return proof-of-concept sample limit."""
 
     @abstractmethod
-    async def extract_claims(
-        self,
-        text: str,
-    ) -> list[str]:
-        """
-        Extract claims from text.
-
-        Args:
-            text (str):
-                Input document.
-
-        Returns:
-            list[str]:
-                Extracted claims.
-        """
-
-    @abstractmethod
-    async def extract_evidence(
-        self,
-        claim: str,
-        text: str,
-    ) -> list[str]:
-        """
-        Extract evidence sentences.
-
-        Args:
-            claim:
-                Claim to find evidence for.
-
-            text:
-                Document text.
-
-        Returns:
-            List of extracted evidence sentences.
-        """
-
-    @abstractmethod
     async def perform_tuning(
         self,
     ) -> dict[str, float]:
         """
         Tune extractor parameters.
 
-        Returns:
-            Dictionary with tuning results.
+        Returns dict[str, float]: Dictionary with tuning results.
         """
 
     @abstractmethod
-    async def _train(
+    async def _train_model(
         self,
-    ) -> ModelType:
-        """Train model."""
+    ) -> ModelType: ...
 
-    def _load(
+    def _load_model(
         self,
-    ) -> ModelType | None:
-        """Load trained model."""
+    ) -> XGBClassifier | None:
+        """Load persisted XGBoost model."""
         model_path = self._get_model_path()
         if not model_path.exists():
             return None
 
-        with model_path.open("rb") as file:
-            return pickle.load(file)  # noqa: S301
+        model = XGBClassifier()
+        model.load_model(model_path)
+        return model
 
     def _save_model(
         self,
-        model: ModelType,
+        model: XGBClassifier,
     ) -> None:
-        """Persist trained model."""
-        with self._get_model_path().open("wb") as file:
-            pickle.dump(
-                model,
-                file,
-            )
+        """Persist trained XGBoost model."""
+        model.save_model(self._get_model_path())
 
     def _apply_tuned_parameters(
         self,
@@ -174,9 +125,7 @@ class BaseXGBoostExtractor[ModelType](ABC):
             best_params,
         )
 
-        return {
-            **best_params,
-        }
+        return {**best_params}
 
     def _fit_xgboost_model(
         self, x: np.ndarray, y: np.ndarray, best_params: dict
@@ -201,16 +150,12 @@ class BaseXGBoostExtractor[ModelType](ABC):
         """Load existing model or train."""
         if self._model is not None:
             return
-
-        self._model = self._load()
-
+        self._model = self._load_model()
         if self._model is not None:
             return
-
         if not train_if_missing:
             raise RuntimeError("Model does not exist.")
-
-        self._model = await self._train()
+        self._model = await self._train_model()
 
     def _find_best_threshold(
         self,
@@ -248,7 +193,6 @@ class BaseXGBoostExtractor[ModelType](ABC):
         self,
         threshold: float,
     ) -> None:
-        """Save selected threshold."""
         self._cache.set(
             "threshold",
             threshold,

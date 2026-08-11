@@ -1,7 +1,5 @@
 """spaCy-based sentence embedder."""
 
-import subprocess
-import sys
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -22,34 +20,22 @@ class SpacyEmbedder:
         self._config: SpacyConfig = config.xgboost_extractor.spacy
         self._nlp = self._load_pipeline()
 
-    def _load_pipeline(
-        self,
-    ) -> spacy.language.Language:
+    def _load_pipeline(self) -> spacy.language.Language:
         """
         Load the configured spaCy model.
-
-        If the model is not installed locally, it is downloaded automatically
-        and loaded afterwards.
 
         Returns:
             spacy.language.Language: Loaded spaCy language pipeline.
         """
+        import spacy.cli
+
         try:
             return spacy.load(
                 self._config.model,
                 exclude=self._config.exclude,
             )
         except OSError:
-            subprocess.run(  # noqa: S603
-                [
-                    sys.executable,
-                    "-m",
-                    "spacy",
-                    "download",
-                    self._config.model,
-                ],
-                check=True,
-            )
+            spacy.cli.download(self._config.model)
             return spacy.load(
                 self._config.model,
                 exclude=self._config.exclude,
@@ -62,11 +48,9 @@ class SpacyEmbedder:
         """
         Generate dense vector embeddings for a batch of texts.
 
-        Args:
-            texts (list[str]): Input texts to embed.
+        Args: texts (list[str]): Input texts to embed.
 
-        Returns:
-            np.ndarray: A 2D array of shape ``(len(texts), embedding_dim)``
+        Returns: np.ndarray: A 2D array of shape ``(len(texts), embedding_dim)``
                 containing one embedding vector per input text.
         """
         return np.vstack(

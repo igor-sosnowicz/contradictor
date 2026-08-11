@@ -44,22 +44,14 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         Initialize XGBoost extractor.
 
-        Args:
-            dataset:
+        Args: dataset (ArgumentDetectionDataset):
                 Dataset used for training and validation.
-
-            model_name:
-                Name of the persisted model file.
-
-            cache_name:
-                Name of the cache directory used for storing metadata.
-
-            proof_of_concept_mode:
+              proof_of_concept_mode (bool):
                 Whether to limit dataset size for faster experiments.
         """
         super().__init__(
             dataset,
-            model_name="xgboost_claim_extractor.pkl",
+            model_name="xgboost_claim_extractor.json",
             cache_name="claim_extractor",
             proof_of_concept_mode=proof_of_concept_mode,
         )
@@ -68,23 +60,15 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """Return claim extractor proof-of-concept limit."""
         return self._config.dataset.claim_proof_of_concept_max_samples
 
-    async def _train(
+    async def _train_model(
         self,
     ) -> XGBClassifier:
         """
         Train the XGBoost claim classifier.
 
-        The method prepares the training dataset, generates sentence
-        embeddings, trains the classifier, and stores the trained model
-        and default classification threshold.
+        Returns: (XGBClassifier): Trained claim classification model.
 
-        Returns:
-            XGBClassifier:
-                Trained claim classification model.
-
-        Raises:
-            DatasetError:
-                If dataset preparation or loading fails.
+        Raises: (DatasetError): If dataset preparation or loading fails.
         """
         await self._dataset.prepare()
 
@@ -112,7 +96,6 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         self._save_model(model)
         return model
 
-    @override
     async def extract_claims(
         self,
         text: str,
@@ -120,20 +103,11 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         Extract claim sentences from a document.
 
-        The input text is split into sentences, transformed into embeddings,
-        and classified using the trained XGBoost model.
+        Args: text (str): Document or text fragment to analyze.
 
-        Args:
-            text (str):
-                Document or text fragment to analyze.
+        Returns: list[str]: Sentences classified as claims.
 
-        Returns:
-            list[str]:
-                Sentences classified as claims.
-
-        Raises:
-            RuntimeError:
-                If the model cannot be initialized.
+        Raises: RuntimeError: If the model cannot be initialized.
         """
         await self._initialise_model()
         if self._model is None:
@@ -157,20 +131,9 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         ]
 
     @override
-    async def extract_evidence(
-        self,
-        claim: str,
-        text: str,
-    ) -> list[str]:
-        raise NotImplementedError(
-            "Claim extractor does not support evidence extraction.",
-        )
-
-    @override
     async def perform_tuning(
         self,
     ) -> dict[str, float | int]:
-        """Tune claim classifier."""
         await self._dataset.prepare()
 
         df = self._dataset.get_claim_split(

@@ -86,12 +86,8 @@ class ClaimEvidencePair:
     """
     Data structure representing a claim-evidence pair.
 
-    Attributes:
-        claim (str):
-            Extracted claim statement.
-
-        evidence (str):
-            Supporting evidence associated with the claim.
+    Attributes: claim (str): Extracted claim statement.
+                evidence (str): Supporting evidence associated with the claim.
     """
 
     claim: str
