@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import spacy
+from spacy.cli import download
 from tqdm import tqdm
 
 from src.configuration import config
@@ -27,15 +28,13 @@ class SpacyEmbedder:
         Returns:
             spacy.language.Language: Loaded spaCy language pipeline.
         """
-        import spacy.cli
-
         try:
             return spacy.load(
                 self._config.model,
                 exclude=self._config.exclude,
             )
         except OSError:
-            spacy.cli.download(self._config.model)
+            download(self._config.model)
             return spacy.load(
                 self._config.model,
                 exclude=self._config.exclude,
