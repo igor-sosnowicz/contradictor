@@ -20,6 +20,7 @@ class SpacyEmbedder:
         """Initialize the embedder and load the configured spaCy pipeline."""
         self._config: SpacyConfig = config.xgboost_extractor.spacy
         self._nlp = self._load_pipeline()
+        self._embedding_cache: dict[str, np.ndarray] = {}
 
     def _load_pipeline(self) -> spacy.language.Language:
         """
@@ -44,25 +45,28 @@ class SpacyEmbedder:
         self,
         texts: list[str],
     ) -> np.ndarray:
-        """
-        Generate dense vector embeddings for a batch of texts.
+        """Generate dense vector embeddings for text using a local cache."""
+        missing_texts = [text for text in texts if text not in self._embedding_cache]
 
-        Args: texts (list[str]): Input texts to embed.
-
-        Returns: np.ndarray: A 2D array of shape ``(len(texts), embedding_dim)``
-                containing one embedding vector per input text.
-        """
-        return np.vstack(
-            [
+        if missing_texts:
+            embeddings = [
                 cast("np.ndarray", doc.vector)
                 for doc in tqdm(
                     self._nlp.pipe(
-                        texts,
+                        missing_texts,
                         batch_size=self._config.batch_size,
                         n_process=self._config.n_process,
                     ),
-                    total=len(texts),
+                    total=len(missing_texts),
                     desc="Embedding texts",
                 )
             ]
-        )
+
+            for text, embedding in zip(
+                missing_texts,
+                embeddings,
+                strict=True,
+            ):
+                self._embedding_cache[text] = embedding
+
+        return np.vstack([self._embedding_cache[text] for text in texts])

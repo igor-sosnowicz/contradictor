@@ -44,10 +44,11 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         """
         Initialize XGBoost extractor.
 
-        Args: dataset (ArgumentDetectionDataset): Dataset for training and validation.
-              model_name (str): Name of the persisted model file.
-              cache_name (str): Name of the cache directory used for storing metadata.
-              proof_of_concept_mode (bool): Limit of dataset size for fast experiments.
+        Args:
+            dataset (ArgumentDetectionDataset): Dataset for training and validation.
+            model_name (str): Name of the persisted model file.
+            cache_name (str): Name of the cache directory used for storing metadata.
+            proof_of_concept_mode (bool): Limit dataset size for fast experiments.
         """
         self._config: XGBoostExtractorConfig = config.xgboost_extractor
         self._dataset = dataset
@@ -81,7 +82,8 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         """
         Tune extractor parameters.
 
-        Returns dict[str, float]: Dictionary with tuning results.
+        Returns:
+            dict[str, float]: Dictionary with tuning results.
         """
 
     @abstractmethod
@@ -113,7 +115,16 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         x: np.ndarray,
         y: np.ndarray,
     ) -> dict[str, float | int]:
-        """Tune and apply XGBoost parameters."""
+        """
+        Tune and apply XGBoost parameters.
+
+        Args:
+            x (np.ndarray): Training feature matrix.
+            y (np.ndarray): Training labels.
+
+        Returns:
+            dict[str, float | int]: Best hyperparameters found during tuning.
+        """
         best_params = self._tune_hyperparameters(
             x,
             y,
@@ -130,7 +141,17 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
     def _fit_xgboost_model(
         self, x: np.ndarray, y: np.ndarray, best_params: dict
     ) -> XGBClassifier:
-        """Shared method for initialization and training XGBoost model."""
+        """
+        Initialize and train an XGBoost model.
+
+        Args:
+            x (np.ndarray): Training feature matrix.
+            y (np.ndarray): Training labels.
+            best_params (dict): XGBoost hyperparameters.
+
+        Returns:
+            XGBClassifier: Trained XGBoost model.
+        """
         model = XGBClassifier(
             objective=self._config.training.objective,
             eval_metric=self._config.training.eval_metric,
@@ -147,7 +168,16 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         *,
         train_if_missing: bool = True,
     ) -> None:
-        """Load existing model or train."""
+        """
+        Load an existing model or train a new one.
+
+        Args:
+            train_if_missing (bool): Whether to train a model if no persisted
+                model exists.
+
+        Raises:
+            RuntimeError: If the model does not exist and training is disabled.
+        """
         if self._model is not None:
             return
         self._model = self._load_model()
@@ -162,7 +192,16 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         probabilities: np.ndarray,
         labels: np.ndarray,
     ) -> tuple[float, float]:
-        """Find threshold with best F1 score."""
+        """
+        Find the threshold with the best F1 score.
+
+        Args:
+            probabilities (np.ndarray): Predicted probabilities for the positive class.
+            labels (np.ndarray): Ground-truth binary labels.
+
+        Returns:
+            tuple[float, float]: Best threshold and corresponding F1 score.
+        """
         threshold_cfg = self._config.threshold
 
         best_threshold = threshold_cfg.default_threshold

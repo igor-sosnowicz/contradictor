@@ -12,7 +12,7 @@ from src.data_models.data_models import SubsetName
 
 
 class FakeDataset:
-    """Fake dataset for testing."""
+    """Provide a deterministic dataset for unit tests."""
 
     async def prepare(self) -> None:
         """Prepare fake dataset."""
@@ -22,7 +22,16 @@ class FakeDataset:
         split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """Return a fake evidence extraction dataset split."""
+        """
+        Return a deterministic evidence extraction dataset split.
+
+        Args:
+            split (SubsetName): Dataset subset to return.
+            max_samples (int | None): Maximum number of samples to return.
+
+        Returns:
+            pd.DataFrame: Fake evidence extraction dataset split.
+        """
         df = pd.DataFrame(
             {
                 "claim": [
@@ -71,18 +80,18 @@ class FakeDataset:
 
 
 class FakeModel:
-    """Fake classifier with controlled predictions."""
+    """Provide a classifier with controlled predictions."""
 
     def __init__(
         self,
         probabilities: list[float],
     ) -> None:
         """
-        Initialize fake classifier.
+        Initialize the fake classifier.
 
         Args:
-            probabilities:
-                Probability of the evidence class for each input row.
+            probabilities (list[float]): Probability of the evidence class
+                for each input row.
         """
         self._probabilities = probabilities
         self.predict_proba_calls = 0
@@ -93,14 +102,13 @@ class FakeModel:
         x: np.ndarray,
     ) -> np.ndarray:
         """
-        Return controlled probabilities.
+        Return controlled class probabilities.
 
         Args:
-            x:
-                Input feature matrix.
+            x (np.ndarray): Input feature matrix.
 
         Returns:
-            Probability predictions for each input row.
+            np.ndarray: Probability predictions for each input row.
         """
         self.predict_proba_calls += 1
         self.last_input = x
@@ -120,7 +128,16 @@ class FakeModel:
 def create_extractor(
     model: FakeModel,
 ) -> XGBoostEvidenceExtractor:
-    """Create an evidence extractor with a fake model."""
+    """
+    Create an evidence extractor with a fake classifier.
+
+    Args:
+        model (FakeModel): Fake classifier used by the extractor.
+
+    Returns:
+        XGBoostEvidenceExtractor: Evidence extractor configured with the fake
+            classifier.
+    """
     extractor = XGBoostEvidenceExtractor(
         FakeDataset(),
         proof_of_concept_mode=True,

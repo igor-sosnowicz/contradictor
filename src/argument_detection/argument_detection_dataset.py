@@ -46,9 +46,11 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Clean a sentence by normalizing whitespace.
 
-        Args: sentence (str): Input sentence to clean.
+        Args:
+            sentence (str): Input sentence to clean.
 
-        Returns: str: Cleaned sentence with normalized whitespace.
+        Returns:
+            str: Cleaned sentence with normalized whitespace.
         """
         cleaned = sentence.replace("\n", " ").replace("\r", " ")
         return " ".join(cleaned.split())
@@ -98,8 +100,8 @@ class ArgumentDetectionDataset(UrlDataset):
                 logger.warning(f"{subset_name}: empty dataset")
                 continue
 
-            logger.info(f"Subset: {subset_name}")
-            logger.info(f"Rows: {len(df)}")
+            logger.debug(f"Subset: {subset_name}")
+            logger.debug(f"Rows: {len(df)}")
 
             if "is_evidence" in df.columns:
                 positives = df["is_evidence"].sum()
@@ -119,10 +121,17 @@ class ArgumentDetectionDataset(UrlDataset):
 
     def _load_persuade(self) -> dict[str, dict[SubsetName, pd.DataFrame]]:
         """
-        Load PERSUADE 2.0 corpus and create datasets for claim-evidence extraction.
+        Load the PERSUADE 2.0 corpus and create extraction datasets.
 
-        Processes the source essays and annotations to build distinct train,
-        validation, and test splits for both claim and evidence tasks.
+        Processes source essays and annotations to build separate training,
+        validation, and testing splits for claim and evidence extraction.
+
+        Returns:
+            dict[str, dict[SubsetName, pd.DataFrame]]: Datasets grouped by
+            extraction task and subset name.
+
+        Raises:
+            DatasetError: If the PERSUADE CSV file does not exist.
         """
         dataset_directory = to_raw_dataset_path("persuade")
         archive_path = dataset_directory / "tla-lab-persuade-dataset"
@@ -170,9 +179,21 @@ class ArgumentDetectionDataset(UrlDataset):
         group_column: str = "essay_id_comp",
     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
-        Split Persuade dataset by essay_id_comp to prevent data leakage.
+        Split the dataset by essay to prevent data leakage.
 
-        All claim-evidence pairs from the same essay stay in one subset.
+        All samples from the same essay are kept in the same subset.
+
+        Args:
+            df (pd.DataFrame): Dataset to split.
+            group_column (str): Column containing group identifiers used to
+                prevent data leakage between subsets.
+
+        Returns:
+            tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: Training,
+            validation, and testing dataframes.
+
+        Raises:
+            DatasetError: If the specified group column does not exist.
         """
         if df.empty:
             return df.copy(), df.copy(), df.copy()
@@ -269,7 +290,7 @@ class ArgumentDetectionDataset(UrlDataset):
 
                 df.to_csv(file_path, index=False)
 
-                logger.info(f"Saved {file_path}: {len(df)} rows")
+                logger.debug(f"Saved {file_path}: {len(df)} rows")
         return {}
 
     def _create_claim_dataset(
@@ -277,13 +298,21 @@ class ArgumentDetectionDataset(UrlDataset):
         df: pd.DataFrame,
     ) -> pd.DataFrame:
         """
-        Create dataset for claim extraction.
+        Create a dataset for claim extraction.
 
-        Each discourse segment is classified as:
-        - 1: claim/position
-        - 0: not a claim
+        Each discourse segment is classified as either a claim/position or
+        a non-claim. Splitting is performed later by essay identifier to
+        prevent data leakage.
 
-        Splitting should later be done by essay_id_comp to avoid leakage.
+        Args:
+            df (pd.DataFrame): Raw PERSUADE dataframe.
+
+        Returns:
+            pd.DataFrame: Dataset containing sentences and claim labels.
+
+        Raises:
+            DatasetError: If required columns are missing or no claim
+                extraction samples are created.
         """
         required_columns = {
             "essay_id_comp",
@@ -336,13 +365,16 @@ class ArgumentDetectionDataset(UrlDataset):
         df: pd.DataFrame,
     ) -> pd.DataFrame:
         """
-        Create claim-evidence pairs from Persuade annotations.
+        Create claim-evidence pairs from PERSUADE annotations.
 
-        Args: df (pd.DataFrame): Raw Persuade dataframe.
+        Args:
+            df (pd.DataFrame): Raw PERSUADE dataframe.
 
-        Returns: pd.DataFrame: Dataset containing claim-evidence pairs.
+        Returns:
+            pd.DataFrame: Dataset containing claim-evidence pairs.
 
-        Raises: DatasetError: If required columns are missing.
+        Raises:
+            DatasetError: If required columns are missing.
         """
         required_columns = {
             "essay_id_comp",
@@ -405,13 +437,15 @@ class ArgumentDetectionDataset(UrlDataset):
         """
         Generate negative claim-evidence pairs.
 
-        Negative examples are created by pairing claims with evidence
-        from different arguments.
+        Negative examples are created by pairing claims with evidence from
+        different arguments.
 
-        Args: positive_pairs (pd.DataFrame):
-        DataFrame containing positive claim-evidence pairs.
+        Args:
+            positive_pairs (pd.DataFrame): Dataframe containing positive
+                claim-evidence pairs.
 
-        Returns: pd.DataFrame: DataFrame containing positive and negative pairs.
+        Returns:
+            pd.DataFrame: Dataframe containing positive and negative pairs.
         """
         negative_pairs = positive_pairs.copy()
         negative_pairs["claim"] = (
@@ -448,14 +482,19 @@ class ArgumentDetectionDataset(UrlDataset):
         max_samples: int | None = None,
     ) -> pd.DataFrame:
         """
-        Get claim extraction dataset split.
+        Get a claim extraction dataset split.
 
-        Args: split (SubsetName): Dataset subset.
-              max_samples (int | None): Optional maximum number of returned rows.
+        Args:
+            split (SubsetName): Dataset subset to retrieve.
+            max_samples (int | None): Optional maximum number of rows to
+                return.
 
-        Returns: pd.DataFrame: Claim extraction dataframe.
+        Returns:
+            pd.DataFrame: Claim extraction dataframe.
 
-        Raises: DatasetError: If dataset split does not exist or has invalid columns.
+        Raises:
+            DatasetError: If the dataset split does not exist or does not
+                contain the required columns.
         """
         dataset_path = (
             config.data_directory
@@ -484,15 +523,19 @@ class ArgumentDetectionDataset(UrlDataset):
         max_samples: int | None = None,
     ) -> pd.DataFrame:
         """
-        Get evidence extraction dataset split.
+        Get an evidence extraction dataset split.
 
-        Args: split (SubsetName): Dataset subset.
-              max_samples (int | None): Optional maximum number of returned rows.
+        Args:
+            split (SubsetName): Dataset subset to retrieve.
+            max_samples (int | None): Optional maximum number of rows to
+                return.
 
-        Returns: pd.DataFrame: Evidence extraction dataframe.
+        Returns:
+            pd.DataFrame: Evidence extraction dataframe.
 
-        Raises: DatasetError:
-        If dataset split does not exist or required columns are missing.
+        Raises:
+            DatasetError: If the dataset split does not exist or required
+                columns are missing.
         """
         dataset_path = (
             config.data_directory

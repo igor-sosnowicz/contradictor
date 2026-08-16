@@ -49,11 +49,11 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         """
         Initialize the XGBoost evidence extractor.
 
-        Args: dataset (ArgumentDetectionDataset):
-                Dataset used for training and validation.
-              proof_of_concept_mode (bool):
-                Whether to limit the number of samples during training
-                for faster experimentation.
+        Args:
+            dataset (ArgumentDetectionDataset): Dataset used for training and
+                validation.
+            proof_of_concept_mode (bool): Whether to limit the number of samples
+                during training for faster experimentation.
         """
         super().__init__(
             dataset,
@@ -64,10 +64,11 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
 
     def _get_max_samples(self) -> int:
         """
-        Retrieve the maximum sample size allowed for Proof-of-Concept runs.
+        Retrieve the maximum sample size allowed for proof-of-concept runs.
 
-        This threshold prevents the evidence extractor from overloading system resources
-        when processing large datasets during quick validation or demo execution.
+        This threshold prevents the evidence extractor from overloading system
+        resources when processing large datasets during quick validation or
+        demo execution.
         """
         return self._config.dataset.evidence_proof_of_concept_max_samples
 
@@ -82,12 +83,13 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         Claim and evidence embeddings are concatenated into a single feature
         representation used by the classifier.
 
-        Args: claims (list[str]): Claim sentences.
-              evidences (list[str]):
-                Evidence sentences associated with claims.
+        Args:
+            claims (list[str]): Claim sentences.
+            evidences (list[str]): Evidence sentences associated with claims.
 
-        Returns: np.ndarray:
-                  Feature matrix containing combined claim and evidence embeddings.
+        Returns:
+            np.ndarray: Feature matrix containing combined claim and evidence
+                embeddings.
         """
         claim_embeddings = self._embedder.embed(claims)
         evidence_embeddings = self._embedder.embed(evidences)
@@ -146,10 +148,15 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         """
         Extract evidence sentences supporting a claim.
 
-        Args: claim (str): Claim for which supporting evidence should be found.
-              text (str): Full document containing candidate evidence sentences.
+        Args:
+            claim (str): Claim for which supporting evidence should be found.
+            text (str): Full document containing candidate evidence sentences.
 
-        Returns: list[str]: Sentences classified as supporting evidence.
+        Returns:
+            list[str]: Sentences classified as supporting evidence.
+
+        Raises:
+            RuntimeError: If the model cannot be initialized.
         """
         await self._initialise_model()
         if self._model is None:

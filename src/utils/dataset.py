@@ -12,7 +12,7 @@ def to_raw_dataset_path(raw_dataset_name: str) -> Path:
     Convert a sole name to path of a raw (unprocessed) dataset.
 
     This function does NOT guarantee the dataset will exist under this path.
-    Only that it will be deterministic and conformat with the configuration.
+    Only that it will be deterministic and conformant with the configuration.
 
     Args:
         raw_dataset_name (str): Name of the raw dataset.
@@ -26,14 +26,15 @@ def to_raw_dataset_path(raw_dataset_name: str) -> Path:
 
 def filter_empty_rows(df: pd.DataFrame, columns: str | list[str]) -> pd.DataFrame:
     """
-    Filter out rows where specified columns are NaN or contain only whitespace.
+    Filter out rows where specified columns are empty or contain only whitespace.
 
     Args:
-        df: Input pandas DataFrame.
-        columns: A single column name or a list of column names to validate.
+        df (pd.DataFrame): Input pandas DataFrame.
+        columns (str | list[str]): Column name or list of column names to
+            validate.
 
     Returns:
-        A shallow copy of the DataFrame with empty rows removed.
+        pd.DataFrame: A copy of the DataFrame with empty rows removed.
     """
     cols = [columns] if isinstance(columns, str) else columns
 

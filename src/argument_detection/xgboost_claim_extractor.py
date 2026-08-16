@@ -44,10 +44,11 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         Initialize XGBoost extractor.
 
-        Args: dataset (ArgumentDetectionDataset):
-                Dataset used for training and validation.
-              proof_of_concept_mode (bool):
-                Whether to limit dataset size for faster experiments.
+        Args:
+            dataset (ArgumentDetectionDataset): Dataset used for training and
+                validation.
+            proof_of_concept_mode (bool): Whether to limit dataset size for
+                faster experiments.
         """
         super().__init__(
             dataset,
@@ -66,9 +67,11 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         Train the XGBoost claim classifier.
 
-        Returns: (XGBClassifier): Trained claim classification model.
+        Returns:
+            XGBClassifier: Trained claim classification model.
 
-        Raises: (DatasetError): If dataset preparation or loading fails.
+        Raises:
+            DatasetError: If dataset preparation or loading fails.
         """
         await self._dataset.prepare()
 
@@ -103,11 +106,14 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         Extract claim sentences from a document.
 
-        Args: text (str): Document or text fragment to analyze.
+        Args:
+            text (str): Document or text fragment to analyze.
 
-        Returns: list[str]: Sentences classified as claims.
+        Returns:
+            list[str]: Sentences classified as claims.
 
-        Raises: RuntimeError: If the model cannot be initialized.
+        Raises:
+            RuntimeError: If the model cannot be initialized.
         """
         await self._initialise_model()
         if self._model is None:
@@ -116,9 +122,10 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         if not sentences:
             return []
         X = self._embedder.embed(sentences)
-        probabilities = (
-            self._model.predict_proba(X)[:, 1]  # type: ignore[union-attr]
-        )
+        model = self._model
+        if model is None:
+            raise RuntimeError("Model was not initialized.")
+        probabilities = model.predict_proba(X)[:, 1]
         threshold = self._config.threshold.claim
         return [
             sentence

@@ -38,11 +38,11 @@ class ClaimEvidenceExtractor:
         """
         Initialize the claim-evidence extraction pipeline.
 
-        Args: claim_extractor (ClaimExtractor):
-              Component responsible for extracting claims from text.
-
-              evidence_extractor (EvidenceExtractor):
-                Component responsible for extracting evidence supporting claims.
+        Args:
+            claim_extractor (XGBoostClaimExtractor): Component responsible for
+                extracting claims from text.
+            evidence_extractor (XGBoostEvidenceExtractor): Component
+                responsible for extracting evidence supporting claims.
         """
         self._claim_extractor = claim_extractor
         self._evidence_extractor = evidence_extractor
@@ -54,12 +54,15 @@ class ClaimEvidenceExtractor:
         """
         Extract claim-evidence pairs from input text.
 
-        Args: text (str): Input essay or document.
+        Args:
+            text (str): Input essay or document.
 
-        Returns: list[ClaimEvidencePair]: List of extracted claim-evidence pairs.
+        Returns:
+            list[ClaimEvidencePair]: List of extracted claim-evidence pairs.
 
-        Raises: Exception:
-                Propagates exceptions raised by claim or evidence extractors.
+        Raises:
+            Exception: Propagates exceptions raised by claim or evidence
+                extractors.
         """
         claims = await self._claim_extractor.extract_claims(text)
         pairs: list[ClaimEvidencePair] = []

@@ -8,7 +8,7 @@ class SpacyConfig(BaseModel):
 
     model: str = "en_core_web_md"
     batch_size: int = Field(default=1024, ge=1)
-    n_process: int = -1
+    n_process: int = 1
 
     exclude: tuple[str, ...] = (
         "tagger",
