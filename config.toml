@@ -1,1 +1,10 @@
 data_directory = "./data"
+
+# LLM pipeline (LM Studio). Match these names to models loaded in LM Studio
+# (see http://localhost:1234/v1/models). No model names are hardcoded.
+llm_backend = "openai_compat"
+extractor_model = "openai/gpt-oss-20b"
+judge_model = "openai/gpt-oss-20b"
+pipeline_chunk_size = 2000
+pipeline_chunk_overlap = 200
+pipeline_top_k_links = 5

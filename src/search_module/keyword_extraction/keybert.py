@@ -1,5 +1,6 @@
 """KeyBERT based keyword extraction."""
 
+from collections.abc import Generator
 from typing import override
 
 from keybert import KeyBERT
@@ -45,11 +46,27 @@ class KeyBERTKeywordExtractor(KeywordExtractor):
             stop_words=list(self.config.stop_words),
             top_n=self.config.max_keywords,
         )
-
-        phrases = [keyword for keyword, _ in keywords]
+        phrases: list[str] = list(_chain(keywords))
 
         return SearchQuery(
             original_text=text,
             keywords=tuple(phrases),
             normalized=" ".join(phrases),
         )
+
+
+def _chain(
+    scored: list[tuple[str, float]] | list[list[tuple[str, float]]],
+) -> Generator[str]:
+    """
+    Flatten List[Tuple[str, float]] | List[List[Tuple[str, float]]]
+    and yield only the str elements from tuples.
+    """
+    if isinstance(scored, list):
+        for item in scored:
+            if isinstance(item, list):
+                yield from _chain(item)
+            elif isinstance(item, tuple) and len(item) >= 1:
+                yield item[0]
+    elif isinstance(scored, tuple) and len(scored) >= 1:
+        yield scored[0]

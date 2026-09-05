@@ -30,7 +30,7 @@ class InterpretativeFrame(StrEnum):
     CONSTITUTIONALITY_AND_LEGALITY = "Constitutionality and Legality"
     POLICY_PRESCRIPTION = "Policy Prescription and Evaluation"
     CRIME_AND_JUSTICE = "Crime and Justice"
-    SECURITY_AND_DEFENSE = "Security and Defense"
+    SECURITY_AND_DEFENSE = "Security and Defense"  # (A: 0.6, B: 0.4)
     HEALTH_AND_SAFETY = "Health and Safety"
     QUALITY_OF_LIFE = "Quality of Life"
     CULTURAL_IDENTITY = "Cultural Identity"
