@@ -156,7 +156,16 @@ class SpacyStyleExtractor(StyleExtractor):
     async def _calculate_positivity(
         self, texts: list[str], sentiment_pipeline: transformers.Pipeline
     ) -> list[float]:
-        sentiments: list[dict[str, str | float]] = sentiment_pipeline(texts)
+        sentiment_output = sentiment_pipeline(texts)
+        if sentiment_output is None:
+            raise RuntimeError("Sentiment pipeline returned no output.")
+
+        if not isinstance(sentiment_output, list):
+            sentiment_output = list(sentiment_output)
+
+        sentiments: list[dict[str, str | float]] = cast(
+            "list[dict[str, str | float]]", sentiment_output
+        )
         # An example of the format: [{"label": "positive", "score": 0.99}]
         sentiment_to_positivity_mapping = {
             "positive": 1.0,
