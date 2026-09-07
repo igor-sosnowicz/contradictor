@@ -27,11 +27,14 @@ ModelType = TypeVar(
 )
 
 
-# The extractor intentionally owns the state shared across concrete
-# XGBoost extractors: configuration, dataset, embeddings, model,
-# persistence, caching, and training limits.
 class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance-attributes
-    """XGBoost-based extractor with shared training and persistence state."""
+    """
+    XGBoost-based extractor with shared training and persistence state.
+
+    The extractor intentionally owns the state shared across concrete
+    XGBoost extractors: configuration, dataset, embeddings, model,
+    persistence, caching, and training limits.
+    """
 
     def __init__(
         self,

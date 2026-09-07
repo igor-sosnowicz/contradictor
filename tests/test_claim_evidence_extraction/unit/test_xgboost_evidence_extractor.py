@@ -22,16 +22,7 @@ class FakeDataset:
         split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """
-        Return a deterministic evidence extraction dataset split.
-
-        Args:
-            split (SubsetName): Dataset subset to return.
-            max_samples (int | None): Maximum number of samples to return.
-
-        Returns:
-            pd.DataFrame: Fake evidence extraction dataset split.
-        """
+        """Return a deterministic evidence extraction dataset split."""
         df = pd.DataFrame(
             {
                 "claim": [
@@ -86,13 +77,7 @@ class FakeModel:
         self,
         probabilities: list[float],
     ) -> None:
-        """
-        Initialize the fake classifier.
-
-        Args:
-            probabilities (list[float]): Probability of the evidence class
-                for each input row.
-        """
+        """Initialize the fake classifier."""
         self._probabilities = probabilities
         self.predict_proba_calls = 0
         self.last_input: np.ndarray | None = None
@@ -101,15 +86,7 @@ class FakeModel:
         self,
         x: np.ndarray,
     ) -> np.ndarray:
-        """
-        Return controlled class probabilities.
-
-        Args:
-            x (np.ndarray): Input feature matrix.
-
-        Returns:
-            np.ndarray: Probability predictions for each input row.
-        """
+        """Return controlled class probabilities."""
         self.predict_proba_calls += 1
         self.last_input = x
 
@@ -128,16 +105,7 @@ class FakeModel:
 def create_extractor(
     model: FakeModel,
 ) -> XGBoostEvidenceExtractor:
-    """
-    Create an evidence extractor with a fake classifier.
-
-    Args:
-        model (FakeModel): Fake classifier used by the extractor.
-
-    Returns:
-        XGBoostEvidenceExtractor: Evidence extractor configured with the fake
-            classifier.
-    """
+    """Create an evidence extractor with a fake classifier."""
     extractor = XGBoostEvidenceExtractor(
         FakeDataset(),
         proof_of_concept_mode=True,

@@ -61,8 +61,7 @@ class ClaimEvidenceExtractor:
             list[ClaimEvidencePair]: List of extracted claim-evidence pairs.
 
         Raises:
-            Exception: Propagates exceptions raised by claim or evidence
-                extractors.
+            ModelNotTrainedError: If either extractor's model is not trained.
         """
         claims = await self._claim_extractor.extract_claims(text)
         pairs: list[ClaimEvidencePair] = []

@@ -35,17 +35,7 @@ class MiniPipelineDataset(ArgumentDetectionDataset):
         split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """
-        Return a deterministic claim classification dataset.
-
-        Args:
-            split (SubsetName): Dataset subset to retrieve.
-            max_samples (int | None): Maximum number of samples to return.
-
-        Returns:
-            pd.DataFrame: DataFrame containing sentences and their claim
-                labels.
-        """
+        """Return a deterministic claim classification dataset."""
         data = pd.DataFrame(
             {
                 "sentence": [
@@ -81,17 +71,7 @@ class MiniPipelineDataset(ArgumentDetectionDataset):
         split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """
-        Return a deterministic claim-evidence classification dataset.
-
-        Args:
-            split (SubsetName): Dataset subset to retrieve.
-            max_samples (int | None): Maximum number of samples to return.
-
-        Returns:
-            pd.DataFrame: DataFrame containing claim-evidence pairs and their
-                labels.
-        """
+        """Return a deterministic claim-evidence classification dataset."""
         data = pd.DataFrame(
             {
                 "claim": [
@@ -142,9 +122,6 @@ async def pipeline() -> ClaimEvidenceExtractor:
 
     The fixture trains both XGBoost extractors once and reuses them across
     all tests in the module.
-
-    Returns:
-        ClaimEvidenceExtractor: A trained claim-evidence extraction pipeline.
     """
     dataset = MiniPipelineDataset()
 
@@ -190,13 +167,7 @@ async def pipeline() -> ClaimEvidenceExtractor:
 async def test_pipeline_extracts_claim_evidence_pairs(
     pipeline: ClaimEvidenceExtractor,
 ) -> None:
-    """
-    Verify that the real pipeline extracts claim-evidence pairs.
-
-    Args:
-        pipeline (ClaimEvidenceExtractor): Fully trained claim-evidence
-            extraction pipeline.
-    """
+    """Verify that the real pipeline extracts claim-evidence pairs."""
     result = await pipeline.extract_pairs(
         "Cats are intelligent animals. Cats learn quickly.",
     )

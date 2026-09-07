@@ -34,17 +34,7 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
         subset: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """
-        Return a small deterministic claim classification dataset.
-
-        Args:
-            subset (SubsetName): Dataset subset requested by the caller.
-            max_samples (int | None): Maximum number of samples to return.
-
-        Returns:
-            pd.DataFrame: DataFrame containing sentences and their claim
-                labels.
-        """
+        """Return a small deterministic claim classification dataset."""
         data = pd.DataFrame(
             {
                 "sentence": [
@@ -71,14 +61,6 @@ def isolated_ml_env(
 
     The model is trained using the real embedder and XGBoost classifier. All
     model artifacts are written to pytest's temporary directory.
-
-    Args:
-        tmp_path (Path): Pytest-provided temporary directory.
-        monkeypatch (pytest.MonkeyPatch): Pytest fixture used to override
-            application configuration.
-
-    Returns:
-        Path: Temporary directory containing the test model.
     """
     model_dir = tmp_path / "models"
     model_dir.mkdir(parents=True)
@@ -126,9 +108,6 @@ async def test_claim_extractor_e2e_flow(isolated_ml_env: Path) -> None:
     The test uses the real embedder, XGBoost model, configuration, and
     filesystem while keeping all model artifacts isolated in a temporary
     directory.
-
-    Args:
-        isolated_ml_env (Path): Temporary directory containing the test model.
     """
     dataset = MiniIntegrationDataset()
     extractor = XGBoostClaimExtractor(dataset, proof_of_concept_mode=True)
@@ -155,13 +134,7 @@ async def test_claim_extractor_e2e_flow(isolated_ml_env: Path) -> None:
 
 @pytest.mark.asyncio
 async def test_claim_extractor_training_flow(isolated_ml_env: Path) -> None:
-    """
-    Verify model training and persistence without mocks.
-
-    Args:
-        isolated_ml_env (Path): Temporary directory where the model is
-            expected to be saved.
-    """
+    """Verify model training and persistence without mocks."""
     dataset = MiniIntegrationDataset()
     extractor = XGBoostClaimExtractor(dataset, proof_of_concept_mode=True)
 

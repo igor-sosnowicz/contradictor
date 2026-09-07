@@ -12,6 +12,7 @@ from src.argument_detection.base_xgboost_extractor import (
 )
 from src.configuration import config
 from src.data_models.data_models import SubsetName
+from src.utils.errors import ModelNotTrainedError
 
 
 class XGBoostClaimExtractor(BaseXGBoostExtractor):
@@ -117,14 +118,14 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         await self._initialise_model()
         if self._model is None:
-            raise RuntimeError("Model was not initialized.")
+            raise ModelNotTrainedError("Model was not initialized.")
         sentences = list(self._sentence_splitter(text))
         if not sentences:
             return []
         X = self._embedder.embed(sentences)
         model = self._model
         if model is None:
-            raise RuntimeError("Model was not initialized.")
+            raise ModelNotTrainedError("Model was not initialized.")
         probabilities = model.predict_proba(X)[:, 1]
         threshold = self._config.threshold.claim
         return [

@@ -30,17 +30,7 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
         split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """
-        Return a deterministic claim-evidence classification dataset.
-
-        Args:
-            split (SubsetName): Dataset subset requested by the caller.
-            max_samples (int | None): Maximum number of samples to return.
-
-        Returns:
-            pd.DataFrame: DataFrame containing claims, evidence candidates,
-                and labels.
-        """
+        """Return a deterministic claim-evidence classification dataset."""
         data = pd.DataFrame(
             {
                 "claim": [
@@ -80,9 +70,6 @@ async def evidence_extractor() -> XGBoostEvidenceExtractor:
 
     The real embedder and XGBoost classifier are used. The trained model is
     reused by all tests in this module.
-
-    Returns:
-        XGBoostEvidenceExtractor: Trained and initialized evidence extractor.
     """
     dataset = MiniIntegrationDataset()
     extractor = XGBoostEvidenceExtractor(
@@ -107,17 +94,7 @@ async def evidence_extractor() -> XGBoostEvidenceExtractor:
 def low_threshold_extractor(
     evidence_extractor: XGBoostEvidenceExtractor,
 ) -> XGBoostEvidenceExtractor:
-    """
-    Configure the extractor with a permissive evidence threshold.
-
-    Args:
-        evidence_extractor (XGBoostEvidenceExtractor): Shared trained evidence
-            extractor.
-
-    Returns:
-        XGBoostEvidenceExtractor: Evidence extractor configured with a
-            permissive classification threshold.
-    """
+    """Configure the extractor with a permissive evidence threshold."""
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(
@@ -132,13 +109,7 @@ def low_threshold_extractor(
 async def test_evidence_extractor_returns_evidence(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
-    """
-    Verify that a supporting evidence sentence is returned.
-
-    Args:
-        low_threshold_extractor (XGBoostEvidenceExtractor): Trained evidence
-            extractor with a permissive classification threshold.
-    """
+    """Verify that a supporting evidence sentence is returned."""
     result = await low_threshold_extractor.extract_evidence(
         "Cats are smart.",
         "Cats learn quickly.",
@@ -152,13 +123,7 @@ async def test_evidence_extractor_returns_evidence(
 async def test_evidence_extractor_filters_non_evidence_candidates(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
-    """
-    Verify that non-evidence candidates are excluded from the result.
-
-    Args:
-        low_threshold_extractor (XGBoostEvidenceExtractor): Trained evidence
-            extractor with a permissive classification threshold.
-    """
+    """Verify that non-evidence candidates are excluded from the result."""
     result = await low_threshold_extractor.extract_evidence(
         "Cats are smart.",
         "Cats learn quickly. Cars need fuel.",
@@ -172,13 +137,7 @@ async def test_evidence_extractor_filters_non_evidence_candidates(
 async def test_evidence_extractor_excludes_claim(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
-    """
-    Verify that the claim itself is excluded from the result.
-
-    Args:
-        low_threshold_extractor (XGBoostEvidenceExtractor): Trained evidence
-            extractor with a permissive classification threshold.
-    """
+    """Verify that the claim itself is excluded from the result."""
     result = await low_threshold_extractor.extract_evidence(
         "Cats are smart.",
         "Cats are smart. Cats learn quickly.",
@@ -192,13 +151,7 @@ async def test_evidence_extractor_excludes_claim(
 async def test_evidence_extractor_returns_empty_list_when_text_contains_only_claim(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
-    """
-    Verify that no evidence is returned when the text contains only claim.
-
-    Args:
-        low_threshold_extractor (XGBoostEvidenceExtractor): Trained evidence
-            extractor with a permissive classification threshold.
-    """
+    """Verify that no evidence is returned when the text contains only claim."""
     result = await low_threshold_extractor.extract_evidence(
         "Cats are smart.",
         "Cats are smart.",
@@ -211,13 +164,7 @@ async def test_evidence_extractor_returns_empty_list_when_text_contains_only_cla
 async def test_evidence_extractor_respects_classification_threshold(
     evidence_extractor: XGBoostEvidenceExtractor,
 ) -> None:
-    """
-    Verify that candidates below the threshold are excluded.
-
-    Args:
-        evidence_extractor (XGBoostEvidenceExtractor): Trained evidence
-            extractor used for the threshold check.
-    """
+    """Verify that candidates below the threshold are excluded."""
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(

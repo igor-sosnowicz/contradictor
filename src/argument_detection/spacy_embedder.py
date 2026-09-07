@@ -45,7 +45,16 @@ class SpacyEmbedder:
         self,
         texts: list[str],
     ) -> np.ndarray:
-        """Generate dense vector embeddings for text using a local cache."""
+        """
+        Generate dense vector embeddings for the provided texts using a local cache.
+
+        Args:
+            texts (list[str]): Texts to embed.
+
+        Returns:
+            np.ndarray: Array of dense vector embeddings, with one embedding
+                corresponding to each input text.
+        """
         missing_texts = [text for text in texts if text not in self._embedding_cache]
 
         if missing_texts:

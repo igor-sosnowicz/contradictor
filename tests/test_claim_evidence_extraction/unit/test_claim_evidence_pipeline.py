@@ -15,16 +15,7 @@ class FakeClaimExtractor:
         self,
         text: str,
     ) -> list[str]:
-        """
-        Return a predefined claim.
-
-        Args:
-            text (str): Input text from which claims would normally be
-                extracted.
-
-        Returns:
-            list[str]: A list containing one predefined claim.
-        """
+        """Return a predefined claim."""
         return ["Cats are intelligent animals."]
 
 
@@ -36,17 +27,7 @@ class FakeEvidenceExtractor:
         claim: str,
         text: str,
     ) -> list[str]:
-        """
-        Return predefined evidence for a claim.
-
-        Args:
-            claim (str): Claim for which supporting evidence would normally be
-                extracted.
-            text (str): Input text containing potential evidence.
-
-        Returns:
-            list[str]: A list containing one predefined evidence sentence.
-        """
+        """Return predefined evidence for a claim."""
         return ["Cats learn quickly."]
 
 
@@ -77,16 +58,7 @@ def test_pipeline_returns_empty_when_no_claims() -> None:
             self,
             text: str,
         ) -> list[str]:
-            """
-            Return an empty list of claims.
-
-            Args:
-                text (str): Input text from which claims would normally be
-                    extracted.
-
-            Returns:
-                list[str]: An empty list.
-            """
+            """Return an empty list of claims."""
             return []
 
     pipeline = ClaimEvidenceExtractor(

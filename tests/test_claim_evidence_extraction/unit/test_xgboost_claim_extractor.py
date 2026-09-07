@@ -21,13 +21,7 @@ class FakeModel:
     """Provide a deterministic fake XGBoost classifier."""
 
     def __init__(self, claim_probability: float) -> None:
-        """
-        Initialize the fake classifier.
-
-        Args:
-            claim_probability (float): Probability assigned to the claim
-                class.
-        """
+        """Initialize the fake classifier."""
         self.claim_probability = claim_probability
         self.predict_proba_calls = 0
         self.last_input: np.ndarray | None = None
@@ -36,16 +30,7 @@ class FakeModel:
         self,
         x: np.ndarray,
     ) -> np.ndarray:
-        """
-        Return deterministic prediction probabilities.
-
-        Args:
-            x (np.ndarray): Input feature matrix.
-
-        Returns:
-            np.ndarray: Prediction probabilities for the non-claim and claim
-                classes.
-        """
+        """Return deterministic prediction probabilities."""
         self.predict_proba_calls += 1
         self.last_input = x
 
@@ -66,15 +51,7 @@ class FakeEmbedder:
         self,
         texts: list[str],
     ) -> np.ndarray:
-        """
-        Return deterministic embeddings for the provided texts.
-
-        Args:
-            texts (list[str]): Texts to embed.
-
-        Returns:
-            np.ndarray: Fake embedding matrix.
-        """
+        """Return deterministic embeddings for the provided texts."""
         self.embed_calls += 1
         self.last_texts = texts
 
@@ -86,19 +63,7 @@ def create_extractor(
     model: FakeModel,
     embedder: FakeEmbedder,
 ) -> XGBoostClaimExtractor:
-    """
-    Create a claim extractor with fake dependencies.
-
-    Args:
-        monkeypatch (pytest.MonkeyPatch): Pytest monkeypatch fixture used to
-            replace extractor dependencies.
-        model (FakeModel): Fake classifier used by the extractor.
-        embedder (FakeEmbedder): Fake embedder used by the extractor.
-
-    Returns:
-        XGBoostClaimExtractor: Extractor configured with fake model,
-            embedder, sentence splitter, and model initialization.
-    """
+    """Create a claim extractor with fake dependencies."""
     extractor = XGBoostClaimExtractor(
         FakeDataset(),
         proof_of_concept_mode=True,
@@ -128,13 +93,7 @@ def create_extractor(
 def test_claim_extractor_returns_claim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """
-    Verify that a sentence classified as a claim is returned.
-
-    Args:
-        monkeypatch (pytest.MonkeyPatch): Pytest monkeypatch fixture used to
-            configure the extractor with fake dependencies.
-    """
+    """Verify that a sentence classified as a claim is returned."""
     model = FakeModel(claim_probability=0.8)
     embedder = FakeEmbedder()
 
@@ -164,13 +123,7 @@ def test_claim_extractor_returns_claim(
 def test_claim_extractor_rejects_non_claim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """
-    Verify that a sentence classified as a non-claim is rejected.
-
-    Args:
-        monkeypatch (pytest.MonkeyPatch): Pytest monkeypatch fixture used to
-            configure the extractor with fake dependencies.
-    """
+    """Verify that a sentence classified as a non-claim is rejected."""
     model = FakeModel(claim_probability=0.2)
     embedder = FakeEmbedder()
 

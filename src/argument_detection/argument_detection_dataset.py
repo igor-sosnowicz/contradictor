@@ -56,7 +56,7 @@ class ArgumentDetectionDataset(UrlDataset):
         return " ".join(cleaned.split())
 
     def __init__(self) -> None:
-        """Initialize the argument detection dataset."""
+        """Initialise the argument detection dataset."""
         # Persuade 1.0:
         # https://www.kaggle.com/datasets/julesking/tla-lab-persuade-dataset
 
