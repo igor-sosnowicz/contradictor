@@ -17,7 +17,7 @@ class StyleExtractor(ABC):
     @abstractmethod
     async def extract(self, texts: list[str]) -> list[np.ndarray]:
         """
-        Efficiently extract features of style in a fixed-size vector.
+        Efficiently extract features of style to a fixed-size vector.
 
         Args:
             texts (list[str]): List of texts for which style should be vectorised.

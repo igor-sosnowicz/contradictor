@@ -2,15 +2,10 @@
 
 from dataclasses import dataclass
 from enum import StrEnum, auto
+from enum import Enum, StrEnum, auto
+from typing import Final
 
 from pydantic import BaseModel, Field
-
-
-class TextSpan(BaseModel):
-    """Span of text in a longer text."""
-
-    start_index: int = Field(..., ge=0)
-    length: int = Field(..., ge=1)
 
 
 class SubsetName(StrEnum):
@@ -43,7 +38,7 @@ class InterpretativeFrame(StrEnum):
 
 # Mapping between MediaFrameCorpus code_frames values and domain enum.
 # Dataset uses codes 1-15, while application logic uses InterpretativeFrame.
-LABEL_TO_FRAME: dict[int, InterpretativeFrame] = {
+LABEL_TO_FRAME: Final[dict[int, InterpretativeFrame]] = {
     0: InterpretativeFrame.ECONOMIC,
     1: InterpretativeFrame.CAPACITY_AND_RESOURCES,
     2: InterpretativeFrame.MORALITY,
@@ -62,10 +57,24 @@ LABEL_TO_FRAME: dict[int, InterpretativeFrame] = {
 }
 
 
-class FramedArgument(BaseModel):
-    """Data model representing an argument paired with its interpretative frame."""
+class Argument(BaseModel):
+    """An argument made of claim and its evidence."""
 
-    text: str
+    claim: str
+    evidence: str
+
+    def __str__(self) -> str:
+        """
+        Convert an argument to a textual form.
+
+        Returns:
+            str: Concatenated claim and evidence.
+        """
+        return f"{self.claim} {self.evidence}"
+
+
+class FramedArgument(Argument):
+    """Data model representing an argument paired with its interpretative frame."""
 
     primary_frame: InterpretativeFrame = Field(
         ...,
@@ -92,3 +101,67 @@ class ClaimEvidencePair:
 
     claim: str
     evidence: str
+class ArgumentWithCounterarguments(BaseModel):
+    """An argument with its counter-arguments."""
+
+    argument: FramedArgument
+    counterarguments: tuple[FramedArgument, ...]
+
+
+class NLIResult(Enum):
+    """Result of a natural language inference."""
+
+    NEUTRAL = 0
+    ENTAILMENT = 1
+    CONTRADICTION = -1
+
+
+class ComputingBackend(StrEnum):
+    """A backend for running computation heavy operations including ML models."""
+
+    CPU = auto()
+    METAL = auto()
+    CUDA = auto()
+
+
+class EncoderImplementation(StrEnum):
+    """Encoder implementation name."""
+
+    NOT_IMPLEMENTED = auto()
+
+
+class SearchPipelineImplementation(StrEnum):
+    """Name of search pipeline implementation."""
+
+    SELF_IMPLEMENTED = auto()
+    FIREFOX_READER_VIEW = auto()
+
+
+class ArgumentFramerImplementation(StrEnum):
+    """Name of argument framer implementation."""
+
+    XGBOOST = auto()
+
+
+class ArgumentExtractorImplementation(StrEnum):
+    """Name of argument extractor implementation."""
+
+    NOT_IMPLEMENTED = auto()
+
+
+class NLIImplementation(StrEnum):
+    """Name of natural language inference implementation."""
+
+    NOT_IMPLEMENTED = auto()
+
+
+class StyleExtractorImplementation(StrEnum):
+    """Name of style extractor implementation."""
+
+    SPACY = auto()
+
+
+class VectorSearchImplementation(StrEnum):
+    """Name of vector search implementation."""
+
+    NOT_IMPLEMENTED = auto()
