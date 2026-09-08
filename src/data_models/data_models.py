@@ -1,7 +1,6 @@
 """Module with project-wide data models."""
 
 from dataclasses import dataclass
-from enum import StrEnum, auto
 from enum import Enum, StrEnum, auto
 from typing import Final
 
@@ -101,6 +100,8 @@ class ClaimEvidencePair:
 
     claim: str
     evidence: str
+
+
 class ArgumentWithCounterarguments(BaseModel):
     """An argument with its counter-arguments."""
 
