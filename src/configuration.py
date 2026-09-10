@@ -6,6 +6,9 @@ from pathlib import Path
 import pydantic
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.argument_detection.config import (
+    XGBoostExtractorConfig,
+)
 from src.data_models.data_models import (
     ArgumentExtractorImplementation,
     ArgumentFramerImplementation,
@@ -32,6 +35,8 @@ class Configuration(BaseModel):
     raw_dataset_subdirectory: str = "raw_datasets"
     preprocessed_dataset_subdirectory: str = "processed_dataset"
     model_subdirectory: str = "models"
+
+    xgboost_extractor: XGBoostExtractorConfig = XGBoostExtractorConfig()
 
     # In seconds.
     dataset_download_timeout: int = 300
@@ -83,4 +88,4 @@ def load_configuration(file: Path) -> Configuration:
         ) from e
 
 
-config = load_configuration(Path("./config.toml"))
+config: Configuration = load_configuration(Path("./config.toml"))

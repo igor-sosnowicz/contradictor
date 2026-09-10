@@ -1,0 +1,204 @@
+"""Tests for evidence extractor."""
+
+import asyncio
+
+import numpy as np
+import pandas as pd
+
+from src.argument_detection.xgboost_evidence_extractor import (
+    XGBoostEvidenceExtractor,
+)
+from src.data_models.data_models import SubsetName
+
+
+class FakeDataset:
+    """Provide a deterministic dataset for unit tests."""
+
+    async def prepare(self) -> None:
+        """Prepare fake dataset."""
+
+    def get_evidence_split(
+        self,
+        split: SubsetName,
+        max_samples: int | None = None,
+    ) -> pd.DataFrame:
+        """Return a deterministic evidence extraction dataset split."""
+        df = pd.DataFrame(
+            {
+                "claim": [
+                    "Cats are smart.",
+                    "Dogs are loyal.",
+                    "Birds can fly.",
+                    "Fish live underwater.",
+                    "Horses are strong.",
+                    "Trees need water.",
+                    "Cars need fuel.",
+                    "Books contain information.",
+                    "Computers process data.",
+                    "Plants grow slowly.",
+                ],
+                "evidence": [
+                    "Cats learn quickly.",
+                    "Dogs help humans.",
+                    "Birds use wings.",
+                    "Fish breathe through gills.",
+                    "Horses have powerful muscles.",
+                    "Trees absorb water.",
+                    "Cars use engines.",
+                    "Books have written pages.",
+                    "Computers execute instructions.",
+                    "Plants need sunlight.",
+                ],
+                "is_evidence": [
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                    1,
+                    0,
+                ],
+            },
+        )
+
+        if max_samples is not None:
+            df = df.iloc[:max_samples]
+
+        return df.reset_index(drop=True)
+
+
+class FakeModel:
+    """Provide a classifier with controlled predictions."""
+
+    def __init__(
+        self,
+        probabilities: list[float],
+    ) -> None:
+        """Initialize the fake classifier."""
+        self._probabilities = probabilities
+        self.predict_proba_calls = 0
+        self.last_input: np.ndarray | None = None
+
+    def predict_proba(
+        self,
+        x: np.ndarray,
+    ) -> np.ndarray:
+        """Return controlled class probabilities."""
+        self.predict_proba_calls += 1
+        self.last_input = x
+
+        if len(x) != len(self._probabilities):
+            raise AssertionError(
+                "Unexpected number of model inputs: "
+                f"expected {len(self._probabilities)}, "
+                f"got {len(x)}",
+            )
+
+        return np.array(
+            [[1.0 - probability, probability] for probability in self._probabilities],
+        )
+
+
+def create_extractor(
+    model: FakeModel,
+) -> XGBoostEvidenceExtractor:
+    """Create an evidence extractor with a fake classifier."""
+    extractor = XGBoostEvidenceExtractor(
+        FakeDataset(),
+        proof_of_concept_mode=True,
+    )
+    extractor._model = model
+
+    return extractor
+
+
+def test_evidence_extractor_returns_evidence() -> None:
+    """Verify evidence sentences are returned."""
+    model = FakeModel([0.9])
+    extractor = create_extractor(model)
+
+    result = asyncio.run(
+        extractor.extract_evidence(
+            "Cats are smart.",
+            "Cats learn quickly.",
+        ),
+    )
+
+    assert result == ["Cats learn quickly."]
+    assert model.predict_proba_calls == 1
+    assert model.last_input is not None
+    assert model.last_input.shape[0] == 1
+
+
+def test_evidence_extractor_filters_non_evidence_candidates() -> None:
+    """Verify only candidates classified as evidence are returned."""
+    expected_model_calls = 1
+
+    model = FakeModel([0.9, 0.1])
+    extractor = create_extractor(model)
+
+    result = asyncio.run(
+        extractor.extract_evidence(
+            "Cats are smart.",
+            "Cats learn quickly. Dogs are loyal.",
+        ),
+    )
+
+    assert result == ["Cats learn quickly."]
+    assert model.predict_proba_calls == expected_model_calls
+
+
+def test_evidence_extractor_excludes_claim() -> None:
+    """Verify the claim itself is not returned as evidence."""
+    model = FakeModel([0.9])
+    extractor = create_extractor(model)
+
+    result = asyncio.run(
+        extractor.extract_evidence(
+            "Cats are smart.",
+            "Cats are smart. Cats learn quickly.",
+        ),
+    )
+
+    assert result == ["Cats learn quickly."]
+    assert model.predict_proba_calls == 1
+    assert model.last_input is not None
+    assert model.last_input.shape[0] == 1
+
+
+def test_evidence_extractor_returns_empty_list_when_text_contains_only_claim() -> None:
+    """Verify no evidence is returned when only the claim is present."""
+    model = FakeModel([])
+    extractor = create_extractor(model)
+
+    result = asyncio.run(
+        extractor.extract_evidence(
+            "Cats are smart.",
+            "Cats are smart.",
+        ),
+    )
+
+    assert result == []
+    assert model.predict_proba_calls == 0
+    assert model.last_input is None
+
+
+def test_evidence_extractor_filters_low_probability_evidence() -> None:
+    """Verify candidates below the classification threshold are excluded."""
+    model = FakeModel([0.1])
+    extractor = create_extractor(model)
+
+    result = asyncio.run(
+        extractor.extract_evidence(
+            "Cats are smart.",
+            "Cats learn quickly.",
+        ),
+    )
+
+    assert result == []
+    assert model.predict_proba_calls == 1
+    assert model.last_input is not None
+    assert model.last_input.shape[0] == 1
