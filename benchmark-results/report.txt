@@ -1,0 +1,21 @@
+1. current_cleaner.json vs readability_cleaner.json
+
+01: comparable, readability would require whitespace trimming, both require special chars trimming
+02: current satates there was an advertisement, readability includes the text of advertisement
+03: both struggle with removing dates in non-standard format
+04: current removed date and authors credentials, readability left this information
+05: comparable
+06: comparable
+07: current included headers unnecessarily, readability did not
+08: current included headers unnecessarily, readability did not
+09: comparable
+10: current included headers unnecessarily, readability did not
+
+Current: would require better handling of nav bar text, better handling of dates and names (perhaps we'll drop this feature anyway)
+Readability: would require handling of whitespaces,  better handling of dates and names (perhaps we'll drop this feature anyway)
+Both: require special characters trimming and word "advertisement" trimming
+
+
+2. simple_keyword_comparison.json vs ngram_keyword_comparison.json vs keybert_keyword_comparison.json
+For simple/ngram keyword extractor both current and readability versions return comparable if not identical results
+keybert returns the best quality results, however requires deduplication; readability vs current comparable
