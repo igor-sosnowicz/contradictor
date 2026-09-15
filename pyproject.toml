@@ -7,6 +7,7 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "click>=8.4.2",
+    "datasets>=5.0.1",
     "ddgs>=9.14.4",
     "diskcache>=5.6.3",
     "fastembed>=0.8.0",
@@ -15,6 +16,7 @@ dependencies = [
     "keybert>=0.9.0",
     "lmstudio>=1.5.0",
     "loguru>=0.7.3",
+    "markdown>=3.10.3",
     "openai>=3.0.0",
     "optuna>=4.9.0",
     "pandas>=3.0.3",
@@ -23,6 +25,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-ai>=2.38.0",
     "pydantic-extra-types>=2.11.1",
+    "pypdf>=6.18.1",
     "rapidfuzz>=3.14.5",
     "scikit-learn>=1.9.0",
     "sentence-transformers>=5.6.1",
@@ -108,6 +111,27 @@ ignore = [
     "S101",   # Allow for asserts allowed in tests.
     "ARG",    # Ignore unused function arguments, because fixtures are not ordinary arguments.
     "SLF001", # Private members may be accessed in tests.
+    "PLR2004", # Asserting against literal counts is the normal idiom in tests.
+    "S311",   # Seeded pseudo-random generators make tests reproducible.
+    "FBT001", # Test helpers take plain boolean flags.
+    "FBT002",
+]
+
+# Standalone entrypoints, deliberately not an importable package.
+"scripts/*.py" = ["INP001"]
+
+# Carrier layouts must be reproducible from a seed, so the standard
+# pseudo-random generator is the correct choice here.
+"src/argument_dataset/pipelines/argrec_to_carrier.py" = ["S311"]
+
+# file_loader follows AGENTS.md: no docstrings in simple methods,
+# wide loader config without noqa comments in code.
+"src/utils/file_loader.py" = [
+    "D102",
+    "D105",
+    "D107",
+    "PLR0913",
+    "TC003", # All imports stay at the top of the file, per AGENTS.md.
 ]
 
 [tool.typos.default.extend-words]

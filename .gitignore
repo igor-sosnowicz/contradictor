@@ -19,6 +19,10 @@ htmlcov/
 
 # Data
 data/
+argument-dataset/
 
 # Cache
 .cache/
+.cc-history
+priv_notes/*
+

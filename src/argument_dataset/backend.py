@@ -9,28 +9,26 @@ from pathlib import Path
 from string import Template
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from pydantic_ai import Agent, PromptedOutput
-from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.openai import OpenAIChatModel, OpenAIChatModelSettings
 from pydantic_ai.profiles import ModelProfile
 from pydantic_ai.providers.openai import OpenAIProvider
 
 from src.argument_dataset.output_models import (
-    ExtractedArgument,
+    ExtractionBatch,
     ExtractionVerdict,
+    FrameClassification,
+    GeneratedPremises,
     LinkVerdict,
+    PremiseSupportVerdict,
+    StyledDocument,
 )
+from src.configuration import RoleModelSettings
 from src.configuration import config as global_config
 from src.data_models.data_models import InterpretativeFrame
 
 PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
-
-
-# TODO(nsjg): move to structured_output_models.py  # noqa: FIX002, TD003
-class ExtractionBatch(BaseModel):
-    """Extractor output: all arguments found in one chunk."""
-
-    arguments: list[ExtractedArgument] = Field(default_factory=list)
 
 
 def render_prompt(filename: str) -> str:
@@ -59,6 +57,32 @@ def _model(name: str) -> OpenAIChatModel:
     return OpenAIChatModel(name, provider=provider, profile=profile)
 
 
+def _settings(role: RoleModelSettings) -> OpenAIChatModelSettings:
+    """
+    Build the sampling settings of one agent role.
+
+    Passing these explicitly stops every request from inheriting whatever
+    defaults the model happened to be loaded with in LM Studio.
+
+    ``reasoning_effort="none"`` is the one that matters for wall-clock: on a
+    thinking model the reasoning block is most of the output and none of the
+    answer. LM Studio only honours it as a top-level field - the same key
+    nested in ``chat_template_kwargs`` is silently ignored.
+    """
+    settings = OpenAIChatModelSettings(
+        temperature=role.temperature,
+        max_tokens=role.max_tokens or global_config.llm.max_tokens,
+        timeout=global_config.llm.timeout,
+    )
+    if role.top_p is not None:
+        settings["top_p"] = role.top_p
+    if role.seed is not None:
+        settings["seed"] = role.seed
+    if role.reasoning_effort is not None:
+        settings["openai_reasoning_effort"] = role.reasoning_effort
+    return settings
+
+
 def make_agents(
     extractor_name: str, judge_name: str
 ) -> tuple[
@@ -73,20 +97,67 @@ def make_agents(
             _model(extractor_name),
             output_type=PromptedOutput(ExtractionBatch),
             system_prompt=render_prompt("extractor_system.md"),
-            retries=5,
+            model_settings=_settings(global_config.llm.extractor),
+            retries=3,
         ),
         Agent(
             _model(judge_name),
             output_type=PromptedOutput(ExtractionVerdict),
             system_prompt=render_prompt("judge_system.md"),
-            retries=5,
+            model_settings=_settings(global_config.llm.judge),
+            retries=3,
         ),
         Agent(
             _model(judge_name),
             output_type=PromptedOutput(LinkVerdict),
             system_prompt=linking_prompt or render_prompt("judge_system.md"),
-            retries=5,
+            model_settings=_settings(global_config.llm.judge),
+            retries=3,
         ),
+    )
+
+
+def make_frame_classifier(model_name: str) -> Agent[None, FrameClassification]:
+    """Build the agent assigning an InterpretativeFrame to a single argument."""
+    return Agent(
+        _model(model_name),
+        output_type=PromptedOutput(FrameClassification),
+        system_prompt=render_prompt("frame_classifier_system.md"),
+        model_settings=_settings(global_config.llm.extractor),
+        retries=3,
+    )
+
+
+def make_premise_generator(model_name: str) -> Agent[None, GeneratedPremises]:
+    """Build the agent proposing supporting premises for a bare conclusion."""
+    return Agent(
+        _model(model_name),
+        output_type=PromptedOutput(GeneratedPremises),
+        system_prompt=render_prompt("premise_generator_system.md"),
+        model_settings=_settings(global_config.llm.generator),
+        retries=3,
+    )
+
+
+def make_premise_judge(model_name: str) -> Agent[None, PremiseSupportVerdict]:
+    """Build the agent scoring how well candidate premises support a claim."""
+    return Agent(
+        _model(model_name),
+        output_type=PromptedOutput(PremiseSupportVerdict),
+        system_prompt=render_prompt("premise_judge_system.md"),
+        model_settings=_settings(global_config.llm.judge),
+        retries=3,
+    )
+
+
+def make_document_styler(model_name: str) -> Agent[None, StyledDocument]:
+    """Build the agent styling a carrier document around verbatim sentences."""
+    return Agent(
+        _model(model_name),
+        output_type=PromptedOutput(StyledDocument),
+        system_prompt=render_prompt("document_styler_system.md"),
+        model_settings=_settings(global_config.llm.styler),
+        retries=3,
     )
 
 

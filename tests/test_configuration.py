@@ -9,7 +9,17 @@ from pydantic import ValidationError
 
 from src.configuration import Configuration, load_configuration
 
-FAKE_CONFIGURATION_PATH = "./random_dir123"
+
+@pytest.fixture
+def fake_data_directory(tmp_path: Path) -> Path:
+    """
+    Fixture for the data directory a loaded configuration will create.
+
+    Kept under pytest's temporary directory: loading a Configuration creates
+    every directory it points at, so a repo-relative path would leave stray
+    directories in the working tree.
+    """
+    return tmp_path / "fake_data_directory"
 
 
 @pytest.fixture
@@ -23,9 +33,9 @@ def invalid_configuration() -> Generator[Path]:
 
 
 @pytest.fixture
-def valid_configuration() -> Generator[Path]:
+def valid_configuration(fake_data_directory: Path) -> Generator[Path]:
     """Fixture for loading invalid configuration file."""
-    content = f'data_directory = "{FAKE_CONFIGURATION_PATH}"\n'
+    content = f'data_directory = "{fake_data_directory}"\n'
     with tempfile.NamedTemporaryFile(mode="r+", suffix=".toml") as file:
         file.write(content)
         file.flush()
@@ -38,11 +48,13 @@ def test_loading_invalid_configuration(invalid_configuration: Path) -> None:
         load_configuration(invalid_configuration)
 
 
-def test_loading_valid_configuration(valid_configuration: Path) -> None:
+def test_loading_valid_configuration(
+    valid_configuration: Path, fake_data_directory: Path
+) -> None:
     """Test if an invalid configuration fails to load."""
     config = load_configuration(valid_configuration)
     assert config
     assert isinstance(config, Configuration)
     assert config.data_directory
     assert isinstance(config.data_directory, Path)
-    assert config.data_directory.resolve() == Path(FAKE_CONFIGURATION_PATH).resolve()
+    assert config.data_directory.resolve() == fake_data_directory.resolve()

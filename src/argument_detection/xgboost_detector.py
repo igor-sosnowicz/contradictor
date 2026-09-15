@@ -72,9 +72,10 @@ class XGBoostDetector(ArgumentDetector):
         try:
             return spacy.load(spacy_pipeline_name, exclude=exclude)
         except OSError:
-            subprocess.run(  # noqa: S603, Trused spacy module.
+            subprocess.run(
                 [sys.executable, "-m", "spacy", "download", spacy_pipeline_name],
                 check=True,
+                shell=False,
             )
             return spacy.load(spacy_pipeline_name, exclude=exclude)
 
