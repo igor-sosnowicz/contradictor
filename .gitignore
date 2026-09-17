@@ -16,9 +16,11 @@ wheels/
 # Test coverage
 htmlcov/
 .coverage
+priv_notes/
 
 # Data
 data/
 
 # Cache
 .cache/
+.cc-history/

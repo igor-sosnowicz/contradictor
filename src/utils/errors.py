@@ -1,5 +1,12 @@
 """Module with hierarchy of exceptions."""
 
+from openai import (
+    APIConnectionError,
+    APITimeoutError,
+    InternalServerError,
+    RateLimitError,
+)
+
 
 class ContradictorError(Exception):
     """Root-level error from which all Contradictor errors inherit."""
@@ -23,3 +30,15 @@ class ConfigurationError(ContradictorError):
 
 class UnsupportedError(ContradictorError):
     """Raised if a currently unsupported option or combination of options is used."""
+
+
+class RetryExhaustedError(ContradictorError):
+    """Raised when all retry attempts for an operation fail."""
+
+
+RETRIABLE_LM_STUDIO_ERRORS: tuple[type[BaseException], ...] = (
+    APIConnectionError,
+    APITimeoutError,
+    RateLimitError,
+    InternalServerError,
+)

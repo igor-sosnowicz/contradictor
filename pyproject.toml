@@ -102,6 +102,7 @@ ignore = [
     "S101",   # Allow for asserts allowed in tests.
     "ARG",    # Ignore unused function arguments, because fixtures are not ordinary arguments.
     "SLF001", # Private members may be accessed in tests.
+    "PLR2004", # Allow magic values in tests, e.g. assert call_count == 3.
 ]
 
 [tool.typos.default.extend-words]
