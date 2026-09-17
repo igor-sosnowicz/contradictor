@@ -22,3 +22,7 @@ data/
 
 # Cache
 .cache/
+
+# Local-files
+.cc-history/
+priv_notes/
