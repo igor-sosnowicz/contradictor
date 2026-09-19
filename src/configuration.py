@@ -25,6 +25,9 @@ from src.utils.errors import ConfigurationError
 class Configuration(BaseModel):
     """The project-wide configuration."""
 
+    # Default models.
+    transformer_nli_model: str = "tasksource/ModernBERT-base-nli"
+
     # Forbid extra parameters absent from the configuration.
     model_config = ConfigDict(extra="forbid")
 
@@ -58,7 +61,7 @@ class Configuration(BaseModel):
         ArgumentExtractorImplementation.NOT_IMPLEMENTED
     )
     argument_framer: ArgumentFramerImplementation = ArgumentFramerImplementation.XGBOOST
-    nli: NLIImplementation = NLIImplementation.NOT_IMPLEMENTED
+    nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
     style_extractor: StyleExtractorImplementation = StyleExtractorImplementation.SPACY
     encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
     vector_search: VectorSearchImplementation = (

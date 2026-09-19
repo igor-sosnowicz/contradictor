@@ -23,3 +23,7 @@ class ConfigurationError(ContradictorError):
 
 class UnsupportedError(ContradictorError):
     """Raised if a currently unsupported option or combination of options is used."""
+
+
+class NLIResultError(ContradictorError):
+    """Raised if an arbitrary instead of a valid value was used for NLIResult."""
