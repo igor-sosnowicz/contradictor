@@ -63,7 +63,7 @@ class SourceFile:
     content: str
 
 
-class SourceFileLoader:
+class SourceFileLoader: # pylint: disable=too-many-instance-attributes
     """
     Collect source paths and lazily load them as plain-text :class:`SourceFile`.
 
@@ -83,7 +83,7 @@ class SourceFileLoader:
             cache instead. None disables caching.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, pylint: disable=too-many-arguments
         self,
         dir_path: Path | str | None = None,
         files: Sequence[Path | str] | None = None,

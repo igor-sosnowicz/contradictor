@@ -21,17 +21,14 @@ class RetryPolicy(Protocol):
     @property
     def max_retries(self) -> int:
         """Maximum retry attempts after the first call."""
-        ...
 
     @property
     def base_delay_seconds(self) -> float:
         """Delay before the first retry; doubles on every attempt."""
-        ...
 
     @property
     def max_delay_seconds(self) -> float:
         """Upper bound for the delay between retries."""
-        ...
 
 
 @dataclass(frozen=True)

@@ -6,9 +6,10 @@ from functools import lru_cache
 from math import sqrt
 from typing import TYPE_CHECKING, Literal
 
-from fastembed import SparseEmbedding
+from fastembed import SparseEmbedding, SparseTextEmbedding, TextEmbedding
 from numpy import array, ndarray
 from numpy.linalg import norm
+from openai import OpenAI
 
 from src.configuration import config as global_config
 from src.utils.errors import RETRIABLE_LM_STUDIO_ERRORS, ConfigurationError
@@ -24,12 +25,10 @@ class DenseEmbedderBase(ABC):
     @abstractmethod
     def embed(self, text: str, **kwargs: object) -> ndarray:
         """Embed a single text."""
-        ...
 
     @abstractmethod
     def embed_batch(self, texts: list[str], **kwargs: object) -> list[ndarray]:
         """Embed a batch of texts."""
-        ...
 
     @staticmethod
     def dense_cosine_similarity(v1: ndarray, v2: ndarray) -> float:
@@ -52,8 +51,6 @@ class DenseEmbedderAPI(DenseEmbedderBase):
         retry_policy: RetrySettings | None = None,
     ) -> None:
         """Create the embedder for the given LM Studio server address."""
-        from openai import OpenAI
-
         self.model_name = model_name
         base_url = f"http://{server_url}/v1"
         api_key = api_key or global_config.lm_studio_api_key
@@ -90,8 +87,6 @@ class DenseEmbedderLocal(DenseEmbedderBase):
         model_name: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     ) -> None:
         """Load the local FastEmbed model."""
-        from fastembed import TextEmbedding
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.model = TextEmbedding(
@@ -141,8 +136,6 @@ class SparseEmbedder:
 
     def __init__(self, model_name: str = "Qdrant/bm25") -> None:
         """Load the local sparse model."""
-        from fastembed import SparseTextEmbedding
-
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self.model = SparseTextEmbedding(
