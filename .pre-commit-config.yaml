@@ -40,3 +40,10 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+      - id: pylint-ci-profile
+        name: ci_profile
+        entry: scripts/precommit_ci_profile.sh
+        language: script
+        types: [python]
+        files: ^src/
+        pass_filenames: true
