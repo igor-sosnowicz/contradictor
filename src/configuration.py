@@ -2,6 +2,7 @@
 
 import tomllib
 from pathlib import Path
+from typing import Literal
 
 import pydantic
 from pydantic import BaseModel, ConfigDict, Field
@@ -20,6 +21,9 @@ from src.data_models.data_models import (
     VectorSearchImplementation,
 )
 from src.utils.errors import ConfigurationError
+
+_DEFAULT_CACHE_DIR = Path("./.cache")
+_DEFAULT_DATA_DIR = Path("./data")
 
 
 class Configuration(BaseModel):
@@ -40,6 +44,22 @@ class Configuration(BaseModel):
     model_subdirectory: str = "models"
 
     xgboost_extractor: XGBoostExtractorConfig = XGBoostExtractorConfig()
+
+    # LM Studio API configuration
+    lm_studio_api_base_url: str = "localhost:1234"
+    lm_studio_api_key: str = "your_api_key_here"
+
+    # FastEmbed model configuration
+    provider: Literal["api", "local"] = "local"
+    sparse_model_name: str = "Qdrant/bm25"
+    dense_model_name: str = (
+        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    )
+
+    fastembed_model_cache_directory: Path = Field(
+        default_factory=lambda: _DEFAULT_CACHE_DIR / "fastembed_models",
+        description="Cache directory for fastembed models",
+    )
 
     # In seconds.
     dataset_download_timeout: int = 300
