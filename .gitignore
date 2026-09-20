@@ -24,5 +24,6 @@ data/
 .cache/
 
 # Local-files
+.env
 .cc-history/
 priv_notes/
