@@ -63,7 +63,7 @@ class SourceFile:
     content: str
 
 
-class SourceFileLoader: # pylint: disable=too-many-instance-attributes
+class SourceFileLoader:  # pylint: disable=too-many-instance-attributes
     """
     Collect source paths and lazily load them as plain-text :class:`SourceFile`.
 
