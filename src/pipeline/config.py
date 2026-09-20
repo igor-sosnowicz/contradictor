@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 
 from src.argument_framing.argument_framer import ArgumentFramer
+from src.nli.nli import NLI
 from src.pipeline.argument_extractor import ArgumentExtractor
 from src.pipeline.encoder import Encoder
-from src.pipeline.nli import NLI
 from src.pipeline.vector_search import VectorSearch
 from src.search_module.pipeline import SearchPipeline
 from src.style_extraction.style_extractor import StyleExtractor

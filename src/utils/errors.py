@@ -36,9 +36,14 @@ class RetryExhaustedError(ContradictorError):
     """Raised when all retry attempts for an operation fail."""
 
 
+class NLIResultError(ContradictorError):
+    """Raised if an arbitrary instead of a valid value was used for NLIResult."""
+
+
 RETRIABLE_LM_STUDIO_ERRORS: tuple[type[BaseException], ...] = (
     APIConnectionError,
     APITimeoutError,
     RateLimitError,
     InternalServerError,
 )
+
