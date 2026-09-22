@@ -2,6 +2,7 @@
 
 from src.configuration import config
 from src.data_models.data_models import SearchPipelineImplementation
+from src.search_module.cleaner import ReadabilityCleaner
 from src.search_module.config import (
     CacheConfig,
     CleaningConfig,
@@ -32,7 +33,6 @@ def build_search_pipeline(
     # modules when they are not requested.
     # pylint: disable=import-outside-toplevel
     from src.search_module.cache import DiskCacheBackend
-    from src.search_module.cleaner import BeautifulSoupCleaner
     from src.search_module.downloader import RequestsDownloader
     from src.search_module.keyword_extraction.keybert import KeyBERTKeywordExtractor
     from src.search_module.search_engines.ddg import DDGSearchEngine
@@ -45,7 +45,7 @@ def build_search_pipeline(
             return SearchPipeline(
                 keyword_extractor=KeyBERTKeywordExtractor(config=KeywordConfig()),
                 search_engine=DDGSearchEngine(config=SearchConfig()),
-                cleaner=BeautifulSoupCleaner(config=CleaningConfig()),
+                cleaner=ReadabilityCleaner(config=CleaningConfig()),
                 downloader=RequestsDownloader(config=DownloadConfig()),
                 cache=DiskCacheBackend(config=CacheConfig()),
             )
