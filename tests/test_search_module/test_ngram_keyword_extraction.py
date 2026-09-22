@@ -1,4 +1,4 @@
-"""Compare n-gram keyword extraction results across different HTML cleaners."""
+"""Benchmark n-gram keyword extraction using ReadabilityCleaner."""
 
 import json
 import re
@@ -6,15 +6,15 @@ from pathlib import Path
 
 import pytest
 
-from src.search_module.cleaner import BeautifulSoupCleaner
-from src.search_module.cleaner_readability import ReadabilityCleaner
+from src.search_module.cleaner import ReadabilityCleaner
 from src.search_module.config import CleaningConfig, KeywordConfig
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
 from src.utils.tokenisers.tokeniser import Tokeniser
 
-FIXTURES_DIR = Path("tests/test_search_module/fixtures")
-RESULTS_DIR = Path("benchmark-results")
-RESULTS_FILE = RESULTS_DIR / "ngram_keyword_comparison.json"
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+FIXTURES_DIR = BASE_DIR / "tests" / "test_search_module" / "fixtures"
+RESULTS_DIR = BASE_DIR / "benchmark-results-readability"
+RESULTS_FILE = RESULTS_DIR / "ngram_readability_keywords.json"
 
 
 class BenchmarkTokeniser(Tokeniser):
@@ -35,18 +35,17 @@ class BenchmarkTokeniser(Tokeniser):
 
 @pytest.mark.parametrize(
     "html_file",
-    sorted(FIXTURES_DIR.glob("*.html")),
+    sorted(FIXTURES_DIR.glob("*.html")) if FIXTURES_DIR.exists() else [],
 )
 def test_ngram_keyword_extraction(
     html_file: Path,
 ) -> None:
-    """Compare n-gram keyword extraction across different HTML cleaners."""
+    """Evaluate NGramKeywordExtractor on text extracted by ReadabilityCleaner."""
     html = html_file.read_text(encoding="utf-8")
-
     keyword_config = KeywordConfig(
         max_keywords=5,
-        min_ngram_size=1,
-        max_ngram_size=3,
+        min_ngram_size=2,
+        max_ngram_size=4,
         stop_words={
             "a",
             "an",
@@ -74,65 +73,46 @@ def test_ngram_keyword_extraction(
             "with",
         },
     )
-
     tokeniser = BenchmarkTokeniser()
-
     extractor = NGramKeywordExtractor(
         config=keyword_config,
         tokeniser=tokeniser,
     )
-
-    cleaners = {
-        "current": BeautifulSoupCleaner(
-            config=CleaningConfig(min_text_length=200),
-        ),
-        "readability": ReadabilityCleaner(),
-    }
-
+    cleaning_config = CleaningConfig(min_text_length=150)
+    cleaner = ReadabilityCleaner(config=cleaning_config)
+    document = cleaner.clean(
+        html=html,
+        url=html_file.stem,
+    )
+    query = extractor.extract(document.text)
     result: dict[str, object] = {
         "file": html_file.name,
-        "cleaners": {},
-    }
-
-    for cleaner_name, cleaner in cleaners.items():
-        document = cleaner.clean(
-            html=html,
-            url=html_file.stem,
-        )
-
-        query = extractor.extract(document.text)
-
-        result["cleaners"][cleaner_name] = {
-            "title": document.title,
+        "title": document.title,
+        "metrics": {
             "characters": len(document.text),
             "words": len(document.text.split()),
+        },
+        "extraction": {
             "keywords": list(query.keywords),
             "normalized": query.normalized,
-        }
-
+        },
+    }
     _save_result(result)
 
 
 def _save_result(result: dict[str, object]) -> None:
+    """Persist extraction results incrementally into a JSON file."""
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
     results: list[dict[str, object]] = []
-
     if RESULTS_FILE.exists():
-        results = json.loads(
-            RESULTS_FILE.read_text(encoding="utf-8"),
-        )
-
+        try:
+            results = json.loads(RESULTS_FILE.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            results = []
     file_name = result["file"]
-
     results = [existing for existing in results if existing["file"] != file_name]
-
     results.append(result)
-
-    results.sort(
-        key=lambda item: str(item["file"]),
-    )
-
+    results.sort(key=lambda item: str(item["file"]))
     RESULTS_FILE.write_text(
         json.dumps(
             results,

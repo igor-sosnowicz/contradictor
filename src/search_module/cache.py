@@ -41,9 +41,7 @@ class DiskCacheBackend(CacheBackend):
     ) -> list[Document] | None:
         if not self.config.enabled:
             return None
-
         cached = self.cache.get(key)
-
         if cached is None:
             return None
         return [Document.model_validate(item) for item in cached]
@@ -56,7 +54,6 @@ class DiskCacheBackend(CacheBackend):
     ) -> None:
         if not self.config.enabled:
             return
-
         serialized = [document.model_dump() for document in value]
         self.cache.set(
             key,
@@ -72,3 +69,11 @@ class DiskCacheBackend(CacheBackend):
             None
         """
         self.cache.clear()
+
+    def close(self) -> None:
+        """
+        Explicitly close the underlying disk cache database.
+
+        Releases file locks, especially important on Windows systems.
+        """
+        self.cache.close()
