@@ -70,19 +70,13 @@ class BenchmarkTokeniser(Tokeniser):
 )
 def test_simple_keyword_extraction(
     html_file: Path,
+    keyword_stop_words: set[str],
 ) -> None:
     """Evaluate SimpleKeywordExtractor on text extracted by ReadabilityCleaner."""
     html = html_file.read_text(encoding="utf-8")
     keyword_config = KeywordConfig(
         max_keywords=5,
-        stop_words={
-            "are",
-            "the",
-            "and",
-            "because",
-            "that",
-            "this",
-        },
+        stop_words=keyword_stop_words,
     )
     tokeniser = BenchmarkTokeniser()
     extractor = SimpleKeywordExtractor(

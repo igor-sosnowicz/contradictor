@@ -3,17 +3,15 @@ HTML cleaner module that extracts primary readable text
 using Mozilla Readability andvalidates it against quality thresholds.
 """
 
-import logging
 from typing import override
 
 from bs4 import BeautifulSoup
+from loguru import logger
 from readability import parse
 
 from src.search_module.config import CleaningConfig
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
-
-logger = logging.getLogger(__name__)
 
 
 class ReadabilityCleaner(Cleaner):

@@ -3,6 +3,7 @@
 import json
 import re
 from pathlib import Path
+from typing import override
 
 import pytest
 
@@ -20,16 +21,16 @@ RESULTS_FILE = RESULTS_DIR / "ngram_readability_keywords.json"
 class BenchmarkTokeniser(Tokeniser):
     """Tokeniser used for benchmarking the n-gram keyword extractor."""
 
+    @override
     def encode(self, text: list[str]) -> list[list[int]]:
-        """Encode each token into a list of character code points."""
         return [[ord(char) for char in item] for item in text]
 
+    @override
     def decode(self, tokens: list[list[int]]) -> list[str]:
-        """Decode character code points back into tokens."""
         return ["".join(chr(token) for token in item) for item in tokens]
 
+    @override
     def tokenise(self, text: str) -> list[str]:
-        """Extract lowercase alphabetic words from the input text."""
         return re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
 
 
@@ -39,6 +40,7 @@ class BenchmarkTokeniser(Tokeniser):
 )
 def test_ngram_keyword_extraction(
     html_file: Path,
+    keyword_stop_words: set[str],
 ) -> None:
     """Evaluate NGramKeywordExtractor on text extracted by ReadabilityCleaner."""
     html = html_file.read_text(encoding="utf-8")
@@ -46,32 +48,7 @@ def test_ngram_keyword_extraction(
         max_keywords=5,
         min_ngram_size=2,
         max_ngram_size=4,
-        stop_words={
-            "a",
-            "an",
-            "and",
-            "are",
-            "as",
-            "at",
-            "be",
-            "because",
-            "by",
-            "for",
-            "from",
-            "in",
-            "is",
-            "it",
-            "of",
-            "on",
-            "or",
-            "that",
-            "the",
-            "this",
-            "to",
-            "was",
-            "were",
-            "with",
-        },
+        stop_words=keyword_stop_words,
     )
     tokeniser = BenchmarkTokeniser()
     extractor = NGramKeywordExtractor(

@@ -1,6 +1,7 @@
 """Disk based cache implementation."""
 
-from typing import override
+from types import TracebackType
+from typing import Self, override
 
 from diskcache import Cache
 
@@ -70,10 +71,15 @@ class DiskCacheBackend(CacheBackend):
         """
         self.cache.clear()
 
-    def close(self) -> None:
-        """
-        Explicitly close the underlying disk cache database.
+    def __enter__(self) -> Self:
+        """Return the cache backend as a context manager."""
+        return self
 
-        Releases file locks, especially important on Windows systems.
-        """
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Close the underlying disk cache."""
         self.cache.close()

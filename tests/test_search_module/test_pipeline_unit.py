@@ -9,7 +9,12 @@ import pytest
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.cleaner import ReadabilityCleaner
-from src.search_module.config import SearchModuleConfig
+from src.search_module.config import (
+    CacheConfig,
+    CleaningConfig,
+    SearchConfig,
+    SearchModuleConfig,
+)
 from src.search_module.downloader import RequestsDownloader
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
 from src.search_module.pipeline import SearchPipeline
@@ -62,12 +67,15 @@ class BenchmarkTokeniser(Tokeniser):
 
 
 @pytest.fixture
-def e2e_cache_dir() -> Iterator[str]:
+def e2e_cache_dir() -> Iterator[Path]:
     """Fixture ensuring a clean, real temporary cache directory for the test."""
     cache_path = Path(".cache/test_search_e2e")
+
     if cache_path.exists():
         shutil.rmtree(cache_path)
-    yield str(cache_path)
+
+    yield cache_path
+
     if cache_path.exists():
         shutil.rmtree(cache_path)
 
@@ -84,53 +92,60 @@ def test_pipeline_complete_e2e_flow(e2e_cache_dir: Path) -> None:
         e2e_cache_dir (Path): Pytest fixture providing a temporary directory
             for storing the disk cache data.
     """
-    config = SearchModuleConfig()
-    config.cache.directory = e2e_cache_dir
-    config.cache.enabled = True
-    config.search.max_results = 2
-    config.cleaning.min_text_length = 100
+    config = SearchModuleConfig(
+        cache=CacheConfig(
+            directory=str(e2e_cache_dir),
+            enabled=True,
+        ),
+        search=SearchConfig(
+            max_results=2,
+        ),
+        cleaning=CleaningConfig(
+            min_text_length=100,
+        ),
+    )
 
     tokeniser = BenchmarkTokeniser()
     keyword_extractor = NGramKeywordExtractor(
-        config=config.keyword, tokeniser=tokeniser
+        config=config.keyword,
+        tokeniser=tokeniser,
     )
     search_engine = DDGSearchEngine(config=config.search)
     downloader = RequestsDownloader(config=config.download)
     cleaner = ReadabilityCleaner(config=config.cleaning)
-    cache = DiskCacheBackend(config=config.cache)
 
-    pipeline = SearchPipeline(
-        keyword_extractor=keyword_extractor,
-        search_engine=search_engine,
-        downloader=downloader,
-        cleaner=cleaner,
-        cache=cache,
-    )
+    with DiskCacheBackend(config=config.cache) as cache:
+        pipeline = SearchPipeline(
+            keyword_extractor=keyword_extractor,
+            search_engine=search_engine,
+            downloader=downloader,
+            cleaner=cleaner,
+            cache=cache,
+        )
 
-    search_phrase = "quantum computing breakthrough 2026"
-    documents = pipeline.search(search_phrase)
+        search_phrase = "quantum computing breakthrough 2026"
+        documents = pipeline.search(search_phrase)
 
-    assert isinstance(documents, list)
-    assert len(documents) > 0, "Pipeline returned no documents from live internet."
+        assert isinstance(documents, list)
+        assert len(documents) > 0, "Pipeline returned no documents from live internet."
 
-    first_doc = documents[0]
-    assert first_doc.url.startswith("http")
-    assert len(first_doc.title) > 0
-    assert len(first_doc.text) >= config.cleaning.min_text_length
+        first_doc = documents[0]
+        assert first_doc.url.startswith("http")
+        assert len(first_doc.title) > 0
+        assert len(first_doc.text) >= config.cleaning.min_text_length
 
-    assert "<html" not in first_doc.text
-    assert "<body>" not in first_doc.text
+        assert "<html" not in first_doc.text
+        assert "<body>" not in first_doc.text
 
-    second_pipeline = SearchPipeline(
-        keyword_extractor=keyword_extractor,
-        search_engine=search_engine,
-        downloader=downloader,
-        cleaner=cleaner,
-        cache=cache,
-    )
+        second_pipeline = SearchPipeline(
+            keyword_extractor=keyword_extractor,
+            search_engine=search_engine,
+            downloader=downloader,
+            cleaner=cleaner,
+            cache=cache,
+        )
 
-    cached_documents = second_pipeline.search(search_phrase)
-    assert len(cached_documents) == len(documents)
-    assert cached_documents[0].text == first_doc.text
+        cached_documents = second_pipeline.search(search_phrase)
 
-    cache.close()
+        assert len(cached_documents) == len(documents)
+        assert cached_documents[0].text == first_doc.text
