@@ -59,9 +59,6 @@ python_version = "3.13"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = [
-    "tests/test_search_module/fixtures"
-]
 
 [tool.pylint."messages control"]
 disable = [
