@@ -18,7 +18,7 @@ class ReadabilityCleaner(Cleaner):
     """Extract main readable content using Mozilla Readability with post-validation."""
 
     def __init__(self, config: CleaningConfig) -> None:
-        """Initialize cleaner with quality thresholds."""
+        """Initialise cleaner with quality thresholds."""
         self.config = config
 
     @override
@@ -42,7 +42,7 @@ class ReadabilityCleaner(Cleaner):
         text_lower = text.lower()
         if any(keyword in text_lower for keyword in self.config.unwanted_keywords):
             logger.warning(
-                "Document %s rejected: text too short (%s chars).",
+                "Document %s rejected: text too short (%d chars).",
                 url,
                 len(text),
             )
@@ -50,7 +50,7 @@ class ReadabilityCleaner(Cleaner):
 
         if len(text) < self.config.min_text_length:
             logger.warning(
-                "Document %s rejected: text too short (%s chars).",
+                "Document %s rejected: text too short (%d chars).",
                 url,
                 len(text),
             )
@@ -58,7 +58,7 @@ class ReadabilityCleaner(Cleaner):
 
         if len(text) > self.config.max_text_length:
             logger.debug(
-                "Document %s text truncated to %s chars.",
+                "Document %s text truncated to %d chars.",
                 url,
                 self.config.max_text_length,
             )
@@ -67,7 +67,7 @@ class ReadabilityCleaner(Cleaner):
         word_count = len(text.split())
         if word_count < self.config.min_word_count:
             logger.warning(
-                "Document %s rejected: word count too low (%s words).",
+                "Document %s rejected: word count too low (%d words).",
                 url,
                 word_count,
             )

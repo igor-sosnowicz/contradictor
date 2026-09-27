@@ -87,10 +87,6 @@ def test_pipeline_complete_e2e_flow(e2e_cache_dir: Path) -> None:
     Validates that the entire sequence—from regular expression keyword
     extraction to executing a live duckduckgo web search, downloading content,
     cleaning HTML tags, and reusing cached data—functions correctly together.
-
-    Args:
-        e2e_cache_dir (Path): Pytest fixture providing a temporary directory
-            for storing the disk cache data.
     """
     config = SearchModuleConfig(
         cache=CacheConfig(
