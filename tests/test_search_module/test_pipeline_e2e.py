@@ -1,7 +1,7 @@
 """Real Integration test for the search module pipeline without any fakes."""
 
 import re
-import shutil
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -63,16 +63,9 @@ class BenchmarkTokeniser(Tokeniser):
 
 @pytest.fixture
 def e2e_cache_dir() -> Iterator[Path]:
-    """Fixture ensuring a clean, real temporary cache directory for the test."""
-    cache_path = Path(".cache/test_search_integration_real")
-
-    if cache_path.exists():
-        shutil.rmtree(cache_path, ignore_errors=True)
-
-    yield cache_path
-
-    if cache_path.exists():
-        shutil.rmtree(cache_path, ignore_errors=True)
+    """Fixture providing a temporary directory for the disk cache."""
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
 
 
 def test_pipeline_ngram_and_readability_real_integration(
