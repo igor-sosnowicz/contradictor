@@ -17,11 +17,9 @@ class DownloadConfig(BaseModel):
     timeout: float = Field(default=10.0, gt=0)
     max_retries: int = Field(default=2, ge=0)
     user_agent: str = (
-        "Mozilla/5.0 "
-        "(Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 "
-        "(KHTML, like Gecko) "
-        "Chrome/138.0 Safari/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/130.0.0.0 Safari/537.36"
     )
     max_content_size_mb: int = Field(
         default=10,
@@ -30,56 +28,30 @@ class DownloadConfig(BaseModel):
 
 
 class CleaningConfig(BaseModel):
-    """HTML cleaning configuration."""
+    """Configuration for post-processing and validating Readability output."""
 
-    min_text_length: int = Field(default=300, ge=0)  # to be adjusted
-    max_text_length: int = Field(default=10_000, ge=0)  # to be adjusted
-    min_word_count: int = Field(default=50, ge=0)  # to be adjusted
-    min_sentence_count: int = Field(default=3, ge=0)  # to be adjusted
-    remove_empty_lines: bool = True
-    collapse_whitespace: bool = True
-    remove_tags: tuple[str, ...] = (
-        "script",
-        "style",
-        "nav",
-        "header",
-        "footer",
-        "aside",
-        "noscript",
-        "svg",
-        "form",
-        "iframe",
-        "button",
-    )
-    noise_penalty_factor: float = Field(default=0.15, ge=0.0, le=1.0)
-    noise_penalty_words: tuple[str, ...] = (
-        "subscribe",
-        "newsletter",
-        "cookie",
-        "privacy",
-        "related",
-        "share",
-        "login",
-    )
+    # For entire document
+    min_text_length: int = Field(default=150, ge=0)
+    max_text_length: int = Field(default=50_000, ge=0)
+    min_word_count: int = Field(default=30, ge=0)
+
+    # Keywords which disqualify entire document
     unwanted_keywords: tuple[str, ...] = (
+        "404 not found",
+        "access denied",
+        "permission denied",
+        "captcha verification",
+    )
+
+    # Words to clean lines/sentences
+    noise_line_keywords: tuple[str, ...] = (
         "cookie",
-        "privacy",
+        "privacy policy",
         "newsletter",
         "subscribe",
         "sign up",
-        "advertisement",
-        "share",
-        "comments",
-        "related",
-        "login",
+        "all rights reserved",
     )
-    content_tags: tuple[str, ...] = (
-        "article",
-        "main",
-        "section",
-        "div",
-    )
-    keep_links: bool = False
 
 
 class CacheConfig(BaseModel):

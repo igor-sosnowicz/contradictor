@@ -1,6 +1,7 @@
 """Disk based cache implementation."""
 
-from typing import override
+from types import TracebackType
+from typing import Self, override
 
 from diskcache import Cache
 
@@ -41,9 +42,7 @@ class DiskCacheBackend(CacheBackend):
     ) -> list[Document] | None:
         if not self.config.enabled:
             return None
-
         cached = self.cache.get(key)
-
         if cached is None:
             return None
         return [Document.model_validate(item) for item in cached]
@@ -56,7 +55,6 @@ class DiskCacheBackend(CacheBackend):
     ) -> None:
         if not self.config.enabled:
             return
-
         serialized = [document.model_dump() for document in value]
         self.cache.set(
             key,
@@ -72,3 +70,16 @@ class DiskCacheBackend(CacheBackend):
             None
         """
         self.cache.clear()
+
+    def __enter__(self) -> Self:
+        """Return the cache backend as a context manager."""
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        """Close the underlying disk cache."""
+        self.cache.close()

@@ -1,0 +1,1340 @@
+[
+  {
+    "file": "005_Economic_www_cnbc_com.html",
+    "title": "Economy",
+    "metrics": {
+      "characters": 632,
+      "words": 105
+    },
+    "extraction": {
+      "keywords": [
+        "data",
+        "news",
+        "cnbc",
+        "products",
+        "about"
+      ],
+      "normalized": "data news cnbc products about"
+    }
+  },
+  {
+    "file": "007_Economic_www_worldbank_org.html",
+    "title": "News | World Bank Group",
+    "metrics": {
+      "characters": 607,
+      "words": 83
+    },
+    "extraction": {
+      "keywords": [
+        "yes",
+        "blogs",
+        "press",
+        "true",
+        "see"
+      ],
+      "normalized": "yes blogs press true see"
+    }
+  },
+  {
+    "file": "008_Capacity_and_Resources_www_iea_org.html",
+    "title": "News - IEA",
+    "metrics": {
+      "characters": 384,
+      "words": 63
+    },
+    "extraction": {
+      "keywords": [
+        "report",
+        "read",
+        "oil",
+        "september",
+        "fuel"
+      ],
+      "normalized": "report read oil september fuel"
+    }
+  },
+  {
+    "file": "009_Capacity_and_Resources_www_bp_com.html",
+    "title": "Energy Outlook",
+    "metrics": {
+      "characters": 1696,
+      "words": 276
+    },
+    "extraction": {
+      "keywords": [
+        "energy",
+        "scenarios",
+        "system",
+        "we",
+        "outlook"
+      ],
+      "normalized": "energy scenarios system we outlook"
+    }
+  },
+  {
+    "file": "010_Capacity_and_Resources_www_fao_org.html",
+    "title": "News | FAO | Food and Agriculture Organization of the United Nations",
+    "metrics": {
+      "characters": 300,
+      "words": 44
+    },
+    "extraction": {
+      "keywords": [
+        "africa",
+        "food",
+        "potatoes",
+        "potato",
+        "potential"
+      ],
+      "normalized": "africa food potatoes potato potential"
+    }
+  },
+  {
+    "file": "011_Capacity_and_Resources_www_usgs_gov.html",
+    "title": "News",
+    "metrics": {
+      "characters": 649,
+      "words": 94
+    },
+    "extraction": {
+      "keywords": [
+        "usgs",
+        "nation",
+        "landslide",
+        "science",
+        "helping"
+      ],
+      "normalized": "usgs nation landslide science helping"
+    }
+  },
+  {
+    "file": "014_Capacity_and_Resources_www_eia_gov.html",
+    "title": "Today in Energy - U.S. Energy Information Administration (EIA)",
+    "metrics": {
+      "characters": 8848,
+      "words": 1417
+    },
+    "extraction": {
+      "keywords": [
+        "more",
+        "data",
+        "gas",
+        "natural",
+        "brief"
+      ],
+      "normalized": "more data gas natural brief"
+    }
+  },
+  {
+    "file": "015_Morality_www_vaticannews_va.html",
+    "title": "News from the Vatican - News about the Church - Vatican News",
+    "metrics": {
+      "characters": 533,
+      "words": 82
+    },
+    "extraction": {
+      "keywords": [
+        "press",
+        "office",
+        "ai",
+        "prefects",
+        "vatican"
+      ],
+      "normalized": "press office ai prefects vatican"
+    }
+  },
+  {
+    "file": "016_Morality_www_theosthinktank_co_uk.html",
+    "title": "Comment",
+    "metrics": {
+      "characters": 300,
+      "words": 47
+    },
+    "extraction": {
+      "keywords": [
+        "theos",
+        "society",
+        "we",
+        "conducts",
+        "research"
+      ],
+      "normalized": "theos society we conducts research"
+    }
+  },
+  {
+    "file": "017_Morality_www_ethicsandculture_com.html",
+    "title": "Ethics and Culture",
+    "metrics": {
+      "characters": 7034,
+      "words": 1219
+    },
+    "extraction": {
+      "keywords": [
+        "more",
+        "read",
+        "we",
+        "about",
+        "god"
+      ],
+      "normalized": "more read we about god"
+    }
+  },
+  {
+    "file": "019_Morality_www_humanists_uk.html",
+    "title": "Humanists UK: News and stories",
+    "metrics": {
+      "characters": 262,
+      "words": 43
+    },
+    "extraction": {
+      "keywords": [
+        "september",
+        "supporting",
+        "lasting",
+        "change",
+        "better"
+      ],
+      "normalized": "september supporting lasting change better"
+    }
+  },
+  {
+    "file": "01_article.html",
+    "title": "How Urban Trees Improve City Life",
+    "metrics": {
+      "characters": 1357,
+      "words": 208
+    },
+    "extraction": {
+      "keywords": [
+        "trees",
+        "can",
+        "streets",
+        "urban",
+        "city"
+      ],
+      "normalized": "trees can streets urban city"
+    }
+  },
+  {
+    "file": "020_Morality_www_dalailama_com.html",
+    "title": "The Office of His Holiness The Dalai Lama | The 14th Dalai Lama",
+    "metrics": {
+      "characters": 2838,
+      "words": 484
+    },
+    "extraction": {
+      "keywords": [
+        "his",
+        "holiness",
+        "india",
+        "my",
+        "birthday"
+      ],
+      "normalized": "his holiness india my birthday"
+    }
+  },
+  {
+    "file": "021_Morality_www_christianitytoday_com.html",
+    "title": "News - Christianity Today",
+    "metrics": {
+      "characters": 2742,
+      "words": 428
+    },
+    "extraction": {
+      "keywords": [
+        "september",
+        "after",
+        "no",
+        "who",
+        "years"
+      ],
+      "normalized": "september after no who years"
+    }
+  },
+  {
+    "file": "022_Fairness_and_Equality_www_unwomen_org.html",
+    "title": "Explore our latest news | UN Women – Headquarters",
+    "metrics": {
+      "characters": 451,
+      "words": 65
+    },
+    "extraction": {
+      "keywords": [
+        "september",
+        "press",
+        "briefing",
+        "release",
+        "speech"
+      ],
+      "normalized": "september press briefing release speech"
+    }
+  },
+  {
+    "file": "023_Fairness_and_Equality_www_amnesty_org.html",
+    "title": "News Archives",
+    "metrics": {
+      "characters": 4008,
+      "words": 544
+    },
+    "extraction": {
+      "keywords": [
+        "rights",
+        "africa",
+        "south",
+        "asia",
+        "central"
+      ],
+      "normalized": "rights africa south asia central"
+    }
+  },
+  {
+    "file": "024_Fairness_and_Equality_www_hrw_org.html",
+    "title": "News",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "025_Fairness_and_Equality_www_oxfam_org.html",
+    "title": "Press releases | Oxfam InternationalOxfam Internationalicon-searchicon-searchsocial-facebooksocial-twittersocial-youtubesocial-instagramOxfam International",
+    "metrics": {
+      "characters": 3584,
+      "words": 550
+    },
+    "extraction": {
+      "keywords": [
+        "oxfam",
+        "our",
+        "climate",
+        "september",
+        "new"
+      ],
+      "normalized": "oxfam our climate september new"
+    }
+  },
+  {
+    "file": "026_Fairness_and_Equality_www_aclu_org.html",
+    "title": "News | American Civil Liberties Union",
+    "metrics": {
+      "characters": 5247,
+      "words": 816
+    },
+    "extraction": {
+      "keywords": [
+        "rights",
+        "aclu",
+        "access",
+        "women",
+        "why"
+      ],
+      "normalized": "rights aclu access women why"
+    }
+  },
+  {
+    "file": "027_Fairness_and_Equality_www_equalitynow_org.html",
+    "title": "News and Insights Archives",
+    "metrics": {
+      "characters": 1132,
+      "words": 175
+    },
+    "extraction": {
+      "keywords": [
+        "against",
+        "sexual",
+        "violence",
+        "justice",
+        "women"
+      ],
+      "normalized": "against sexual violence justice women"
+    }
+  },
+  {
+    "file": "028_Fairness_and_Equality_eurekalert_org.html",
+    "title": "EurekAlert! Science News Service from AAAS",
+    "metrics": {
+      "characters": 1474,
+      "words": 210
+    },
+    "extraction": {
+      "keywords": [
+        "university",
+        "more",
+        "science",
+        "news",
+        "mount"
+      ],
+      "normalized": "university more science news mount"
+    }
+  },
+  {
+    "file": "029_Constitutionality_and_Legality_www_scotusblog_com.html",
+    "title": "SCOTUSblog",
+    "metrics": {
+      "characters": 565,
+      "words": 97
+    },
+    "extraction": {
+      "keywords": [
+        "court",
+        "news",
+        "conference",
+        "orders",
+        "mon"
+      ],
+      "normalized": "court news conference orders mon"
+    }
+  },
+  {
+    "file": "02_article.html",
+    "title": "The Science of Better Sleep",
+    "metrics": {
+      "characters": 1290,
+      "words": 194
+    },
+    "extraction": {
+      "keywords": [
+        "sleep",
+        "bed",
+        "bedroom",
+        "can",
+        "make"
+      ],
+      "normalized": "sleep bed bedroom can make"
+    }
+  },
+  {
+    "file": "03.html",
+    "title": "Local Observatory Opens New Research Center",
+    "metrics": {
+      "characters": 1266,
+      "words": 188
+    },
+    "extraction": {
+      "keywords": [
+        "observatory",
+        "research",
+        "new",
+        "center",
+        "data"
+      ],
+      "normalized": "observatory research new center data"
+    }
+  },
+  {
+    "file": "030_Constitutionality_and_Legality_www_law_com.html",
+    "title": "Washington DC | National Law Journal Topic | Law.com",
+    "metrics": {
+      "characters": 1011,
+      "words": 159
+    },
+    "extraction": {
+      "keywords": [
+        "law",
+        "circuit",
+        "cell",
+        "phone",
+        "border"
+      ],
+      "normalized": "law circuit cell phone border"
+    }
+  },
+  {
+    "file": "031_Constitutionality_and_Legality_www_jurist_org.html",
+    "title": "Texas abortion bans challenged as unconstitutional in wrongful death suit over denied care",
+    "metrics": {
+      "characters": 5125,
+      "words": 795
+    },
+    "extraction": {
+      "keywords": [
+        "september",
+        "read",
+        "more",
+        "un",
+        "court"
+      ],
+      "normalized": "september read more un court"
+    }
+  },
+  {
+    "file": "032_Constitutionality_and_Legality_www_supremecourt_gov.html",
+    "title": "Supreme Court of the United States Home",
+    "metrics": {
+      "characters": 1141,
+      "words": 195
+    },
+    "extraction": {
+      "keywords": [
+        "harlan",
+        "war",
+        "colonel",
+        "stirrups",
+        "kentucky"
+      ],
+      "normalized": "harlan war colonel stirrups kentucky"
+    }
+  },
+  {
+    "file": "033_Constitutionality_and_Legality_www_harvardlawreview_org.html",
+    "title": "Harvard Law Review",
+    "metrics": {
+      "characters": 6476,
+      "words": 971
+    },
+    "extraction": {
+      "keywords": [
+        "court",
+        "constitutional",
+        "law",
+        "government",
+        "supreme"
+      ],
+      "normalized": "court constitutional law government supreme"
+    }
+  },
+  {
+    "file": "036_Policy_Prescription_and_Evaluation_www_brookings_edu.html",
+    "title": "Policy2020 | Brookings",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "037_Policy_Prescription_and_Evaluation_www_rand_org.html",
+    "title": "Research & Commentary",
+    "metrics": {
+      "characters": 3988,
+      "words": 591
+    },
+    "extraction": {
+      "keywords": [
+        "sep",
+        "research",
+        "data",
+        "ai",
+        "center"
+      ],
+      "normalized": "sep research data ai center"
+    }
+  },
+  {
+    "file": "04.html",
+    "title": "What I Learned From a Month Without Notifications",
+    "metrics": {
+      "characters": 1275,
+      "words": 216
+    },
+    "extraction": {
+      "keywords": [
+        "my",
+        "phone",
+        "less",
+        "me",
+        "but"
+      ],
+      "normalized": "my phone less me but"
+    }
+  },
+  {
+    "file": "040_Policy_Prescription_and_Evaluation_www_cfr_org.html",
+    "title": "Council on Foreign Relations",
+    "metrics": {
+      "characters": 2469,
+      "words": 383
+    },
+    "extraction": {
+      "keywords": [
+        "expert",
+        "take",
+        "podcast",
+        "james",
+        "lindsay"
+      ],
+      "normalized": "expert take podcast james lindsay"
+    }
+  },
+  {
+    "file": "043_Crime_and_Justice_www_themarshallproject_org.html",
+    "title": "The Marshall Project",
+    "metrics": {
+      "characters": 1290,
+      "words": 206
+    },
+    "extraction": {
+      "keywords": [
+        "department",
+        "ice",
+        "second",
+        "trump",
+        "immigration"
+      ],
+      "normalized": "department ice second trump immigration"
+    }
+  },
+  {
+    "file": "044_Crime_and_Justice_www_fbi_gov.html",
+    "title": "News | Federal Bureau of Investigation",
+    "metrics": {
+      "characters": 526,
+      "words": 73
+    },
+    "extraction": {
+      "keywords": [
+        "fbi",
+        "cyber",
+        "strategy",
+        "cyberspace",
+        "four"
+      ],
+      "normalized": "fbi cyber strategy cyberspace four"
+    }
+  },
+  {
+    "file": "045_Crime_and_Justice_www_interpol_int.html",
+    "title": "News and Events",
+    "metrics": {
+      "characters": 1849,
+      "words": 281
+    },
+    "extraction": {
+      "keywords": [
+        "interpol",
+        "general",
+        "global",
+        "assembly",
+        "september"
+      ],
+      "normalized": "interpol general global assembly september"
+    }
+  },
+  {
+    "file": "046_Crime_and_Justice_www_justice_gov.html",
+    "title": "",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "047_Crime_and_Justice_www_prisonpolicy_org.html",
+    "title": "In the News",
+    "metrics": {
+      "characters": 50000,
+      "words": 8488
+    },
+    "extraction": {
+      "keywords": [
+        "prison",
+        "august",
+        "new",
+        "news",
+        "april"
+      ],
+      "normalized": "prison august new news april"
+    }
+  },
+  {
+    "file": "049_Crime_and_Justice_www_crimestoppers-uk_org.html",
+    "title": "News & media | Crimestoppers",
+    "metrics": {
+      "characters": 414,
+      "words": 63
+    },
+    "extraction": {
+      "keywords": [
+        "registered",
+        "crimestoppers",
+        "trust",
+        "england",
+        "wales"
+      ],
+      "normalized": "registered crimestoppers trust england wales"
+    }
+  },
+  {
+    "file": "05.html",
+    "title": "Acme API Documentation - Authentication",
+    "metrics": {
+      "characters": 999,
+      "words": 140
+    },
+    "extraction": {
+      "keywords": [
+        "api",
+        "keys",
+        "bearer",
+        "request",
+        "authorization"
+      ],
+      "normalized": "api keys bearer request authorization"
+    }
+  },
+  {
+    "file": "050_Security_and_Defense_www_defensenews_com.html",
+    "title": "Defense News, Covering the politics, business and technology of defense | Defense News",
+    "metrics": {
+      "characters": 9434,
+      "words": 1469
+    },
+    "extraction": {
+      "keywords": [
+        "us",
+        "air",
+        "defense",
+        "force",
+        "space"
+      ],
+      "normalized": "us air defense force space"
+    }
+  },
+  {
+    "file": "052_Security_and_Defense_www_nato_int.html",
+    "title": "News",
+    "metrics": {
+      "characters": 10508,
+      "words": 1484
+    },
+    "extraction": {
+      "keywords": [
+        "nato",
+        "representative",
+        "defence",
+        "military",
+        "chief"
+      ],
+      "normalized": "nato representative defence military chief"
+    }
+  },
+  {
+    "file": "054_Security_and_Defense_www_military_com.html",
+    "title": "Military Daily News | Military.com",
+    "metrics": {
+      "characters": 4442,
+      "words": 700
+    },
+    "extraction": {
+      "keywords": [
+        "war",
+        "iran",
+        "russian",
+        "us",
+        "billion"
+      ],
+      "normalized": "war iran russian us billion"
+    }
+  },
+  {
+    "file": "055_Security_and_Defense_www_iiss_org.html",
+    "title": "IISS Online Analysis",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "057_Health_and_Safety_www_who_int.html",
+    "title": "Newsroom",
+    "metrics": {
+      "characters": 353,
+      "words": 54
+    },
+    "extraction": {
+      "keywords": [
+        "health",
+        "who",
+        "all",
+        "live",
+        "global"
+      ],
+      "normalized": "health who all live global"
+    }
+  },
+  {
+    "file": "06.html",
+    "title": "Example Encyclopedia - Solar Energy",
+    "metrics": {
+      "characters": 1461,
+      "words": 193
+    },
+    "extraction": {
+      "keywords": [
+        "solar",
+        "energy",
+        "electricity",
+        "sunlight",
+        "heat"
+      ],
+      "normalized": "solar energy electricity sunlight heat"
+    }
+  },
+  {
+    "file": "064_Quality_of_Life_www_livehappy_com.html",
+    "title": "Making Your World a Happier Place | Live Happy",
+    "metrics": {
+      "characters": 433,
+      "words": 64
+    },
+    "extraction": {
+      "keywords": [
+        "happiness",
+        "happy",
+        "through",
+        "movement",
+        "living"
+      ],
+      "normalized": "happiness happy through movement living"
+    }
+  },
+  {
+    "file": "065_Quality_of_Life_www_mindbodygreen_com.html",
+    "title": "mindbodygreen - well-rounded well-being for a life well lived",
+    "metrics": {
+      "characters": 6092,
+      "words": 891
+    },
+    "extraction": {
+      "keywords": [
+        "longevity",
+        "nutrition",
+        "your",
+        "menopause",
+        "peri"
+      ],
+      "normalized": "longevity nutrition your menopause peri"
+    }
+  },
+  {
+    "file": "066_Quality_of_Life_www_wellandgood_com.html",
+    "title": "theSkimm - Your go-to for the info and tools you need to live your smartest life.",
+    "metrics": {
+      "characters": 1425,
+      "words": 237
+    },
+    "extraction": {
+      "keywords": [
+        "what",
+        "skimm",
+        "our",
+        "together",
+        "you"
+      ],
+      "normalized": "what skimm our together you"
+    }
+  },
+  {
+    "file": "068_Quality_of_Life_www_architecturaldigest_com.html",
+    "title": "Architecture + Design",
+    "metrics": {
+      "characters": 1882,
+      "words": 290
+    },
+    "extraction": {
+      "keywords": [
+        "most",
+        "design",
+        "architecture",
+        "his",
+        "home"
+      ],
+      "normalized": "most design architecture his home"
+    }
+  },
+  {
+    "file": "069_Quality_of_Life_www_travelandleisure_com.html",
+    "title": "Travel + Leisure: Travel Reviews, News, Guides & Tips",
+    "metrics": {
+      "characters": 11277,
+      "words": 1659
+    },
+    "extraction": {
+      "keywords": [
+        "include",
+        "hotel",
+        "complimentary",
+        "free",
+        "service"
+      ],
+      "normalized": "include hotel complimentary free service"
+    }
+  },
+  {
+    "file": "07.html",
+    "title": "Northwind Store - Wireless Headphones",
+    "metrics": {
+      "characters": 675,
+      "words": 101
+    },
+    "extraction": {
+      "keywords": [
+        "wireless",
+        "headphones",
+        "quietsound",
+        "noise",
+        "up"
+      ],
+      "normalized": "wireless headphones quietsound noise up"
+    }
+  },
+  {
+    "file": "070_Quality_of_Life_www_goodnewsnetwork_org.html",
+    "title": "The Good News Network: Positive Stories 24/7",
+    "metrics": {
+      "characters": 585,
+      "words": 91
+    },
+    "extraction": {
+      "keywords": [
+        "corn",
+        "league",
+        "good",
+        "news",
+        "history"
+      ],
+      "normalized": "corn league good news history"
+    }
+  },
+  {
+    "file": "072_Cultural_Identity_www_smithsonianmag_com.html",
+    "title": "History News & Insights | Smithsonian Magazine",
+    "metrics": {
+      "characters": 6557,
+      "words": 1057
+    },
+    "extraction": {
+      "keywords": [
+        "september",
+        "august",
+        "world",
+        "american",
+        "history"
+      ],
+      "normalized": "september august world american history"
+    }
+  },
+  {
+    "file": "073_Cultural_Identity_www_bbc_com.html",
+    "title": "BBC Culture | Arts, Film & TV, Reviews, Books, Music, Style",
+    "metrics": {
+      "characters": 8095,
+      "words": 1400
+    },
+    "extraction": {
+      "keywords": [
+        "ago",
+        "hrs",
+        "new",
+        "us",
+        "why"
+      ],
+      "normalized": "ago hrs new us why"
+    }
+  },
+  {
+    "file": "074_Cultural_Identity_www_hyperallergic_com.html",
+    "title": "Hyperallergic",
+    "metrics": {
+      "characters": 3937,
+      "words": 608
+    },
+    "extraction": {
+      "keywords": [
+        "art",
+        "more",
+        "studio",
+        "us",
+        "artists"
+      ],
+      "normalized": "art more studio us artists"
+    }
+  },
+  {
+    "file": "075_Cultural_Identity_www_theartnewspaper_com.html",
+    "title": "The Art Newspaper - International art news and events",
+    "metrics": {
+      "characters": 1758,
+      "words": 281
+    },
+    "extraction": {
+      "keywords": [
+        "art",
+        "artist",
+        "his",
+        "podcast",
+        "our"
+      ],
+      "normalized": "art artist his podcast our"
+    }
+  },
+  {
+    "file": "076_Cultural_Identity_www_history_com.html",
+    "title": "",
+    "metrics": {
+      "characters": 227,
+      "words": 33
+    },
+    "extraction": {
+      "keywords": [
+        "od",
+        "imperium",
+        "soboty",
+        "lipca",
+        "na"
+      ],
+      "normalized": "od imperium soboty lipca na"
+    }
+  },
+  {
+    "file": "077_Cultural_Identity_nationaltrust_org_uk.html",
+    "title": "Home",
+    "metrics": {
+      "characters": 2723,
+      "words": 443
+    },
+    "extraction": {
+      "keywords": [
+        "nature",
+        "your",
+        "places",
+        "history",
+        "discover"
+      ],
+      "normalized": "nature your places history discover"
+    }
+  },
+  {
+    "file": "078_Public_Opinion_www_pewresearch_org.html",
+    "title": "Pew Research Center",
+    "metrics": {
+      "characters": 5584,
+      "words": 962
+    },
+    "extraction": {
+      "keywords": [
+        "report",
+        "short",
+        "read",
+        "more",
+        "jun"
+      ],
+      "normalized": "report short read more jun"
+    }
+  },
+  {
+    "file": "079_Public_Opinion_news_gallup_com.html",
+    "title": "Unbiased news powered by public opinion research and analysis of human behavior around the world",
+    "metrics": {
+      "characters": 1931,
+      "words": 299
+    },
+    "extraction": {
+      "keywords": [
+        "report",
+        "economic",
+        "confidence",
+        "more",
+        "workers"
+      ],
+      "normalized": "report economic confidence more workers"
+    }
+  },
+  {
+    "file": "08.html",
+    "title": "Community Forum - Choosing a Mechanical Keyboard",
+    "metrics": {
+      "characters": 1045,
+      "words": 167
+    },
+    "extraction": {
+      "keywords": [
+        "layout",
+        "member",
+        "switches",
+        "you",
+        "what"
+      ],
+      "normalized": "layout member switches you what"
+    }
+  },
+  {
+    "file": "081_Public_Opinion_yougov_co_uk.html",
+    "title": "YouGov UK: Data Analytics & Market Research Services",
+    "metrics": {
+      "characters": 10291,
+      "words": 1708
+    },
+    "extraction": {
+      "keywords": [
+        "how",
+        "brand",
+        "uk",
+        "yougov",
+        "they"
+      ],
+      "normalized": "how brand uk yougov they"
+    }
+  },
+  {
+    "file": "082_Public_Opinion_www_pollingreport_com.html",
+    "title": "PollingReport.com",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "083_Public_Opinion_www_maristpoll_marist_edu.html",
+    "title": "Home of the Marist Poll",
+    "metrics": {
+      "characters": 1175,
+      "words": 201
+    },
+    "extraction": {
+      "keywords": [
+        "we",
+        "ai",
+        "about",
+        "best",
+        "become"
+      ],
+      "normalized": "we ai about best become"
+    }
+  },
+  {
+    "file": "084_Public_Opinion_www_monmouth_edu.html",
+    "title": "Monmouth University Polling Institute",
+    "metrics": {
+      "characters": 1909,
+      "words": 309
+    },
+    "extraction": {
+      "keywords": [
+        "national",
+        "monmouth",
+        "polling",
+        "trump",
+        "december"
+      ],
+      "normalized": "national monmouth polling trump december"
+    }
+  },
+  {
+    "file": "088_Political_www_rollcall_com.html",
+    "title": "Before the final midterm whistle, Senate spends time on sports",
+    "metrics": {
+      "characters": 4256,
+      "words": 687
+    },
+    "extraction": {
+      "keywords": [
+        "posted",
+        "september",
+        "congress",
+        "campaigns",
+        "house"
+      ],
+      "normalized": "posted september congress campaigns house"
+    }
+  },
+  {
+    "file": "09.html",
+    "title": "Global Energy Report: What Changed This Year?",
+    "metrics": {
+      "characters": 1407,
+      "words": 198
+    },
+    "extraction": {
+      "keywords": [
+        "generation",
+        "electricity",
+        "capacity",
+        "points",
+        "markets"
+      ],
+      "normalized": "generation electricity capacity points markets"
+    }
+  },
+  {
+    "file": "090_Political_www_politico_eu.html",
+    "title": "POLITICO",
+    "metrics": {
+      "characters": 872,
+      "words": 138
+    },
+    "extraction": {
+      "keywords": [
+        "polls",
+        "but",
+        "read",
+        "france",
+        "centrist"
+      ],
+      "normalized": "polls but read france centrist"
+    }
+  },
+  {
+    "file": "091_Political_spectator_co_uk.html",
+    "title": "Home Page",
+    "metrics": {
+      "characters": 812,
+      "words": 140
+    },
+    "extraction": {
+      "keywords": [
+        "who",
+        "delo",
+        "he",
+        "his",
+        "donation"
+      ],
+      "normalized": "who delo he his donation"
+    }
+  },
+  {
+    "file": "092_External_Regulation_and_Reputation_www_wto_org.html",
+    "title": "WTO | News - Whats happening at the WTO",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "093_External_Regulation_and_Reputation_www_un_org.html",
+    "title": "UN Meetings Coverage and Press Releases",
+    "metrics": {
+      "characters": 3921,
+      "words": 588
+    },
+    "extraction": {
+      "keywords": [
+        "general",
+        "today",
+        "secretary",
+        "un",
+        "united"
+      ],
+      "normalized": "general today secretary un united"
+    }
+  },
+  {
+    "file": "098_External_Regulation_and_Reputation_www_europol_europa_eu.html",
+    "title": "Newsroom | Europol",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "099_Other_www_wired_com.html",
+    "title": "Science News: Health, Robotics, Climate Change, Space News",
+    "metrics": {
+      "characters": 413,
+      "words": 67
+    },
+    "extraction": {
+      "keywords": [
+        "wired",
+        "future",
+        "obsessed",
+        "what",
+        "comes"
+      ],
+      "normalized": "wired future obsessed what comes"
+    }
+  },
+  {
+    "file": "10.html",
+    "title": "The History of Public Libraries",
+    "metrics": {
+      "characters": 3128,
+      "words": 416
+    },
+    "extraction": {
+      "keywords": [
+        "libraries",
+        "books",
+        "collections",
+        "knowledge",
+        "public"
+      ],
+      "normalized": "libraries books collections knowledge public"
+    }
+  },
+  {
+    "file": "100_Other_www_techcrunch_com.html",
+    "title": "TechCrunch | Startup and Technology News",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "101_Other_www_space_com.html",
+    "title": "Space News - Latest Space and Astronomy News",
+    "metrics": {
+      "characters": 3161,
+      "words": 516
+    },
+    "extraction": {
+      "keywords": [
+        "space",
+        "september",
+        "published",
+        "sept",
+        "now"
+      ],
+      "normalized": "space september published sept now"
+    }
+  },
+  {
+    "file": "103_Other_www_bbc_com.html",
+    "title": "BBCBritish Broadcasting CorporationBritish Broadcasting Corporation",
+    "metrics": {
+      "characters": 1684,
+      "words": 278
+    },
+    "extraction": {
+      "keywords": [
+        "sept",
+        "ago",
+        "church",
+        "days",
+        "aug"
+      ],
+      "normalized": "sept ago church days aug"
+    }
+  }
+]

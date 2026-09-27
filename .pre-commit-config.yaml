@@ -31,7 +31,7 @@ repos:
     rev: v1.47.2
     hooks:
       - id: typos
-        exclude: ^tests/test_search_module/html_files/
+        exclude: ^tests/test_search_module/html_files/|^tests/test_search_module/fixtures/|^benchmark-results-readability/
   - repo: local
     hooks:
       - id: mypy

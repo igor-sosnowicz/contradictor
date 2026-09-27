@@ -1,0 +1,1340 @@
+[
+  {
+    "file": "005_Economic_www_cnbc_com.html",
+    "title": "Economy",
+    "metrics": {
+      "characters": 632,
+      "words": 105
+    },
+    "extraction": {
+      "keywords": [
+        "about cnbc",
+        "cnbc councils",
+        "reprints cnbc councils",
+        "join cnbc",
+        "licensing reprints cnbc"
+      ],
+      "normalized": "about cnbc cnbc councils reprints cnbc councils join cnbc licensing reprints cnbc"
+    }
+  },
+  {
+    "file": "007_Economic_www_worldbank_org.html",
+    "title": "News | World Bank Group",
+    "metrics": {
+      "characters": 607,
+      "words": 83
+    },
+    "extraction": {
+      "keywords": [
+        "all press releases",
+        "press releases",
+        "yes speeches transcript",
+        "speeches transcript everything",
+        "all speeches transcript"
+      ],
+      "normalized": "all press releases press releases yes speeches transcript speeches transcript everything all speeches transcript"
+    }
+  },
+  {
+    "file": "008_Capacity_and_Resources_www_iea_org.html",
+    "title": "News - IEA",
+    "metrics": {
+      "characters": 384,
+      "words": 63
+    },
+    "extraction": {
+      "keywords": [
+        "2026 fuel report",
+        "2026 sheltering oil",
+        "september 2026 fuel",
+        "energy outlook 2025",
+        "2026 fuel"
+      ],
+      "normalized": "2026 fuel report 2026 sheltering oil september 2026 fuel energy outlook 2025 2026 fuel"
+    }
+  },
+  {
+    "file": "009_Capacity_and_Resources_www_bp_com.html",
+    "title": "Energy Outlook",
+    "metrics": {
+      "characters": 1696,
+      "words": 276
+    },
+    "extraction": {
+      "keywords": [
+        "energy outlook 2025",
+        "emissions global energy",
+        "which global energy",
+        "scenarios bp energy",
+        "global energy"
+      ],
+      "normalized": "energy outlook 2025 emissions global energy which global energy scenarios bp energy global energy"
+    }
+  },
+  {
+    "file": "010_Capacity_and_Resources_www_fao_org.html",
+    "title": "News | FAO | Food and Agriculture Organization of the United Nations",
+    "metrics": {
+      "characters": 300,
+      "words": 44
+    },
+    "extraction": {
+      "keywords": [
+        "africa potato potential",
+        "crops like potatoes",
+        "africa potato",
+        "challenges potatoes",
+        "food security resilience"
+      ],
+      "normalized": "africa potato potential crops like potatoes africa potato challenges potatoes food security resilience"
+    }
+  },
+  {
+    "file": "011_Capacity_and_Resources_www_usgs_gov.html",
+    "title": "News",
+    "metrics": {
+      "characters": 649,
+      "words": 94
+    },
+    "extraction": {
+      "keywords": [
+        "national geologic map",
+        "geologic map now",
+        "geologic map",
+        "national geologic",
+        "cooperative national geologic"
+      ],
+      "normalized": "national geologic map geologic map now geologic map national geologic cooperative national geologic"
+    }
+  },
+  {
+    "file": "014_Capacity_and_Resources_www_eia_gov.html",
+    "title": "Today in Energy - U.S. Energy Information Administration (EIA)",
+    "metrics": {
+      "characters": 8848,
+      "words": 1417
+    },
+    "extraction": {
+      "keywords": [
+        "we forecast crude",
+        "2026 eight petroleum",
+        "2026 lng exports",
+        "forecast crude oil",
+        "forecast crude"
+      ],
+      "normalized": "we forecast crude 2026 eight petroleum 2026 lng exports forecast crude oil forecast crude"
+    }
+  },
+  {
+    "file": "015_Morality_www_vaticannews_va.html",
+    "title": "News from the Vatican - News about the Church - Vatican News",
+    "metrics": {
+      "characters": 533,
+      "words": 82
+    },
+    "extraction": {
+      "keywords": [
+        "vatican news service",
+        "vatican news",
+        "faith promotion of",
+        "of faith promotion",
+        "doctrine of faith"
+      ],
+      "normalized": "vatican news service vatican news faith promotion of of faith promotion doctrine of faith"
+    }
+  },
+  {
+    "file": "016_Morality_www_theosthinktank_co_uk.html",
+    "title": "Comment",
+    "metrics": {
+      "characters": 300,
+      "words": 47
+    },
+    "extraction": {
+      "keywords": [
+        "theos theos",
+        "theos conducts research",
+        "theos theos conducts",
+        "theos conducts",
+        "bible society charity"
+      ],
+      "normalized": "theos theos theos conducts research theos theos conducts theos conducts bible society charity"
+    }
+  },
+  {
+    "file": "017_Morality_www_ethicsandculture_com.html",
+    "title": "Ethics and Culture",
+    "metrics": {
+      "characters": 7034,
+      "words": 1219
+    },
+    "extraction": {
+      "keywords": [
+        "about jesus crucifixion",
+        "reading bible is",
+        "bible is battle",
+        "scripture reveals",
+        "reading bible"
+      ],
+      "normalized": "about jesus crucifixion reading bible is bible is battle scripture reveals reading bible"
+    }
+  },
+  {
+    "file": "019_Morality_www_humanists_uk.html",
+    "title": "Humanists UK: News and stories",
+    "metrics": {
+      "characters": 262,
+      "words": 43
+    },
+    "extraction": {
+      "keywords": [
+        "2026 18 september",
+        "2026 15 september",
+        "2026 10 september",
+        "10 september 2026",
+        "18 september 2026"
+      ],
+      "normalized": "2026 18 september 2026 15 september 2026 10 september 10 september 2026 18 september 2026"
+    }
+  },
+  {
+    "file": "01_article.html",
+    "title": "How Urban Trees Improve City Life",
+    "metrics": {
+      "characters": 1357,
+      "words": 208
+    },
+    "extraction": {
+      "keywords": [
+        "urban trees can",
+        "urban trees",
+        "met urban trees",
+        "successful urban forest",
+        "environment trees"
+      ],
+      "normalized": "urban trees can urban trees met urban trees successful urban forest environment trees"
+    }
+  },
+  {
+    "file": "020_Morality_www_dalailama_com.html",
+    "title": "The Office of His Holiness The Dalai Lama | The 14th Dalai Lama",
+    "metrics": {
+      "characters": 2838,
+      "words": 484
+    },
+    "extraction": {
+      "keywords": [
+        "majesty king harald",
+        "minister modi birthday",
+        "king harald of",
+        "king harald",
+        "of king harald"
+      ],
+      "normalized": "majesty king harald minister modi birthday king harald of king harald of king harald"
+    }
+  },
+  {
+    "file": "021_Morality_www_christianitytoday_com.html",
+    "title": "News - Christianity Today",
+    "metrics": {
+      "characters": 2742,
+      "words": 428
+    },
+    "extraction": {
+      "keywords": [
+        "2026 pastor of",
+        "september 2026 pastor",
+        "legal status pastors",
+        "2026 pastor",
+        "status pastors"
+      ],
+      "normalized": "2026 pastor of september 2026 pastor legal status pastors 2026 pastor status pastors"
+    }
+  },
+  {
+    "file": "022_Fairness_and_Equality_www_unwomen_org.html",
+    "title": "Explore our latest news | UN Women – Headquarters",
+    "metrics": {
+      "characters": 451,
+      "words": 65
+    },
+    "extraction": {
+      "keywords": [
+        "home story_type_news_story topics_news",
+        "story_type_news_story topics_news",
+        "story_type_news_story topics_news regions_news",
+        "2026 press briefing",
+        "september 2026 press"
+      ],
+      "normalized": "home story_type_news_story topics_news story_type_news_story topics_news story_type_news_story topics_news regions_news 2026 press briefing september 2026 press"
+    }
+  },
+  {
+    "file": "023_Fairness_and_Equality_www_amnesty_org.html",
+    "title": "News Archives",
+    "metrics": {
+      "characters": 4008,
+      "words": 544
+    },
+    "extraction": {
+      "keywords": [
+        "afghanistan africa albania",
+        "afghanistan africa",
+        "salvador equatorial guinea",
+        "guyana haiti honduras",
+        "haiti honduras"
+      ],
+      "normalized": "afghanistan africa albania afghanistan africa salvador equatorial guinea guyana haiti honduras haiti honduras"
+    }
+  },
+  {
+    "file": "024_Fairness_and_Equality_www_hrw_org.html",
+    "title": "News",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "025_Fairness_and_Equality_www_oxfam_org.html",
+    "title": "Press releases | Oxfam InternationalOxfam Internationalicon-searchicon-searchsocial-facebooksocial-twittersocial-youtubesocial-instagramOxfam International",
+    "metrics": {
+      "characters": 3584,
+      "words": 550
+    },
+    "extraction": {
+      "keywords": [
+        "oxfam palestinian organisations",
+        "gaza oxfam partners",
+        "2026 oxfam palestinian",
+        "gaza oxfam",
+        "palestinian leadership oxfam"
+      ],
+      "normalized": "oxfam palestinian organisations gaza oxfam partners 2026 oxfam palestinian gaza oxfam palestinian leadership oxfam"
+    }
+  },
+  {
+    "file": "026_Fairness_and_Equality_www_aclu_org.html",
+    "title": "News | American Civil Liberties Union",
+    "metrics": {
+      "characters": 5247,
+      "words": 816
+    },
+    "extraction": {
+      "keywords": [
+        "states punishing women",
+        "clemency one woman",
+        "aclu of montana",
+        "aclu of virginia",
+        "native american rights"
+      ],
+      "normalized": "states punishing women clemency one woman aclu of montana aclu of virginia native american rights"
+    }
+  },
+  {
+    "file": "027_Fairness_and_Equality_www_equalitynow_org.html",
+    "title": "News and Insights Archives",
+    "metrics": {
+      "characters": 1132,
+      "words": 175
+    },
+    "extraction": {
+      "keywords": [
+        "africa preventing legislating",
+        "feminist trailblazer african",
+        "latin america justice",
+        "human trafficking world",
+        "against trafficking in"
+      ],
+      "normalized": "africa preventing legislating feminist trailblazer african latin america justice human trafficking world against trafficking in"
+    }
+  },
+  {
+    "file": "028_Fairness_and_Equality_eurekalert_org.html",
+    "title": "EurekAlert! Science News Service from AAAS",
+    "metrics": {
+      "characters": 1474,
+      "words": 210
+    },
+    "extraction": {
+      "keywords": [
+        "university wildfire smoke",
+        "desert fossil",
+        "medicine scientists observe",
+        "in desert fossil",
+        "medicine scientists"
+      ],
+      "normalized": "university wildfire smoke desert fossil medicine scientists observe in desert fossil medicine scientists"
+    }
+  },
+  {
+    "file": "029_Constitutionality_and_Legality_www_scotusblog_com.html",
+    "title": "SCOTUSblog",
+    "metrics": {
+      "characters": 565,
+      "words": 97
+    },
+    "extraction": {
+      "keywords": [
+        "court news scotuscrim",
+        "court news supreme",
+        "news supreme court",
+        "latest court news",
+        "supreme court"
+      ],
+      "normalized": "court news scotuscrim court news supreme news supreme court latest court news supreme court"
+    }
+  },
+  {
+    "file": "02_article.html",
+    "title": "The Science of Better Sleep",
+    "metrics": {
+      "characters": 1290,
+      "words": 194
+    },
+    "extraction": {
+      "keywords": [
+        "improving sleep time",
+        "improving sleep",
+        "health good sleep",
+        "influence nighttime sleep",
+        "foundations improving sleep"
+      ],
+      "normalized": "improving sleep time improving sleep health good sleep influence nighttime sleep foundations improving sleep"
+    }
+  },
+  {
+    "file": "03.html",
+    "title": "Local Observatory Opens New Research Center",
+    "metrics": {
+      "characters": 1266,
+      "words": 188
+    },
+    "extraction": {
+      "keywords": [
+        "north valley observatory",
+        "observatory new",
+        "valley observatory officially",
+        "valley observatory",
+        "observatory officially"
+      ],
+      "normalized": "north valley observatory observatory new valley observatory officially valley observatory observatory officially"
+    }
+  },
+  {
+    "file": "030_Constitutionality_and_Legality_www_law_com.html",
+    "title": "Washington DC | National Law Journal Topic | Law.com",
+    "metrics": {
+      "characters": 1011,
+      "words": 159
+    },
+    "extraction": {
+      "keywords": [
+        "second circuit precedents",
+        "circuit rules warrant",
+        "circuit precedents",
+        "circuit precedents no",
+        "judicial security law"
+      ],
+      "normalized": "second circuit precedents circuit rules warrant circuit precedents circuit precedents no judicial security law"
+    }
+  },
+  {
+    "file": "031_Constitutionality_and_Legality_www_jurist_org.html",
+    "title": "Texas abortion bans challenged as unconstitutional in wrongful death suit over denied care",
+    "metrics": {
+      "characters": 5125,
+      "words": 795
+    },
+    "extraction": {
+      "keywords": [
+        "eu first associate",
+        "perspective european commission",
+        "european commission",
+        "of european commission",
+        "european commission ursula"
+      ],
+      "normalized": "eu first associate perspective european commission european commission of european commission european commission ursula"
+    }
+  },
+  {
+    "file": "032_Constitutionality_and_Legality_www_supremecourt_gov.html",
+    "title": "Supreme Court of the United States Home",
+    "metrics": {
+      "characters": 1141,
+      "words": 195
+    },
+    "extraction": {
+      "keywords": [
+        "1863 harlan was",
+        "colonel harlan stirrups",
+        "colonel harlan",
+        "1863 harlan",
+        "know colonel harlan"
+      ],
+      "normalized": "1863 harlan was colonel harlan stirrups colonel harlan 1863 harlan know colonel harlan"
+    }
+  },
+  {
+    "file": "033_Constitutionality_and_Legality_www_harvardlawreview_org.html",
+    "title": "Harvard Law Review",
+    "metrics": {
+      "characters": 6476,
+      "words": 971
+    },
+    "extraction": {
+      "keywords": [
+        "protection supreme court",
+        "powers supreme court",
+        "supreme court threat",
+        "constitutional showdown executive",
+        "provide supreme court"
+      ],
+      "normalized": "protection supreme court powers supreme court supreme court threat constitutional showdown executive provide supreme court"
+    }
+  },
+  {
+    "file": "036_Policy_Prescription_and_Evaluation_www_brookings_edu.html",
+    "title": "Policy2020 | Brookings",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "037_Policy_Prescription_and_Evaluation_www_rand_org.html",
+    "title": "Research & Commentary",
+    "metrics": {
+      "characters": 3988,
+      "words": 591
+    },
+    "extraction": {
+      "keywords": [
+        "army chaplains perceptions",
+        "ai incidents lawsuits",
+        "chaplains perceptions",
+        "examines ai incidents",
+        "chaplains perceptions about"
+      ],
+      "normalized": "army chaplains perceptions ai incidents lawsuits chaplains perceptions examines ai incidents chaplains perceptions about"
+    }
+  },
+  {
+    "file": "04.html",
+    "title": "What I Learned From a Month Without Notifications",
+    "metrics": {
+      "characters": 1275,
+      "words": 216
+    },
+    "extraction": {
+      "keywords": [
+        "almost every notification",
+        "notifications enabled calls",
+        "keep notifications",
+        "keep notifications enabled",
+        "whenever small notification"
+      ],
+      "normalized": "almost every notification notifications enabled calls keep notifications keep notifications enabled whenever small notification"
+    }
+  },
+  {
+    "file": "040_Policy_Prescription_and_Evaluation_www_cfr_org.html",
+    "title": "Council on Foreign Relations",
+    "metrics": {
+      "characters": 2469,
+      "words": 383
+    },
+    "extraction": {
+      "keywords": [
+        "foreign policy experts",
+        "iran war ripple",
+        "policy experts by",
+        "warmuth reuters 2026",
+        "september 11 expert"
+      ],
+      "normalized": "foreign policy experts iran war ripple policy experts by warmuth reuters 2026 september 11 expert"
+    }
+  },
+  {
+    "file": "043_Crime_and_Justice_www_themarshallproject_org.html",
+    "title": "The Marshall Project",
+    "metrics": {
+      "characters": 1290,
+      "words": 206
+    },
+    "extraction": {
+      "keywords": [
+        "death penalty immigration",
+        "california death penalty",
+        "homeland security ice",
+        "ice california death",
+        "murder trial"
+      ],
+      "normalized": "death penalty immigration california death penalty homeland security ice ice california death murder trial"
+    }
+  },
+  {
+    "file": "044_Crime_and_Justice_www_fbi_gov.html",
+    "title": "News | Federal Bureau of Investigation",
+    "metrics": {
+      "characters": 526,
+      "words": 73
+    },
+    "extraction": {
+      "keywords": [
+        "fbi new cyber",
+        "fbi cyber division",
+        "fbi cyber",
+        "new cyber strategy",
+        "cyber strategy"
+      ],
+      "normalized": "fbi new cyber fbi cyber division fbi cyber new cyber strategy cyber strategy"
+    }
+  },
+  {
+    "file": "045_Crime_and_Justice_www_interpol_int.html",
+    "title": "News and Events",
+    "metrics": {
+      "characters": 1849,
+      "words": 281
+    },
+    "extraction": {
+      "keywords": [
+        "increasing global threat",
+        "global threat of",
+        "2026 counter terrorism",
+        "global threat",
+        "threats september 2026"
+      ],
+      "normalized": "increasing global threat global threat of 2026 counter terrorism global threat threats september 2026"
+    }
+  },
+  {
+    "file": "046_Crime_and_Justice_www_justice_gov.html",
+    "title": "",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "047_Crime_and_Justice_www_prisonpolicy_org.html",
+    "title": "In the News",
+    "metrics": {
+      "characters": 50000,
+      "words": 8488
+    },
+    "extraction": {
+      "keywords": [
+        "prison policy initiative",
+        "2024 prison crisis",
+        "2025 prison policy",
+        "2026 american prisons",
+        "2026 research incarceration"
+      ],
+      "normalized": "prison policy initiative 2024 prison crisis 2025 prison policy 2026 american prisons 2026 research incarceration"
+    }
+  },
+  {
+    "file": "049_Crime_and_Justice_www_crimestoppers-uk_org.html",
+    "title": "News & media | Crimestoppers",
+    "metrics": {
+      "characters": 414,
+      "words": 63
+    },
+    "extraction": {
+      "keywords": [
+        "crimestoppers trust registered",
+        "address crimestoppers trust",
+        "crimestoppers trust po",
+        "crimestoppers trust",
+        "address crimestoppers"
+      ],
+      "normalized": "crimestoppers trust registered address crimestoppers trust crimestoppers trust po crimestoppers trust address crimestoppers"
+    }
+  },
+  {
+    "file": "05.html",
+    "title": "Acme API Documentation - Authentication",
+    "metrics": {
+      "characters": 999,
+      "words": 140
+    },
+    "extraction": {
+      "keywords": [
+        "authentication acme api",
+        "authorization bearer your_api_key",
+        "api reference authentication",
+        "acme api",
+        "authentication acme"
+      ],
+      "normalized": "authentication acme api authorization bearer your_api_key api reference authentication acme api authentication acme"
+    }
+  },
+  {
+    "file": "050_Security_and_Defense_www_defensenews_com.html",
+    "title": "Defense News, Covering the politics, business and technology of defense | Defense News",
+    "metrics": {
+      "characters": 9434,
+      "words": 1469
+    },
+    "extraction": {
+      "keywords": [
+        "weapon us air",
+        "patriot interceptors us",
+        "interceptors us navy",
+        "air weapon us",
+        "target chinese aircraft"
+      ],
+      "normalized": "weapon us air patriot interceptors us interceptors us navy air weapon us target chinese aircraft"
+    }
+  },
+  {
+    "file": "052_Security_and_Defense_www_nato_int.html",
+    "title": "News",
+    "metrics": {
+      "characters": 10508,
+      "words": 1484
+    },
+    "extraction": {
+      "keywords": [
+        "reports nato",
+        "nato military committee",
+        "council nato",
+        "nato united states",
+        "nato united"
+      ],
+      "normalized": "reports nato nato military committee council nato nato united states nato united"
+    }
+  },
+  {
+    "file": "054_Security_and_Defense_www_military_com.html",
+    "title": "Military Daily News | Military.com",
+    "metrics": {
+      "characters": 4442,
+      "words": 700
+    },
+    "extraction": {
+      "keywords": [
+        "impeach hegseth iran",
+        "us war crimes",
+        "stunt iran war",
+        "iran war rep",
+        "massie impeachment"
+      ],
+      "normalized": "impeach hegseth iran us war crimes stunt iran war iran war rep massie impeachment"
+    }
+  },
+  {
+    "file": "055_Security_and_Defense_www_iiss_org.html",
+    "title": "IISS Online Analysis",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "057_Health_and_Safety_www_who_int.html",
+    "title": "Newsroom",
+    "metrics": {
+      "characters": 353,
+      "words": 54
+    },
+    "extraction": {
+      "keywords": [
+        "global health days",
+        "press conferences live",
+        "all live press",
+        "live press conferences",
+        "global public health"
+      ],
+      "normalized": "global health days press conferences live all live press live press conferences global public health"
+    }
+  },
+  {
+    "file": "06.html",
+    "title": "Example Encyclopedia - Solar Energy",
+    "metrics": {
+      "characters": 1461,
+      "words": 193
+    },
+    "extraction": {
+      "keywords": [
+        "solar energy type",
+        "energy solar energy",
+        "energy solar",
+        "solar energy",
+        "solar energy solar"
+      ],
+      "normalized": "solar energy type energy solar energy energy solar solar energy solar energy solar"
+    }
+  },
+  {
+    "file": "064_Quality_of_Life_www_livehappy_com.html",
+    "title": "Making Your World a Happier Place | Live Happy",
+    "metrics": {
+      "characters": 433,
+      "words": 64
+    },
+    "extraction": {
+      "keywords": [
+        "living happy",
+        "inbox live happy",
+        "live happy is",
+        "living happy life",
+        "live happy"
+      ],
+      "normalized": "living happy inbox live happy live happy is living happy life live happy"
+    }
+  },
+  {
+    "file": "065_Quality_of_Life_www_mindbodygreen_com.html",
+    "title": "mindbodygreen - well-rounded well-being for a life well lived",
+    "metrics": {
+      "characters": 6092,
+      "words": 891
+    },
+    "extraction": {
+      "keywords": [
+        "game health",
+        "game health news",
+        "long game health",
+        "your personal wellness",
+        "personal wellness"
+      ],
+      "normalized": "game health game health news long game health your personal wellness personal wellness"
+    }
+  },
+  {
+    "file": "066_Quality_of_Life_www_wellandgood_com.html",
+    "title": "theSkimm - Your go-to for the info and tools you need to live your smartest life.",
+    "metrics": {
+      "characters": 1425,
+      "words": 237
+    },
+    "extraction": {
+      "keywords": [
+        "skimm our weekend",
+        "daily skimm",
+        "daily skimm what",
+        "skimm what happening",
+        "we skimm what"
+      ],
+      "normalized": "skimm our weekend daily skimm daily skimm what skimm what happening we skimm what"
+    }
+  },
+  {
+    "file": "068_Quality_of_Life_www_architecturaldigest_com.html",
+    "title": "Architecture + Design",
+    "metrics": {
+      "characters": 1882,
+      "words": 290
+    },
+    "extraction": {
+      "keywords": [
+        "inspiring architectural creations",
+        "inspiring architectural",
+        "maya chawla architecture",
+        "lloyd wright buildings",
+        "american architect decades"
+      ],
+      "normalized": "inspiring architectural creations inspiring architectural maya chawla architecture lloyd wright buildings american architect decades"
+    }
+  },
+  {
+    "file": "069_Quality_of_Life_www_travelandleisure_com.html",
+    "title": "Travel + Leisure: Travel Reviews, News, Guides & Tips",
+    "metrics": {
+      "characters": 11277,
+      "words": 1659
+    },
+    "extraction": {
+      "keywords": [
+        "seasons resort orlando",
+        "resort orlando at",
+        "resort orlando",
+        "disney world resort",
+        "world resort offers"
+      ],
+      "normalized": "seasons resort orlando resort orlando at resort orlando disney world resort world resort offers"
+    }
+  },
+  {
+    "file": "07.html",
+    "title": "Northwind Store - Wireless Headphones",
+    "metrics": {
+      "characters": 675,
+      "words": 101
+    },
+    "extraction": {
+      "keywords": [
+        "quietsound 500 headphones",
+        "wireless headphones northwind",
+        "500 wireless headphones",
+        "quietsound 500 wireless",
+        "headphones northwind"
+      ],
+      "normalized": "quietsound 500 headphones wireless headphones northwind 500 wireless headphones quietsound 500 wireless headphones northwind"
+    }
+  },
+  {
+    "file": "070_Quality_of_Life_www_goodnewsnetwork_org.html",
+    "title": "The Good News Network: Positive Stories 24/7",
+    "metrics": {
+      "characters": 585,
+      "words": 91
+    },
+    "extraction": {
+      "keywords": [
+        "anti corn law",
+        "corn law league",
+        "today anti corn",
+        "seeing corn laws",
+        "corn laws"
+      ],
+      "normalized": "anti corn law corn law league today anti corn seeing corn laws corn laws"
+    }
+  },
+  {
+    "file": "072_Cultural_Identity_www_smithsonianmag_com.html",
+    "title": "History News & Insights | Smithsonian Magazine",
+    "metrics": {
+      "characters": 6557,
+      "words": 1057
+    },
+    "extraction": {
+      "keywords": [
+        "space montana heritage",
+        "montana heritage",
+        "montana heritage center",
+        "2026 montana built",
+        "designing space montana"
+      ],
+      "normalized": "space montana heritage montana heritage montana heritage center 2026 montana built designing space montana"
+    }
+  },
+  {
+    "file": "073_Cultural_Identity_www_bbc_com.html",
+    "title": "BBC Culture | Arts, Film & TV, Reviews, Books, Music, Style",
+    "metrics": {
+      "characters": 8095,
+      "words": 1400
+    },
+    "extraction": {
+      "keywords": [
+        "mary magdalene is",
+        "saint mary magdalene",
+        "mary magdalene",
+        "magdalene is",
+        "paintings of mary"
+      ],
+      "normalized": "mary magdalene is saint mary magdalene mary magdalene magdalene is paintings of mary"
+    }
+  },
+  {
+    "file": "074_Cultural_Identity_www_hyperallergic_com.html",
+    "title": "Hyperallergic",
+    "metrics": {
+      "characters": 3937,
+      "words": 608
+    },
+    "extraction": {
+      "keywords": [
+        "international studio curatorial",
+        "us art review",
+        "american art museum",
+        "chilean artist drawings",
+        "nyc based artists"
+      ],
+      "normalized": "international studio curatorial us art review american art museum chilean artist drawings nyc based artists"
+    }
+  },
+  {
+    "file": "075_Cultural_Identity_www_theartnewspaper_com.html",
+    "title": "The Art Newspaper - International art news and events",
+    "metrics": {
+      "characters": 1758,
+      "words": 281
+    },
+    "extraction": {
+      "keywords": [
+        "latest bayeux tapestry",
+        "bayeux tapestry nearly",
+        "bayeux tapestry",
+        "tapestry bayeux tapestry",
+        "bayeux tapestry bayeux"
+      ],
+      "normalized": "latest bayeux tapestry bayeux tapestry nearly bayeux tapestry tapestry bayeux tapestry bayeux tapestry bayeux"
+    }
+  },
+  {
+    "file": "076_Cultural_Identity_www_history_com.html",
+    "title": "",
+    "metrics": {
+      "characters": 227,
+      "words": 33
+    },
+    "extraction": {
+      "keywords": [
+        "poznaj historię wzlotu",
+        "history imperium rzymskie",
+        "upadek poznaj historię",
+        "wydarzenia które doprowadziły",
+        "na history imperium"
+      ],
+      "normalized": "poznaj historię wzlotu history imperium rzymskie upadek poznaj historię wydarzenia które doprowadziły na history imperium"
+    }
+  },
+  {
+    "file": "077_Cultural_Identity_nationaltrust_org_uk.html",
+    "title": "Home",
+    "metrics": {
+      "characters": 2723,
+      "words": 443
+    },
+    "extraction": {
+      "keywords": [
+        "exhibitions connect nature",
+        "museum swindon start",
+        "museum swindon",
+        "heritage open days",
+        "heritage open"
+      ],
+      "normalized": "exhibitions connect nature museum swindon start museum swindon heritage open days heritage open"
+    }
+  },
+  {
+    "file": "078_Public_Opinion_www_pewresearch_org.html",
+    "title": "Pew Research Center",
+    "metrics": {
+      "characters": 5584,
+      "words": 962
+    },
+    "extraction": {
+      "keywords": [
+        "republicans to predict",
+        "2026 public opinion",
+        "2026 israelis palestinians",
+        "2026 most americans",
+        "2026 israelis"
+      ],
+      "normalized": "republicans to predict 2026 public opinion 2026 israelis palestinians 2026 most americans 2026 israelis"
+    }
+  },
+  {
+    "file": "079_Public_Opinion_news_gallup_com.html",
+    "title": "Unbiased news powered by public opinion research and analysis of human behavior around the world",
+    "metrics": {
+      "characters": 1931,
+      "words": 299
+    },
+    "extraction": {
+      "keywords": [
+        "date economic confidence",
+        "americans economic confidence",
+        "economic confidence index",
+        "economic confidence sinks",
+        "economic confidence"
+      ],
+      "normalized": "date economic confidence americans economic confidence economic confidence index economic confidence sinks economic confidence"
+    }
+  },
+  {
+    "file": "08.html",
+    "title": "Community Forum - Choosing a Mechanical Keyboard",
+    "metrics": {
+      "characters": 1045,
+      "words": 167
+    },
+    "extraction": {
+      "keywords": [
+        "mechanical keyboard",
+        "keycaps my budget",
+        "switches switch preference",
+        "first mechanical keyboard",
+        "quality of keycaps"
+      ],
+      "normalized": "mechanical keyboard keycaps my budget switches switch preference first mechanical keyboard quality of keycaps"
+    }
+  },
+  {
+    "file": "081_Public_Opinion_yougov_co_uk.html",
+    "title": "YouGov UK: Data Analytics & Market Research Services",
+    "metrics": {
+      "characters": 10291,
+      "words": 1708
+    },
+    "extraction": {
+      "keywords": [
+        "media consumption trends",
+        "consumption uk media",
+        "uk media consumption",
+        "entertainment entertainment health",
+        "entertainment health"
+      ],
+      "normalized": "media consumption trends consumption uk media uk media consumption entertainment entertainment health entertainment health"
+    }
+  },
+  {
+    "file": "082_Public_Opinion_www_pollingreport_com.html",
+    "title": "PollingReport.com",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "083_Public_Opinion_www_maristpoll_marist_edu.html",
+    "title": "Home of the Marist Poll",
+    "metrics": {
+      "characters": 1175,
+      "words": 201
+    },
+    "extraction": {
+      "keywords": [
+        "fears about ai",
+        "artificial intelligence fears",
+        "learn about polling",
+        "poll july 2026",
+        "2026 ai officially"
+      ],
+      "normalized": "fears about ai artificial intelligence fears learn about polling poll july 2026 2026 ai officially"
+    }
+  },
+  {
+    "file": "084_Public_Opinion_www_monmouth_edu.html",
+    "title": "Monmouth University Polling Institute",
+    "metrics": {
+      "characters": 1909,
+      "words": 309
+    },
+    "extraction": {
+      "keywords": [
+        "candidates monmouth polling",
+        "monmouth polling",
+        "monmouth university polling",
+        "monmouth polling june",
+        "candidates monmouth"
+      ],
+      "normalized": "candidates monmouth polling monmouth polling monmouth university polling monmouth polling june candidates monmouth"
+    }
+  },
+  {
+    "file": "088_Political_www_rollcall_com.html",
+    "title": "Before the final midterm whistle, Senate spends time on sports",
+    "metrics": {
+      "characters": 4256,
+      "words": 687
+    },
+    "extraction": {
+      "keywords": [
+        "39am campaigns congressional",
+        "at 25pm congress",
+        "at 59pm congress",
+        "at 36pm congress",
+        "campaigns congressional"
+      ],
+      "normalized": "39am campaigns congressional at 25pm congress at 59pm congress at 36pm congress campaigns congressional"
+    }
+  },
+  {
+    "file": "09.html",
+    "title": "Global Energy Report: What Changed This Year?",
+    "metrics": {
+      "characters": 1407,
+      "words": 198
+    },
+    "extraction": {
+      "keywords": [
+        "new renewable capacity",
+        "renewable generation increasing",
+        "substantial new renewable",
+        "renewable generation",
+        "renewable capacity others"
+      ],
+      "normalized": "new renewable capacity renewable generation increasing substantial new renewable renewable generation renewable capacity others"
+    }
+  },
+  {
+    "file": "090_Political_www_politico_eu.html",
+    "title": "POLITICO",
+    "metrics": {
+      "characters": 872,
+      "words": 138
+    },
+    "extraction": {
+      "keywords": [
+        "what polls show",
+        "what polls",
+        "polls how does",
+        "polls show",
+        "polls show in"
+      ],
+      "normalized": "what polls show what polls polls how does polls show polls show in"
+    }
+  },
+  {
+    "file": "091_Political_spectator_co_uk.html",
+    "title": "Home Page",
+    "metrics": {
+      "characters": 812,
+      "words": 140
+    },
+    "extraction": {
+      "keywords": [
+        "charles steel autistocracy",
+        "crypto millionaire who",
+        "charles steel",
+        "crypto millionaire",
+        "ben delo"
+      ],
+      "normalized": "charles steel autistocracy crypto millionaire who charles steel crypto millionaire ben delo"
+    }
+  },
+  {
+    "file": "092_External_Regulation_and_Reputation_www_wto_org.html",
+    "title": "WTO | News - Whats happening at the WTO",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "093_External_Regulation_and_Reputation_www_un_org.html",
+    "title": "UN Meetings Coverage and Press Releases",
+    "metrics": {
+      "characters": 3921,
+      "words": 588
+    },
+    "extraction": {
+      "keywords": [
+        "united nations sanctions",
+        "iran as council",
+        "releases united nations",
+        "yemen safeguard",
+        "united nations covered"
+      ],
+      "normalized": "united nations sanctions iran as council releases united nations yemen safeguard united nations covered"
+    }
+  },
+  {
+    "file": "098_External_Regulation_and_Reputation_www_europol_europa_eu.html",
+    "title": "Newsroom | Europol",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "099_Other_www_wired_com.html",
+    "title": "Science News: Health, Robotics, Climate Change, Space News",
+    "metrics": {
+      "characters": 413,
+      "words": 67
+    },
+    "extraction": {
+      "keywords": [
+        "wired future",
+        "future wired",
+        "future wired future",
+        "wired is obsessed",
+        "wired future reference"
+      ],
+      "normalized": "wired future future wired future wired future wired is obsessed wired future reference"
+    }
+  },
+  {
+    "file": "10.html",
+    "title": "The History of Public Libraries",
+    "metrics": {
+      "characters": 3128,
+      "words": 416
+    },
+    "extraction": {
+      "keywords": [
+        "librarians as collections",
+        "collections grew librarians",
+        "librarians developed systems",
+        "electronic collections research",
+        "public libraries often"
+      ],
+      "normalized": "librarians as collections collections grew librarians librarians developed systems electronic collections research public libraries often"
+    }
+  },
+  {
+    "file": "100_Other_www_techcrunch_com.html",
+    "title": "TechCrunch | Startup and Technology News",
+    "metrics": {
+      "characters": 0,
+      "words": 0
+    },
+    "extraction": {
+      "keywords": [],
+      "normalized": ""
+    }
+  },
+  {
+    "file": "101_Other_www_space_com.html",
+    "title": "Space News - Latest Space and Astronomy News",
+    "metrics": {
+      "characters": 3161,
+      "words": 516
+    },
+    "extraction": {
+      "keywords": [
+        "herschel discovered saturn",
+        "space telescope astronomers",
+        "space telescope mysterious",
+        "space telescope",
+        "herschel discovers saturn"
+      ],
+      "normalized": "herschel discovered saturn space telescope astronomers space telescope mysterious space telescope herschel discovers saturn"
+    }
+  },
+  {
+    "file": "103_Other_www_bbc_com.html",
+    "title": "BBCBritish Broadcasting CorporationBritish Broadcasting Corporation",
+    "metrics": {
+      "characters": 1684,
+      "words": 278
+    },
+    "extraction": {
+      "keywords": [
+        "2026 science facilities",
+        "maxwell sept 2026",
+        "sept 2026 science",
+        "2026 science",
+        "2026 how brain"
+      ],
+      "normalized": "2026 science facilities maxwell sept 2026 sept 2026 science 2026 science 2026 how brain"
+    }
+  }
+]

@@ -1,22 +1,30 @@
 """Tests for cache in search module."""
 
+from collections.abc import Iterator
 from pathlib import Path
+
+import pytest
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.config import CacheConfig
 from src.search_module.models import Document
 
 
-def test_cache_set_and_get(tmp_path: Path) -> None:
-    """Verify that cached documents can be stored and retrieved."""
+@pytest.fixture
+def cache(tmp_path: Path) -> Iterator[DiskCacheBackend]:
+    """Provide a temporary disk cache and close it after the test."""
     config = CacheConfig(
         directory=str(tmp_path),
         enabled=True,
         ttl_seconds=60,
     )
 
-    cache = DiskCacheBackend(config)
+    with DiskCacheBackend(config) as cache:
+        yield cache
 
+
+def test_cache_set_and_get(cache: DiskCacheBackend) -> None:
+    """Verify that cached documents can be stored and retrieved."""
     documents = [
         Document(
             url="https://example.com",
@@ -34,29 +42,15 @@ def test_cache_set_and_get(tmp_path: Path) -> None:
     assert cached[0].text == documents[0].text
 
 
-def test_cache_returns_none_for_missing_key(tmp_path: Path) -> None:
+def test_cache_returns_none_for_missing_key(
+    cache: DiskCacheBackend,
+) -> None:
     """Verify that missing cache keys return None."""
-    config = CacheConfig(
-        directory=str(tmp_path),
-        enabled=True,
-        ttl_seconds=60,
-    )
-
-    cache = DiskCacheBackend(config)
-
     assert cache.get("missing") is None
 
 
-def test_cache_clear(tmp_path: Path) -> None:
+def test_cache_clear(cache: DiskCacheBackend) -> None:
     """Verify that clearing cache removes stored entries."""
-    config = CacheConfig(
-        directory=str(tmp_path),
-        enabled=True,
-        ttl_seconds=60,
-    )
-
-    cache = DiskCacheBackend(config)
-
     cache.set(
         "key",
         [
@@ -79,15 +73,14 @@ def test_disabled_cache(tmp_path: Path) -> None:
         enabled=False,
     )
 
-    cache = DiskCacheBackend(config)
+    with DiskCacheBackend(config) as cache:
+        docs = [
+            Document(
+                url="https://example.com",
+                text="abc",
+            )
+        ]
 
-    docs = [
-        Document(
-            url="https://example.com",
-            text="abc",
-        )
-    ]
+        cache.set("key", docs)
 
-    cache.set("key", docs)
-
-    assert cache.get("key") is None
+        assert cache.get("key") is None
