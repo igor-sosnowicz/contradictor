@@ -23,37 +23,7 @@ class BenchmarkTokeniser(Tokeniser):
     def tokenise(self, text: str) -> list[str]:
         """Split text into lowercase words and remove common stop words."""
         words = re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
-        return [
-            word
-            for word in words
-            if word
-            not in {
-                "a",
-                "an",
-                "and",
-                "are",
-                "as",
-                "at",
-                "be",
-                "because",
-                "by",
-                "for",
-                "from",
-                "in",
-                "is",
-                "it",
-                "of",
-                "on",
-                "or",
-                "that",
-                "the",
-                "this",
-                "to",
-                "was",
-                "were",
-                "with",
-            }
-        ]
+        return [word for word in words if word not in self.stop_words]
 
     def encode(self, text: str) -> list[str]:
         """Encode text into tokens using the benchmark tokenisation."""
