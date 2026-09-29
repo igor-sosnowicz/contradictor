@@ -7,6 +7,10 @@ resolution-markers = [
     "sys_platform != 'emscripten' and sys_platform != 'win32'",
 ]
 
+[options]
+exclude-newer = "0001-01-01T00:00:00Z" # This has no effect and is included for backwards compatibility when using relative exclude-newer values.
+exclude-newer-span = "P7D"
+
 [[package]]
 name = "aiodns"
 version = "4.0.4"
@@ -408,6 +412,7 @@ dependencies = [
     { name = "loguru" },
     { name = "optuna" },
     { name = "pandas" },
+    { name = "platformdirs" },
     { name = "pycountry" },
     { name = "pydantic" },
     { name = "pydantic-extra-types" },
@@ -445,6 +450,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "optuna", specifier = ">=4.9.0" },
     { name = "pandas", specifier = ">=3.0.3" },
+    { name = "platformdirs", specifier = ">=4.10.1" },
     { name = "pycountry", specifier = ">=26.2.16" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pydantic-extra-types", specifier = ">=2.11.1" },
