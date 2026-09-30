@@ -182,4 +182,6 @@ class StyleExtractorImplementation(StrEnum):
 class VectorSearchImplementation(StrEnum):
     """Name of vector search implementation."""
 
-    NOT_IMPLEMENTED = auto()
+    CHROMA = auto()
+    MILVUS = auto()
+    CUSTOM = auto()
