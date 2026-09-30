@@ -64,9 +64,7 @@ class Configuration(BaseModel):
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
     style_extractor: StyleExtractorImplementation = StyleExtractorImplementation.SPACY
     encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
-    vector_search: VectorSearchImplementation = (
-        VectorSearchImplementation.NOT_IMPLEMENTED
-    )
+    vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
 
 def load_configuration(file: Path) -> Configuration:
