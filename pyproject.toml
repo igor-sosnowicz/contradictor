@@ -61,7 +61,7 @@ python_version = "3.13"
 line-length = 88
 target-version = "py313"
 exclude = [
-    "vulture_whitelist.py",
+    "vulture_whitelist.txt",
 ]
 
 [tool.pylint."messages control"]
