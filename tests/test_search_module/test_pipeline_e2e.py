@@ -1,11 +1,7 @@
 """Real Integration test for the search module pipeline without any fakes."""
 
 import re
-import tempfile
-from collections.abc import Iterator
 from pathlib import Path
-
-import pytest
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.cleaner import ReadabilityCleaner
@@ -61,32 +57,12 @@ class BenchmarkTokeniser(Tokeniser):
         return re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
 
 
-@pytest.fixture
-def e2e_cache_dir() -> Iterator[Path]:
-    """Fixture providing a temporary directory for the disk cache."""
-    with tempfile.TemporaryDirectory() as temp_dir:
-        yield Path(temp_dir)
-
-
 def test_pipeline_ngram_and_readability_real_integration(
-    e2e_cache_dir: Path,
+    tmp_path: Path,
 ) -> None:
-    """
-    Perform an integration test of the search pipeline with real internet components.
-
-    Verifies the end-to-end flow including keyword extraction via n-grams,
-    live search query execution, page downloading, HTML cleaning using readability,
-    and caching mechanisms to ensure subsequent identical requests hit the disk cache.
-
-    Args:
-        e2e_cache_dir (Path): Pytest fixture providing a temporary directory
-            for the disk cache backend.
-
-    Returns:
-        None
-    """
+    """Perform an integration test of the search pipeline with internet components."""
     config = SearchModuleConfig()
-    config.cache.directory = str(e2e_cache_dir)
+    config.cache.directory = str(tmp_path)
     config.cache.enabled = True
     config.search.max_results = 2
     config.cleaning.min_text_length = 150

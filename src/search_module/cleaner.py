@@ -35,41 +35,33 @@ class ReadabilityCleaner(Cleaner):
             title = article.title or ""
             text = self._html_to_text(content)
         except (ValueError, AttributeError, TypeError) as e:
-            logger.debug("Readability parsing failed for %s: %s", url, e)
+            logger.debug(f"Readability parsing failed for {url}: {e}")
             text = self._html_to_text(html)
             title = ""
 
         text_lower = text.lower()
         if any(keyword in text_lower for keyword in self.config.unwanted_keywords):
             logger.warning(
-                "Document %s rejected: text too short (%d chars).",
-                url,
-                len(text),
+                f"Document {url} rejected: text too short ({len(text)} chars).",
             )
             return Document(url=url, text="", title=title)
 
         if len(text) < self.config.min_text_length:
             logger.warning(
-                "Document %s rejected: text too short (%d chars).",
-                url,
-                len(text),
+                f"Document {url} rejected: text too short ({len(text)} chars).",
             )
             return Document(url=url, text="", title=title)
 
         if len(text) > self.config.max_text_length:
             logger.debug(
-                "Document %s text truncated to %d chars.",
-                url,
-                self.config.max_text_length,
+                f"Document {url} text truncated to {self.config.max_text_length} chars."
             )
             text = text[: self.config.max_text_length]
 
         word_count = len(text.split())
         if word_count < self.config.min_word_count:
             logger.warning(
-                "Document %s rejected: word count too low (%d words).",
-                url,
-                word_count,
+                f"Document {url} rejected: word count too low ({word_count} words)."
             )
             return Document(url=url, text="", title=title)
 

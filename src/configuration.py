@@ -4,6 +4,7 @@ import tomllib
 from pathlib import Path
 
 import pydantic
+from platformdirs import PlatformDirs
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.argument_detection.config import (
@@ -21,18 +22,23 @@ from src.data_models.data_models import (
 )
 from src.utils.errors import ConfigurationError
 
+directories = PlatformDirs("Contradictor")
+
 
 class Configuration(BaseModel):
     """The project-wide configuration."""
 
-    # Default models.
-    transformer_nli_model: str = "tasksource/ModernBERT-base-nli"
-
     # Forbid extra parameters absent from the configuration.
     model_config = ConfigDict(extra="forbid")
 
-    cache_directory: Path = Path("./.cache")
-    data_directory: Path = Path("./data")
+    # Default models.
+    transformer_nli_model: str = "tasksource/ModernBERT-base-nli"
+
+    # Cached data that can be regenerated.
+    cache_directory: Path = directories.user_cache_path
+
+    # Persistent application data.
+    data_directory: Path = directories.user_data_path
 
     # A sub-directory of the data directory storing raw versions of downloaded datasets.
     raw_dataset_subdirectory: str = "raw_datasets"
