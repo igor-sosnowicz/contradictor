@@ -39,8 +39,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         / "xgboost_evidence_extractor.pkl"
     )
 
-    CACHE_DIRECTORY: Final = Path(config.cache_directory / "evidence_extractor")
-
     def __init__(
         self,
         dataset: ArgumentDetectionDataset,

@@ -56,3 +56,12 @@ jobs:
         with:
           name: coverage-report
           path: .coverage
+
+  vulture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - name: Run vulture
+        run: uv run vulture src/ vulture_whitelist.txt

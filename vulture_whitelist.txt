@@ -1,0 +1,49 @@
+# Used by the application as a concrete implementation.
+ClaimEvidenceExtractor
+
+# Used by the pipeline/API even though Vulture cannot detect the calls.
+_.extract_pairs
+_.check_n_grams_bounds
+
+# Pydantic/model configuration accessed dynamically.
+model_config
+
+# Enum members used through serialization/configuration.
+NEUTRAL
+CONTRADICTION
+METAL
+CUDA
+
+# Function parameters used by dynamically inspected/called code.
+reference_texts
+references
+other
+max_candidates
+
+# Exception handler variables required by the exception handling API.
+exc_type
+exc_value
+traceback
+
+# Configuration fields accessed through configuration objects.
+safesearch
+max_retries
+max_content_size_mb
+version
+min_word_length
+
+# Classes instantiated/accessed dynamically by the application.
+SearchModuleConfig
+LLMClient
+
+# Model fields populated/serialized dynamically.
+original_text
+snippet
+source
+retrieved_at
+status_code
+content_type
+cleaning
+
+# Populated from the NLI model's output score in _perform_inference.
+confidence
