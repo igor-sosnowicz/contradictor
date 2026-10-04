@@ -62,7 +62,6 @@ def test_pipeline_ngram_and_readability_real_integration(
 ) -> None:
     """Perform an integration test of the search pipeline with internet components."""
     config = SearchModuleConfig()
-    config.cache.directory = str(tmp_path)
     config.cache.enabled = True
     config.search.max_results = 2
     config.cleaning.min_text_length = 150
@@ -78,7 +77,7 @@ def test_pipeline_ngram_and_readability_real_integration(
     downloader = RequestsDownloader(config=config.download)
     readability_cleaner = ReadabilityCleaner(config=config.cleaning)
 
-    with DiskCacheBackend(config=config.cache) as cache:
+    with DiskCacheBackend(config=config.cache, directory=tmp_path) as cache:
         pipeline = SearchPipeline(
             keyword_extractor=keyword_extractor,
             search_engine=search_engine,

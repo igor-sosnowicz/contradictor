@@ -15,30 +15,31 @@ from xgboost import XGBClassifier
 from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.configuration import XGBoostConfig
-from src.configuration import config
+from src.argument_framing.paths import ArgumentFramingPaths
 from src.data_models.data_models import (
     LABEL_TO_FRAME,
     Argument,
     FramedArgument,
     SubsetName,
 )
+from src.paths import resolve
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
 
 
 class XGBoostFrameClassifier(ArgumentFramer):
     """XGBoost classifier assigning interpretative frames to arguments."""
 
-    PATH_TO_MODEL: Final = Path(
-        config.data_directory
-        / config.model_subdirectory
-        / "xgboost_frame_classifier.pkl"
-    )
-
-    PATH_TO_VECTORIZER: Final = Path(
-        config.data_directory / config.model_subdirectory / "tfidf_vectorizer.pkl"
-    )
-
     NUM_CLASSES: Final = 15
+
+    @property
+    def path_to_model(self) -> Path:
+        """Path to the persisted frame classifier."""
+        return resolve(ArgumentFramingPaths.FRAME_CLASSIFIER_FILE)
+
+    @property
+    def path_to_vectorizer(self) -> Path:
+        """Path to the persisted TF-IDF vectorizer."""
+        return resolve(ArgumentFramingPaths.TFIDF_VECTORIZER_FILE)
 
     def __init__(
         self,
@@ -59,7 +60,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
             configuration (XGBoostConfig | None): Internal configuration of the XGBoost
                 and TF-IDF vectoriser models. None means default values will be used.
         """
-        self.PATH_TO_MODEL.parent.mkdir(parents=True, exist_ok=True)
+        self.path_to_model.parent.mkdir(parents=True, exist_ok=True)
 
         self._model = self._load()
         self._vectorizer = self._load_vectorizer()
@@ -70,17 +71,17 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @override
     def _load(self) -> XGBClassifier | None:
-        if not self.PATH_TO_MODEL.exists():
+        if not self.path_to_model.exists():
             return None
 
-        with self.PATH_TO_MODEL.open("rb") as file:
+        with self.path_to_model.open("rb") as file:
             return pickle.load(file)  # noqa: S301, Trusted source.
 
     def _load_vectorizer(self) -> TfidfVectorizer | None:
-        if not self.PATH_TO_VECTORIZER.exists():
+        if not self.path_to_vectorizer.exists():
             return None
 
-        with self.PATH_TO_VECTORIZER.open("rb") as file:
+        with self.path_to_vectorizer.open("rb") as file:
             return pickle.load(file)  # noqa: S301, Trusted source.
 
     @override
@@ -123,10 +124,10 @@ class XGBoostFrameClassifier(ArgumentFramer):
             verbose=True,
         )
 
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(model, file)
 
-        with self.PATH_TO_VECTORIZER.open("wb") as file:
+        with self.path_to_vectorizer.open("wb") as file:
             pickle.dump(vectorizer, file)
 
         self._vectorizer = vectorizer
@@ -286,7 +287,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
         self._model.fit(x, y)
 
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(self._model, file)
 
         return {

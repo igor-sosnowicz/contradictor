@@ -1,13 +1,16 @@
 """Disk based cache implementation."""
 
+from pathlib import Path
 from types import TracebackType
 from typing import Self, override
 
 from diskcache import Cache
 
+from src.paths import resolve
 from src.search_module.config import CacheConfig
 from src.search_module.interfaces import CacheBackend
 from src.search_module.models import Document
+from src.search_module.paths import SearchPaths
 
 
 class DiskCacheBackend(CacheBackend):
@@ -20,19 +23,26 @@ class DiskCacheBackend(CacheBackend):
     def __init__(
         self,
         config: CacheConfig,
+        directory: Path | None = None,
     ) -> None:
         """
         Initialize the disk cache backend.
 
         Args:
             config (CacheConfig): Configuration for the cache backend.
+            directory (Path | None): Override for the cache directory, used to
+                isolate tests. Defaults to the search module wishlist path.
 
         Returns:
             None
         """
         self.config = config
         self.cache = Cache(
-            directory=config.directory,
+            directory=str(
+                directory
+                if directory is not None
+                else resolve(SearchPaths.SEARCH_CACHE_DIR)
+            ),
         )
 
     @override

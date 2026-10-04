@@ -10,8 +10,8 @@ from xgboost import XGBClassifier
 from src.argument_detection.argument_detection_dataset import ArgumentDetectionDataset
 from src.argument_detection.config import ThresholdConfig
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
-from src.configuration import config
 from src.data_models.data_models import SubsetName
+from src.paths import model_path
 
 
 class MiniIntegrationDataset(ArgumentDetectionDataset):
@@ -54,20 +54,14 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
 @pytest.fixture
 def isolated_ml_env(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> Path:
     """
     Create an isolated filesystem environment with a test XGBoost model.
 
     The model is trained using the real embedder and XGBoost classifier. All
-    model artifacts are written to pytest's temporary directory.
+    model artifacts are written to pytest's temporary directory, because the
+    root conftest points the path registry there.
     """
-    model_dir = tmp_path / "models"
-    model_dir.mkdir(parents=True)
-
-    monkeypatch.setattr(config, "data_directory", tmp_path)
-    monkeypatch.setattr(config, "model_subdirectory", Path("models"))
-
     dataset = MiniIntegrationDataset()
     extractor = XGBoostClaimExtractor(dataset, proof_of_concept_mode=True)
 
@@ -91,11 +85,12 @@ def isolated_ml_env(
     )
     mini_xgb.fit(X_train, y_train)
 
-    model_path = model_dir / "xgboost_claim_extractor.json"
-    mini_xgb.save_model(str(model_path))
+    saved_model_path = model_path("xgboost_claim_extractor.json")
+    saved_model_path.parent.mkdir(parents=True, exist_ok=True)
+    mini_xgb.save_model(str(saved_model_path))
 
-    assert model_path.exists()
-    assert model_path.stat().st_size > 0
+    assert saved_model_path.exists()
+    assert saved_model_path.stat().st_size > 0
 
     return tmp_path
 
@@ -140,7 +135,7 @@ async def test_claim_extractor_training_flow(isolated_ml_env: Path) -> None:
 
     trained_model = await extractor._train_model()
 
-    expected_model_path = isolated_ml_env / "models" / "xgboost_claim_extractor.json"
+    expected_model_path = model_path("xgboost_claim_extractor.json")
 
     assert isinstance(trained_model, XGBClassifier)
     assert expected_model_path.exists()

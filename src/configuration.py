@@ -40,11 +40,7 @@ class Configuration(BaseModel):
     # Persistent application data.
     data_directory: Path = directories.user_data_path
 
-    # A sub-directory of the data directory storing raw versions of downloaded datasets.
-    raw_dataset_subdirectory: str = "raw_datasets"
-    preprocessed_dataset_subdirectory: str = "processed_dataset"
-    model_subdirectory: str = "models"
-
+    # Paths below these roots are owned by src.paths, not by configuration.
     xgboost_extractor: XGBoostExtractorConfig = XGBoostExtractorConfig()
 
     # In seconds.

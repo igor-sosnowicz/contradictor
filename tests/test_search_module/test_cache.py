@@ -14,12 +14,11 @@ from src.search_module.models import Document
 def cache(tmp_path: Path) -> Iterator[DiskCacheBackend]:
     """Provide a temporary disk cache and close it after the test."""
     config = CacheConfig(
-        directory=str(tmp_path),
         enabled=True,
         ttl_seconds=60,
     )
 
-    with DiskCacheBackend(config) as cache:
+    with DiskCacheBackend(config, directory=tmp_path) as cache:
         yield cache
 
 
@@ -69,11 +68,10 @@ def test_cache_clear(cache: DiskCacheBackend) -> None:
 def test_disabled_cache(tmp_path: Path) -> None:
     """Verify that disabled cache does not store or retrieve data."""
     config = CacheConfig(
-        directory=str(tmp_path),
         enabled=False,
     )
 
-    with DiskCacheBackend(config) as cache:
+    with DiskCacheBackend(config, directory=tmp_path) as cache:
         docs = [
             Document(
                 url="https://example.com",

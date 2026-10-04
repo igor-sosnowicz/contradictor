@@ -29,8 +29,8 @@ async def test_xgboost_framer_initialization() -> None:
     mock_dataset = ArgumentFramingDataset()
     framer = XGBoostFrameClassifier(dataset=mock_dataset)
 
-    assert framer.PATH_TO_MODEL.parent.exists()
-    assert framer.PATH_TO_VECTORIZER.parent.exists()
+    assert framer.path_to_model.parent.exists()
+    assert framer.path_to_vectorizer.parent.exists()
 
     with pytest.raises(ModelNotTrainedError):
         await framer.perform_tuning()

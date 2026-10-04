@@ -12,6 +12,7 @@ from loguru import logger
 from src.configuration import config
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import SubsetName
+from src.paths import processed_dataset_path
 
 
 class UrlDataset(Dataset):
@@ -46,11 +47,7 @@ class UrlDataset(Dataset):
         await self._download_raw_datasets_if_missing()
         datasets = self._transform()
         if not datasets:
-            self._splits_path = (
-                config.data_directory
-                / config.preprocessed_dataset_subdirectory
-                / self.processed_folder_name
-            )
+            self._splits_path = processed_dataset_path(self.processed_folder_name)
             return self._splits_path
         self._splits_path = self._merge_datasets(datasets)
         return self._splits_path
@@ -133,24 +130,20 @@ class UrlDataset(Dataset):
         """Merge and save processed dataset splits."""
         merged_data = self._combine_subsets(extracted_data)
 
-        processed_dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / self.processed_folder_name
-        )
+        splits_path = processed_dataset_path(self.processed_folder_name)
 
-        processed_dataset_path.mkdir(
+        splits_path.mkdir(
             parents=True,
             exist_ok=True,
         )
 
         for subset_name, df in merged_data.items():
-            subset_file = processed_dataset_path / f"{subset_name.value}.csv"
+            subset_file = splits_path / f"{subset_name.value}.csv"
             df.to_csv(subset_file, index=False)
 
         self._log_statistics(merged_data)
 
-        return processed_dataset_path
+        return splits_path
 
     def _combine_subsets(
         self, extracted_data: dict[Path, dict[SubsetName, pd.DataFrame]]

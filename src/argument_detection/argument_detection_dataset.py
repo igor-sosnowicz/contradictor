@@ -9,9 +9,10 @@ from loguru import logger
 from sklearn.model_selection import GroupShuffleSplit
 
 from src.argument_detection.config import XGBoostExtractorConfig
-from src.configuration import config
+from src.argument_detection.paths import ArgumentDetectionPaths
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
+from src.paths import resolve
 from src.utils.dataset import filter_empty_rows, to_raw_dataset_path
 from src.utils.errors import DatasetError
 
@@ -253,16 +254,8 @@ class ArgumentDetectionDataset(UrlDataset):
 
     def _transform(self) -> dict:
         """Create two processed datasets for claim-evidence extraction."""
-        claim_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "claim_extraction"
-        )
-        evidence_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "evidence_extraction"
-        )
+        claim_path = resolve(ArgumentDetectionPaths.CLAIM_PROCESSED_DIR)
+        evidence_path = resolve(ArgumentDetectionPaths.EVIDENCE_PROCESSED_DIR)
 
         if (
             claim_path.exists()
@@ -496,11 +489,7 @@ class ArgumentDetectionDataset(UrlDataset):
             DatasetError: If the dataset split does not exist or does not
                 contain the required columns.
         """
-        dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "claim_extraction"
-        )
+        dataset_path = resolve(ArgumentDetectionPaths.CLAIM_PROCESSED_DIR)
         subset_file = dataset_path / f"{split.value}.csv"
 
         if not subset_file.exists():
@@ -537,11 +526,7 @@ class ArgumentDetectionDataset(UrlDataset):
             DatasetError: If the dataset split does not exist or required
                 columns are missing.
         """
-        dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "evidence_extraction"
-        )
+        dataset_path = resolve(ArgumentDetectionPaths.EVIDENCE_PROCESSED_DIR)
         subset_file = dataset_path / f"{split.value}.csv"
 
         if not subset_file.exists():

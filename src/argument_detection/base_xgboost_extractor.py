@@ -17,6 +17,7 @@ from src.argument_detection.argument_detection_dataset import (
 )
 from src.argument_detection.spacy_embedder import SpacyEmbedder
 from src.configuration import config
+from src.paths import cache_path, model_path
 from src.utils.sentence_splitter import SentenceSplitter
 
 if TYPE_CHECKING:
@@ -65,12 +66,12 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
             exist_ok=True,
         )
 
-        self._cache = Cache(config.cache_directory / cache_name)
+        self._cache = Cache(cache_path(cache_name))
         self._max_samples = self._get_max_samples() if proof_of_concept_mode else 0
 
     def _get_model_path(self) -> Path:
         """Generate path to the model file dynamically."""
-        return config.data_directory / config.model_subdirectory / self._model_name
+        return model_path(self._model_name)
 
     @abstractmethod
     def _get_max_samples(
@@ -98,12 +99,12 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         self,
     ) -> XGBClassifier | None:
         """Load persisted XGBoost model."""
-        model_path = self._get_model_path()
-        if not model_path.exists():
+        path = self._get_model_path()
+        if not path.exists():
             return None
 
         model = XGBClassifier()
-        model.load_model(model_path)
+        model.load_model(path)
         return model
 
     def _save_model(
@@ -111,7 +112,9 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         model: XGBClassifier,
     ) -> None:
         """Persist trained XGBoost model."""
-        model.save_model(self._get_model_path())
+        path = self._get_model_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        model.save_model(path)
 
     def _apply_tuned_parameters(
         self,

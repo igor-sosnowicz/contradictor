@@ -2,6 +2,7 @@
 
 import asyncio
 
+from src.paths import initialise
 from src.pipeline.config import PipelineConfiguration
 from src.pipeline.contradictor_pipeline import ContradictorPipeline
 from src.pipeline.factories.argument_extractor_factory import build_argument_extractor
@@ -41,5 +42,11 @@ async def main() -> None:
     print(results)  # noqa: T201, Temporary to show off the results.
 
 
-if __name__ == "__main__":
+def run() -> None:
+    """Run the application pipeline for the console script."""
+    initialise()
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()
