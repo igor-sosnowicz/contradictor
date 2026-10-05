@@ -44,7 +44,7 @@ def _configured_roots() -> _Roots:
     Returns:
         _Roots: The configured data and cache roots.
     """
-    # Importing at module scope would read config.toml on every use, 
+    # Importing at module scope would read config.toml on every use,
     # including calls that pass both roots explicitly. It would
     # also create an import cycle, since src.configuration reaches these paths.
     from src.configuration import config  # pylint: disable=import-outside-toplevel
