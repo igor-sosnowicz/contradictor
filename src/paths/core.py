@@ -29,6 +29,30 @@ def _segments(relative: str) -> tuple[str, ...]:
     return PurePosixPath(relative).parts
 
 
+def escapes_root(relative: str) -> bool:
+    """
+    Report whether a relative path is absolute or steps above its root.
+
+    Both POSIX and Windows rules are applied, so a path that stays inside the
+    root on Linux also stays inside it on Windows.
+
+    Args:
+        relative (str): Path relative to a root.
+
+    Returns:
+        bool: True if the path is absolute or contains a `..` segment.
+    """
+    posix = PurePosixPath(relative)
+    windows = PureWindowsPath(relative)
+    return bool(
+        posix.is_absolute()
+        or windows.is_absolute()
+        or windows.drive
+        or ".." in posix.parts
+        or ".." in windows.parts
+    )
+
+
 def _reject(relative: str, label: str) -> None:
     """
     Raise ValueError unless a relative path is portable and is within its root.
@@ -45,17 +69,8 @@ def _reject(relative: str, label: str) -> None:
     if not relative:
         message = f"{label} must not be empty."
         raise ValueError(message)
-    
-    posix = PurePosixPath(relative)
-    windows = PureWindowsPath(relative)
 
-    if (
-        posix.is_absolute()
-        or windows.is_absolute()
-        or windows.drive
-        or ".." in posix.parts
-        or ".." in windows.parts
-    ):
+    if escapes_root(relative):
         message = f"{label} must stay inside its root, got {relative!r}."
         raise ValueError(message)
     if "\\" in relative:
@@ -83,7 +98,7 @@ class PathSpec:
     so mark file children with `.as_file()` if they are of file type.
 
     One whishlist cannot have two identical `(root, relative, is_dir)` tripples.
-    If there is a duplicate then the duplicate becomes an alias of the first and 
+    If there is a duplicate then the duplicate becomes an alias of the first and
     is skipped by directory creation.
 
     Args:
@@ -148,11 +163,11 @@ class PathSpec:
 
 
 class CorePaths(Enum):
-    """
-    Wishlist of shared data/cache directories.
-    """
+    """Wishlist of shared data/cache directories."""
 
     MODELS_DIR = PathSpec(PathRoot.DATA, "models", is_dir=True)
     RAW_DATASETS_DIR = PathSpec(PathRoot.DATA, "raw_datasets", is_dir=True)
     PROCESSED_DATASETS_DIR = PathSpec(PathRoot.DATA, "processed_dataset", is_dir=True)
+    # Written "." so dynamic cache directories sit directly under the cache root
+    # rather than one level deeper.
     CACHES_DIR = PathSpec(PathRoot.CACHE, ".", is_dir=True)

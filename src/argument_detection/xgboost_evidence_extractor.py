@@ -12,7 +12,6 @@ from src.argument_detection.base_xgboost_extractor import (
     BaseXGBoostExtractor,
 )
 from src.data_models.data_models import SubsetName
-from src.utils.errors import ModelNotTrainedError
 
 
 class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
@@ -144,9 +143,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         Raises:
             RuntimeError: If the model cannot be initialized.
         """
-        await self._initialise_model()
-        if self._model is None:
-            raise ModelNotTrainedError("Model was not initialized.")
+        model = await self._require_model()
 
         def normalise(sentence: str) -> str:
             return " ".join(sentence.lower().split())
@@ -170,7 +167,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             [claim] * len(candidates),
             candidates,
         )
-        probabilities = self._model.predict_proba(X)[:, 1]
+        probabilities = model.predict_proba(X)[:, 1]
         if "threshold" not in self._cache:
             await self.perform_tuning()
         threshold = self._config.threshold.claim

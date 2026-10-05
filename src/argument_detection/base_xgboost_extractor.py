@@ -18,6 +18,7 @@ from src.argument_detection.argument_detection_dataset import (
 from src.argument_detection.spacy_embedder import SpacyEmbedder
 from src.configuration import config
 from src.paths import cache_path, model_path
+from src.utils.errors import ModelNotTrainedError
 from src.utils.sentence_splitter import SentenceSplitter
 
 if TYPE_CHECKING:
@@ -168,6 +169,25 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         )
         model.fit(x, y)
         return model
+
+    async def _require_model(self) -> ModelType:
+        """
+        Load or train the model, then return it.
+
+        Subclasses call this at the start of an extraction method, so the
+        "initialise, then assert we have a model" pair is written once.
+
+        Returns:
+            ModelType: A ready-to-use model.
+
+        Raises:
+            ModelNotTrainedError: If no model is available after initialisation.
+        """
+        await self._initialise_model()
+        if self._model is None:
+            message = "Model was not initialized."
+            raise ModelNotTrainedError(message)
+        return self._model
 
     async def _initialise_model(
         self,

@@ -10,6 +10,7 @@ from src.paths.core import (
     CorePaths,
     PathRoot,
     PathSpec,
+    escapes_root,
 )
 from src.search_module.paths import SearchPaths
 
@@ -43,7 +44,10 @@ def _configured_roots() -> _Roots:
     Returns:
         _Roots: The configured data and cache roots.
     """
-    from src.configuration import config
+    # Importing at module scope would read config.toml on every use, 
+    # including calls that pass both roots explicitly. It would
+    # also create an import cycle, since src.configuration reaches these paths.
+    from src.configuration import config  # pylint: disable=import-outside-toplevel
 
     return _Roots(data=config.data_directory, cache=config.cache_directory)
 
@@ -55,7 +59,8 @@ def _active_roots() -> _Roots:
     Returns:
         _Roots: The active roots.
     """
-    global _roots  # noqa: PLW0603, Singleton by design.
+    # pylint: disable=global-statement  # Singleton by design.
+    global _roots  # noqa: PLW0603
     if _roots is None:
         _roots = _configured_roots()
     return _roots
@@ -83,7 +88,8 @@ def initialise(
     Returns:
         list[Path]: All directories that exist after the call.
     """
-    global _roots  # noqa: PLW0603, Singleton by design.
+    # pylint: disable=global-statement  # Singleton by design.
+    global _roots  # noqa: PLW0603
     if data_root is None and cache_root is None:
         return ensure_all()
     if data_root is not None and cache_root is not None:
@@ -120,12 +126,12 @@ def _resolve(member: Enum, roots: _Roots) -> Path:
             "ALL_WISHLISTS in src.paths.registry."
         )
         raise ValueError(message)
-    
+
     spec = member.value
     if not isinstance(spec, PathSpec):
         message = f"Wishlist member {member!r} must hold a PathSpec."
         raise TypeError(message)
-    
+
     root = roots.data if spec.root == PathRoot.DATA else roots.cache
     return root / spec.relative
 
@@ -181,6 +187,19 @@ def ensure_all() -> list[Path]:
     return _ensure_all(_active_roots())
 
 
+def _is_single_segment(name: str) -> bool:
+    """
+    Report whether a dynamic name is exactly one path segment on every platform.
+
+    Args:
+        name (str): Dataset, model or cache name.
+
+    Returns:
+        bool: True if `name` is one segment under both POSIX and Windows rules.
+    """
+    return len(PurePosixPath(name).parts) == 1 and len(PureWindowsPath(name).parts) == 1
+
+
 def _sanitise(name: str) -> str:
     """
     Normalise a dynamic dataset/model name to a single path segment.
@@ -197,18 +216,10 @@ def _sanitise(name: str) -> str:
             these keeps every resolved path inside its declared parent and names
             the same location on POSIX and Windows.
     """
-    posix = PurePosixPath(name)
-    windows = PureWindowsPath(name)
-
     if (
         not name
-        or len(posix.parts) != 1
-        or len(windows.parts) != 1
-        or posix.is_absolute()
-        or windows.is_absolute()
-        or windows.drive
-        or ".." in posix.parts
-        or ".." in windows.parts
+        or not _is_single_segment(name)
+        or escapes_root(name)
         or name.endswith((".", " "))
     ):
         message = f"Dynamic name must be a single path segment, got {name!r}."
