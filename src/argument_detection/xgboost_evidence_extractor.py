@@ -1,8 +1,6 @@
 """XGBoost model for claim-evidence pair extraction."""
 
-import pickle
-from pathlib import Path
-from typing import Final, override
+from typing import override
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -13,9 +11,7 @@ from src.argument_detection.argument_detection_dataset import (
 from src.argument_detection.base_xgboost_extractor import (
     BaseXGBoostExtractor,
 )
-from src.configuration import config
 from src.data_models.data_models import SubsetName
-from src.utils.errors import ModelNotTrainedError
 
 
 class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
@@ -32,14 +28,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
     - extracting supporting evidence,
     - tuning the classification threshold.
     """
-
-    PATH_TO_MODEL: Final = Path(
-        config.data_directory
-        / config.model_subdirectory
-        / "xgboost_evidence_extractor.pkl"
-    )
-
-    CACHE_DIRECTORY: Final = Path(config.cache_directory / "evidence_extractor")
 
     def __init__(
         self,
@@ -134,11 +122,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             y,
         )
         self._model = model
-        with self.PATH_TO_MODEL.open("wb") as file:
-            pickle.dump(
-                model,
-                file,
-            )
+        self._save_model(model)
         return model
 
     async def extract_evidence(
@@ -159,9 +143,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         Raises:
             RuntimeError: If the model cannot be initialized.
         """
-        await self._initialise_model()
-        if self._model is None:
-            raise ModelNotTrainedError("Model was not initialized.")
+        model = await self._require_model()
 
         def normalise(sentence: str) -> str:
             return " ".join(sentence.lower().split())
@@ -185,7 +167,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             [claim] * len(candidates),
             candidates,
         )
-        probabilities = self._model.predict_proba(X)[:, 1]
+        probabilities = model.predict_proba(X)[:, 1]
         if "threshold" not in self._cache:
             await self.perform_tuning()
         threshold = self._config.threshold.claim

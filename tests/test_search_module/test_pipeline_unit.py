@@ -72,7 +72,6 @@ def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
     """
     config = SearchModuleConfig(
         cache=CacheConfig(
-            directory=str(tmp_path),
             enabled=True,
         ),
         search=SearchConfig(
@@ -92,7 +91,7 @@ def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
     downloader = RequestsDownloader(config=config.download)
     cleaner = ReadabilityCleaner(config=config.cleaning)
 
-    with DiskCacheBackend(config=config.cache) as cache:
+    with DiskCacheBackend(config=config.cache, directory=tmp_path) as cache:
         pipeline = SearchPipeline(
             keyword_extractor=keyword_extractor,
             search_engine=search_engine,

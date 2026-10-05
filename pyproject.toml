@@ -46,7 +46,7 @@ dev = [
 exclude-newer = "7 days"
 
 [project.scripts]
-app = "src.main:main"
+app = "src.main:run"
 
 [build-system]
 requires = ["hatchling"]

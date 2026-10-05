@@ -43,6 +43,7 @@ The following development and maintenance conventions were decided and should be
 
 - commit message format: `<type>: Short description of changes` (see a section below to discover commit types we use)
 - branch name format: `<contributor_first_name>-short-description`
+- test fixture scope: the path isolation fixture must be at least as broad as the widest-scoped fixture that resolves a path (see [Test path isolation](#test-path-isolation))
 
 ### Commit Types
 
@@ -59,3 +60,16 @@ We use the following types in the project:
 - `style:` – reformatting, code style rules
 - `refactor:` – improvement of existing code without adding new features
 - `perf:` – performance improvements
+
+### Test Path Isolation
+
+Contradictor resolves every filesystem path through a single registry, rooted at platform-appropriate data and cache directories.
+
+Tests must not write to those real directories, so `tests/conftest.py` redirects the roots into a pytest temporary directory. The fixture is `autouse`, which means **new tests need no changes to benefit** — anything that writes a file during a test writes it to the temporary directory instead of your home directory.
+
+Two rules matter when adding code or fixtures:
+
+- **Do not resolve a path at import time.** Class-body and module-level code runs before any fixture, so it would capture the real directories. Resolve paths in `__init__` or a property.
+- **Keep the isolation fixture at least as broad as any fixture that resolves paths.** Pytest builds wider scopes first, so a narrower override is applied too late.
+
+For the registry API, the full rule list, and how to opt a component out, see [`docs/unified_path_system.md`](docs/unified_path_system.md).
