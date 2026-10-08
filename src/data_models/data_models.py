@@ -138,8 +138,6 @@ class ComputingBackend(StrEnum):
     """A backend for running computation heavy operations including ML models."""
 
     CPU = auto()
-    METAL = auto()
-    CUDA = auto()
 
 
 class EncoderImplementation(StrEnum):

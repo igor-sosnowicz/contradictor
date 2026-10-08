@@ -64,4 +64,4 @@ jobs:
       - uses: ./.github/actions/setup
 
       - name: Run vulture
-        run: uv run vulture src/ vulture_whitelist.txt
+        run: uv run vulture src/ tests/ vulture_whitelist.txt

@@ -11,7 +11,6 @@ from src.argument_detection.argument_detection_dataset import ArgumentDetectionD
 from src.argument_detection.config import ThresholdConfig
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.configuration import config
-from src.data_models.data_models import SubsetName
 
 
 class MiniIntegrationDataset(ArgumentDetectionDataset):
@@ -25,13 +24,8 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
     def __init__(self) -> None:
         """Initialize the deterministic integration-test dataset."""
 
-    async def prepare(self) -> None:
-        """Mark the dataset as prepared."""
-        self._is_prepared = True
-
     def get_claim_split(
         self,
-        subset: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
         """Return a small deterministic claim classification dataset."""

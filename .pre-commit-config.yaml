@@ -38,6 +38,7 @@ repos:
       - id: vulture
         args:
           - src/
+          - tests/
           - vulture_whitelist.txt
   - repo: local
     hooks:

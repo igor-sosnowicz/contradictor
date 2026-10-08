@@ -1,7 +1,6 @@
 """Module with search module interfaces."""
 
 from abc import ABC, abstractmethod
-from typing import Protocol
 
 from src.search_module.models import Document, SearchQuery, SearchResult
 
@@ -126,24 +125,4 @@ class CacheBackend(ABC):
 
         Returns:
             None
-        """
-
-
-class LLMClient(Protocol):
-    """Interface for LLM keyword extraction clients."""
-
-    def extract_keywords(
-        self,
-        text: str,
-        limit: int,
-    ) -> list[str]:
-        """
-        Extract a structured list of keywords from text using an LLM.
-
-        Args:
-            text (str): The context or text data to analyze.
-            limit (int): The maximum number of keywords to extract.
-
-        Returns:
-            list[str]: A list of extracted keyword strings.
         """
