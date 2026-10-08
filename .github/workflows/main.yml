@@ -57,7 +57,7 @@ jobs:
           name: coverage-report
           path: .coverage
 
-  vulture:
+  dead_code_detection:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
