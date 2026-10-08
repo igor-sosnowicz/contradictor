@@ -8,7 +8,6 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import GroupShuffleSplit
 
-from src.argument_detection.config import XGBoostExtractorConfig
 from src.configuration import config
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
@@ -205,8 +204,8 @@ class ArgumentDetectionDataset(UrlDataset):
 
         splitter = GroupShuffleSplit(
             n_splits=self.NUM_TRAIN_VAL_TEST_SPLITS,
-            test_size=XGBoostExtractorConfig.dataset.test_size,
-            random_state=XGBoostExtractorConfig.dataset.random_state,
+            test_size=config.xgboost_extractor.dataset.test_size,
+            random_state=config.xgboost_extractor.dataset.random_state,
         )
 
         train_idx, temp_idx = next(
@@ -217,8 +216,8 @@ class ArgumentDetectionDataset(UrlDataset):
         temp_df = df.iloc[temp_idx].copy()
         splitter_temp = GroupShuffleSplit(
             n_splits=self.NUM_TRAIN_VAL_TEST_SPLITS,
-            test_size=XGBoostExtractorConfig.dataset.val_size,
-            random_state=XGBoostExtractorConfig.dataset.random_state,
+            test_size=config.xgboost_extractor.dataset.val_size,
+            random_state=config.xgboost_extractor.dataset.random_state,
         )
 
         val_idx, test_idx = next(
@@ -451,8 +450,8 @@ class ArgumentDetectionDataset(UrlDataset):
         negative_pairs["claim"] = (
             negative_pairs["claim"]
             .sample(
-                frac=XGBoostExtractorConfig.dataset.negative_sample_frac,
-                random_state=XGBoostExtractorConfig.dataset.random_state,
+                frac=config.xgboost_extractor.dataset.negative_sample_frac,
+                random_state=config.xgboost_extractor.dataset.random_state,
             )
             .reset_index(drop=True)
         )
@@ -461,6 +460,7 @@ class ArgumentDetectionDataset(UrlDataset):
         negative_pairs = negative_pairs[
             negative_pairs["claim"] != positive_pairs["claim"].to_numpy()
         ]
+
         return (
             pd.concat(
                 [
@@ -471,7 +471,7 @@ class ArgumentDetectionDataset(UrlDataset):
             )
             .sample(
                 frac=self.SAMPLE_ALL_RECORDS,
-                random_state=XGBoostExtractorConfig.dataset.random_state,
+                random_state=config.xgboost_extractor.dataset.random_state,
             )
             .reset_index(drop=True)
         )

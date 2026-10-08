@@ -25,10 +25,7 @@ class MiniPipelineDataset(ArgumentDetectionDataset):
 
     def __init__(self) -> None:
         """Initialize the deterministic test dataset."""
-
-    async def prepare(self) -> None:
-        """Mark dataset as prepared."""
-        self._is_prepared = True
+        super().__init__()
 
     def get_claim_split(
         self,
