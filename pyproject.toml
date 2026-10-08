@@ -15,6 +15,7 @@ dependencies = [
     "loguru>=0.7.3",
     "optuna>=4.9.0",
     "pandas>=3.0.3",
+    "platformdirs>=4.10.1",
     "pycountry>=26.2.16",
     "pydantic>=2.13.4",
     "pydantic-extra-types>=2.11.1",
@@ -40,6 +41,10 @@ dev = [
     "ruff>=0.15.20",
     "vulture>=2.16",
 ]
+
+[tool.uv]
+# Protect against supply chain attacks.
+exclude-newer = "7 days"
 
 [project.scripts]
 app = "src.main:main"

@@ -32,37 +32,6 @@ def valid_configuration() -> Generator[Path]:
         yield Path(file.name)
 
 
-@pytest.fixture
-def keyword_stop_words() -> set[str]:
-    """Provide common stop words for keyword extraction tests."""
-    return {
-        "a",
-        "an",
-        "and",
-        "are",
-        "as",
-        "at",
-        "be",
-        "because",
-        "by",
-        "for",
-        "from",
-        "in",
-        "is",
-        "it",
-        "of",
-        "on",
-        "or",
-        "that",
-        "the",
-        "this",
-        "to",
-        "was",
-        "were",
-        "with",
-    }
-
-
 def test_loading_invalid_configuration(invalid_configuration: Path) -> None:
     """Test if an invalid configuration fails to load."""
     with pytest.raises(ConfigurationError, match="non-existent-key"):

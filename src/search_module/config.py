@@ -2,6 +2,8 @@
 
 from pydantic import BaseModel, Field
 
+from src.configuration import config
+
 
 class SearchConfig(BaseModel):
     """Search engine configuration."""
@@ -53,7 +55,8 @@ class CacheConfig(BaseModel):
 
     enabled: bool = True
     ttl_seconds: int = Field(default=7 * 24 * 60 * 60, ge=1)
-    directory: str = ".cache/search"
+    directory: str = str(config.cache_directory / "search")
+    version: str = "v1"
 
 
 class KeywordConfig(BaseModel):

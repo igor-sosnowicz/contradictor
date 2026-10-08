@@ -1,11 +1,7 @@
 """End-to-End (E2E) test for the search module pipeline without any fakes."""
 
 import re
-import shutil
-from collections.abc import Iterator
 from pathlib import Path
-
-import pytest
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.cleaner import ReadabilityCleaner
@@ -66,21 +62,7 @@ class BenchmarkTokeniser(Tokeniser):
         return re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
 
 
-@pytest.fixture
-def e2e_cache_dir() -> Iterator[Path]:
-    """Fixture ensuring a clean, real temporary cache directory for the test."""
-    cache_path = Path(".cache/test_search_e2e")
-
-    if cache_path.exists():
-        shutil.rmtree(cache_path)
-
-    yield cache_path
-
-    if cache_path.exists():
-        shutil.rmtree(cache_path)
-
-
-def test_pipeline_complete_e2e_flow(e2e_cache_dir: Path) -> None:
+def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
     """
     Execute a complete end-to-end integration test for the search pipeline.
 
@@ -90,7 +72,7 @@ def test_pipeline_complete_e2e_flow(e2e_cache_dir: Path) -> None:
     """
     config = SearchModuleConfig(
         cache=CacheConfig(
-            directory=str(e2e_cache_dir),
+            directory=str(tmp_path),
             enabled=True,
         ),
         search=SearchConfig(

@@ -180,4 +180,4 @@ class StyleExtractorImplementation(StrEnum):
 class VectorSearchImplementation(StrEnum):
     """Name of vector search implementation."""
 
-    NOT_IMPLEMENTED = auto()
+    NUMPY_BASED = auto()
