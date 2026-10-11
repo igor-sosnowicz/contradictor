@@ -1,4 +1,4 @@
-"""Integration tests for the evidence extractior."""
+"""Integration tests for the evidence extractor."""
 
 import pandas as pd
 import pytest
@@ -80,7 +80,9 @@ async def evidence_extractor() -> XGBoostEvidenceExtractor:
 
     extractor._config = extractor._config.model_copy(
         update={
-            "threshold": extractor._config.threshold.model_copy(update={"claim": 0.5})
+            "threshold": extractor._config.threshold.model_copy(
+                update={"evidence": 0.5}
+            )
         }
     )
 
@@ -95,7 +97,7 @@ def low_threshold_extractor(
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(
-                update={"claim": 0.5}
+                update={"evidence": 0.5}
             )
         }
     )
@@ -165,7 +167,7 @@ async def test_evidence_extractor_respects_classification_threshold(
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(
-                update={"claim": 0.99}
+                update={"evidence": 0.99}
             )
         }
     )
