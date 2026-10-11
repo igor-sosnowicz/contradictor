@@ -154,7 +154,19 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         )
 
     async def extract_claims_batch(self, texts: list[str]) -> list[list[str]]:
-        """Extract claims from a batch of documents in a vectorised manner."""
+        """
+        Extract claim sentences from a batch of documents in a vectorised manner.
+
+        Args:
+            texts (list[str]): List of documents or text fragments to analyze.
+
+        Returns:
+            list[list[str]]: Lists of sentences classified as claims,
+                one list per input document. Order is preserved.
+
+        Raises:
+            ModelNotTrainedError: If the model is not trained or initialized.
+        """
         await self._initialise_model()
         if self._model is None:
             raise ModelNotTrainedError("Model was not initialized.")
