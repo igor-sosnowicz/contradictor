@@ -61,6 +61,10 @@ class ClaimEvidenceExtractor(ArgumentExtractor):
         else:
             return asyncio.run(self._process_batch(texts))
 
+    # pylint: disable=too-many-locals
+    # Reason: Managing batch document indexes, flat claims, flat texts,
+    # and mapped results simultaneously in a vectorized
+    # pipeline naturally requires a higher local variable count.
     async def _process_batch(self, texts: list[str]) -> list[list[Argument]]:
         """Process documents in a fully vectorized/batched manner."""
         all_docs_claims: list[

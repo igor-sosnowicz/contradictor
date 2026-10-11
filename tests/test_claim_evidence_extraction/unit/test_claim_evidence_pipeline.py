@@ -38,12 +38,12 @@ async def test_pipeline_extracts_pairs(
     )
 
     result_batch = await mock_pipeline._process_batch(["Some full document text"])
-    result = result_batch
+    result = result_batch[0]
 
     assert len(result) == 1
-    assert isinstance(result, Argument)
-    assert result.claim == "Cats are smart."
-    assert result.evidence == "Cats learn quickly."
+    assert isinstance(result[0], Argument)
+    assert result[0].claim == "Cats are smart."
+    assert result[0].evidence == "Cats learn quickly."
 
     mock_pipeline._claim_extractor.extract_claims_batch.assert_called_once_with(
         ["Some full document text"]
@@ -62,7 +62,6 @@ async def test_pipeline_returns_empty_when_no_claims(
     mock_pipeline._claim_extractor.extract_claims_batch = AsyncMock(return_value=[[]])
 
     result_batch = await mock_pipeline._process_batch(["Text without claims"])
-    result = result_batch
 
-    assert result == []
+    assert result_batch == [[]]
     mock_pipeline._evidence_extractor.extract_evidence_batch.assert_not_called()
