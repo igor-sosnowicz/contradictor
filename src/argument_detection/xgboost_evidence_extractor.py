@@ -202,7 +202,20 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         claims: list[str],
         texts: list[str],
     ) -> list[list[str]]:
-        """Extract evidence for a batch of claims in a vectorised manner."""
+        """
+        Extract evidence for a batch of claims in a vectorised manner.
+
+        Args:
+            claims (list[str]): List of claims for which evidence should be found.
+            texts (list[str]): List of full documents corresponding to each claim.
+
+        Returns:
+            list[list[str]]: A list containing lists of evidence sentences
+                for each input claim.
+
+        Raises:
+            RuntimeError: If the model cannot be initialized.
+        """
         await self._initialise_model()
         if self._model is None:
             raise ModelNotTrainedError("Model was not initialized.")
