@@ -163,6 +163,7 @@ class ArgumentExtractorImplementation(StrEnum):
     """Name of argument extractor implementation."""
 
     NOT_IMPLEMENTED = auto()
+    XGBOOST = auto()
 
 
 class NLIImplementation(StrEnum):
