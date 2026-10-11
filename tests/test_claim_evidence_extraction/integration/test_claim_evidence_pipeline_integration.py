@@ -17,7 +17,7 @@ from src.argument_detection.xgboost_claim_extractor import (
 from src.argument_detection.xgboost_evidence_extractor import (
     XGBoostEvidenceExtractor,
 )
-from src.data_models.data_models import ClaimEvidencePair, SubsetName
+from src.data_models.data_models import Argument, SubsetName
 
 
 class MiniPipelineDataset(ArgumentDetectionDataset):
@@ -149,7 +149,7 @@ async def pipeline() -> ClaimEvidenceExtractor:
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(
-                update={"claim": 0.5},
+                update={"evidence": 0.5},  # Zmieniono z "claim" na "evidence"
             ),
         },
     )
@@ -165,12 +165,13 @@ async def test_pipeline_extracts_claim_evidence_pairs(
     pipeline: ClaimEvidenceExtractor,
 ) -> None:
     """Verify that the real pipeline extracts claim-evidence pairs."""
-    result = await pipeline.extract_pairs(
-        "Cats are intelligent animals. Cats learn quickly.",
+    result_batch = await pipeline._process_batch(
+        ["Cats are intelligent animals. Cats learn quickly."],
     )
+    result = result_batch[0]
 
     assert result
-    assert all(isinstance(pair, ClaimEvidencePair) for pair in result)
+    assert all(isinstance(pair, Argument) for pair in result)
 
     assert any(
         pair.claim == "Cats are intelligent animals."

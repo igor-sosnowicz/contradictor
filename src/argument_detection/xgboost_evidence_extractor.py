@@ -197,6 +197,10 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             if (probability >= threshold and normalise(evidence) != normalised_claim)
         ]
 
+    # pylint: disable=too-many-locals
+    # Reason: Vectorised batch processing requires flattening data pipelines and
+    # tracking original indices,
+    # which elevates the local variable count for efficiency.
     async def extract_evidence_batch(
         self,
         claims: list[str],
