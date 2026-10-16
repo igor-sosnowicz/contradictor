@@ -22,3 +22,6 @@ data/
 
 # Cache
 .cache/
+
+# Local issue tracking
+TODO.md
