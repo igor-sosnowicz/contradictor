@@ -1,4 +1,4 @@
-<!--Disclaimer: The below website for annotating is a helper tool, so, has been completely vibe-coded.-->
+<!--Disclaimer: The below website for annotating is a helper tool and has been vibe-coded.-->
 <!doctype html>
 <html lang="en">
     <meta charset="utf-8" />
@@ -30,6 +30,11 @@
         }
         button {
             cursor: pointer;
+        }
+        button:disabled,
+        textarea:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
         }
         .card {
             border: 1px solid #ccc;
@@ -85,6 +90,26 @@
         </div>
         <p class="muted">
             Select a folder containing .txt files to load them all at once.
+            Loading a directory replaces the current project.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Load Annotations</h2>
+        <div class="row">
+            <input
+                type="file"
+                id="annotationsInput"
+                accept=".json,application/json"
+                multiple
+                aria-label="Select annotation JSON files"
+            />
+            <button id="loadAnnotations">Load annotation file(s)</button>
+        </div>
+        <p class="muted">
+            Select annotation JSON files exported from this tool. Their
+            documents, arguments, and relations will be added to the current
+            project.
         </p>
     </section>
 
@@ -92,18 +117,18 @@
         <h2>Source document</h2>
         <div class="row">
             <select id="documentPicker" aria-label="Choose document"></select>
-            <button id="addDocument">Add document</button>
         </div>
         <textarea
             id="documentText"
-            placeholder="Paste or type the source document here"
+            placeholder="Load a directory of .txt files to begin"
+            disabled
         ></textarea>
         <div class="source-url" id="sourceUrl"></div>
         <p class="muted">
             Select a passage in the text, then mark it as a claim or evidence.
         </p>
-        <button id="markClaim">Mark selection as claim</button>
-        <button id="markEvidence">Mark selection as evidence</button>
+        <button id="markClaim" disabled>Mark selection as claim</button>
+        <button id="markEvidence" disabled>Mark selection as evidence</button>
     </section>
 
     <section class="card">
@@ -121,7 +146,7 @@
         <h2>Link two arguments</h2>
         <div class="row">
             <select id="argumentA" aria-label="First argument"></select>
-            <span>contradicts</span>
+            <span><b>contradicts</b></span>
             <select id="argumentB" aria-label="Second argument"></select>
             <button id="addRelation">Add link</button>
         </div>
@@ -135,32 +160,34 @@
     <button id="download">Download annotations as JSON</button>
 
     <script>
-        let documents = [{ id: 1, title: "Document 1", text: "", source: "" }];
-        let activeDocumentId = 1;
+        let documents = [];
+        let activeDocumentId = null;
         let draftSpans = [];
         let argumentsList = [];
         let relations = [];
-        let nextDocumentId = 2;
+        let nextDocumentId = 1;
         let nextArgumentId = 1;
 
         const $ = (id) => document.getElementById(id);
         const activeDocument = () =>
-            documents.find((d) => d.id === activeDocumentId);
+            documents.find((doc) => doc.id === activeDocumentId);
         const getArgument = (id) =>
-            argumentsList.find((a) => a.id === Number(id));
+            argumentsList.find((argument) => argument.id === Number(id));
 
         function optionLabel(argument) {
-            const doc = documents.find((d) => d.id === argument.documentId);
-            const claim = argument.claim.text;
+            const doc = documents.find(
+                (item) => item.id === argument.documentId,
+            );
+            const claim = argument.claim?.text ?? "(no claim)";
             return `Argument ${argument.id} (${doc ? doc.title : "document"}): ${claim}`;
         }
 
         function parseDocument(fileContent) {
-            // Split by "source:" to separate content from source URL
             const parts = fileContent.split(/^source:\s*/m);
-            const text = parts[0].trim();
-            const source = parts[1] ? parts[1].trim() : "";
-            return { text, source };
+            return {
+                text: parts[0].trim(),
+                source: parts[1] ? parts[1].trim() : "",
+            };
         }
 
         function renderDocuments() {
@@ -174,15 +201,25 @@
                 picker.append(option);
             });
 
-            picker.value = activeDocumentId;
+            if (!documents.some((doc) => doc.id === activeDocumentId)) {
+                activeDocumentId = documents[0]?.id ?? null;
+            }
+
             const doc = activeDocument();
-            $("documentText").value = doc.text;
+            picker.disabled = documents.length === 0;
+            if (doc) picker.value = doc.id;
+
+            $("documentText").value = doc?.text ?? "";
+            $("documentText").disabled = !doc;
+            $("markClaim").disabled = !doc;
+            $("markEvidence").disabled = !doc;
 
             const sourceUrlDiv = $("sourceUrl");
-            if (doc.source) {
+            if (doc?.source) {
                 sourceUrlDiv.textContent = `Source: ${doc.source}`;
                 sourceUrlDiv.style.display = "block";
             } else {
+                sourceUrlDiv.textContent = "";
                 sourceUrlDiv.style.display = "none";
             }
         }
@@ -203,6 +240,7 @@
                 const label = document.createElement("div");
                 label.className = "label";
                 label.textContent = span.kind;
+
                 const quote = document.createElement("div");
                 quote.className = "quote";
                 quote.textContent = `"${span.text}"`;
@@ -224,7 +262,9 @@
             box.replaceChildren();
 
             argumentsList.forEach((argument) => {
-                const doc = documents.find((d) => d.id === argument.documentId);
+                const doc = documents.find(
+                    (item) => item.id === argument.documentId,
+                );
                 const card = document.createElement("div");
                 card.className = "card";
 
@@ -234,15 +274,16 @@
 
                 const claimLabel = document.createElement("strong");
                 claimLabel.textContent = "Claim";
+
                 const claim = document.createElement("div");
                 claim.className = "quote";
-                claim.textContent = argument.claim.text;
+                claim.textContent = argument.claim?.text ?? "";
 
                 const evidenceLabel = document.createElement("strong");
                 evidenceLabel.textContent = "Evidence";
                 card.append(title, claimLabel, claim, evidenceLabel);
 
-                argument.evidence.forEach((span) => {
+                (argument.evidence ?? []).forEach((span) => {
                     const evidence = document.createElement("div");
                     evidence.className = "quote";
                     evidence.textContent = `• ${span.text}`;
@@ -253,10 +294,12 @@
                 remove.textContent = "Delete argument";
                 remove.onclick = () => {
                     argumentsList = argumentsList.filter(
-                        (a) => a.id !== argument.id,
+                        (item) => item.id !== argument.id,
                     );
                     relations = relations.filter(
-                        (r) => r.a !== argument.id && r.b !== argument.id,
+                        (relation) =>
+                            relation.a !== argument.id &&
+                            relation.b !== argument.id,
                     );
                     renderAll();
                 };
@@ -303,7 +346,7 @@
 
                 const card = document.createElement("div");
                 card.className = "card";
-                card.textContent = `${optionLabel(a)}  contradicts  ${optionLabel(b)}`;
+                card.textContent = `${optionLabel(a)}  <b>contradicts</b>  ${optionLabel(b)}`;
 
                 const remove = document.createElement("button");
                 remove.textContent = "Delete link";
@@ -353,40 +396,36 @@
             renderDraft();
         }
 
-        $("directoryInput").onchange = async (event) => {
-            const files = event.target.files;
-            const txtFiles = Array.from(files).filter((file) =>
-                file.name.endsWith(".txt"),
+        $("loadDirectory").onclick = async () => {
+            const txtFiles = Array.from($("directoryInput").files).filter(
+                (file) => file.name.toLowerCase().endsWith(".txt"),
             );
 
             if (txtFiles.length === 0) {
-                alert("No .txt files found in the selected directory.");
+                alert("Select a directory containing .txt files first.");
                 return;
             }
 
-            // Clear existing documents except the first one
-            documents = [documents[0]];
-            nextDocumentId = 2;
+            const loadedDocuments = [];
+
+            for (const file of txtFiles) {
+                const { text, source } = parseDocument(await file.text());
+                loadedDocuments.push({
+                    id: loadedDocuments.length + 1,
+                    title: file.name.replace(/\.txt$/i, ""),
+                    text,
+                    source,
+                });
+            }
+
+            documents = loadedDocuments;
+            activeDocumentId = documents[0]?.id ?? null;
+            nextDocumentId = documents.length + 1;
             draftSpans = [];
             argumentsList = [];
             relations = [];
             nextArgumentId = 1;
 
-            // Load all .txt files
-            for (const file of txtFiles) {
-                const content = await file.text();
-                const { text, source } = parseDocument(content);
-                const title = file.name.replace(/\.txt$/, ""); // Remove .txt extension
-
-                documents.push({
-                    id: nextDocumentId++,
-                    title: title,
-                    text: text,
-                    source: source,
-                });
-            }
-
-            activeDocumentId = documents[1].id;
             renderAll();
             alert(`Loaded ${txtFiles.length} document(s).`);
         };
@@ -398,26 +437,8 @@
         };
 
         $("documentText").oninput = (event) => {
-            activeDocument().text = event.target.value;
-        };
-
-        $("addDocument").onclick = () => {
-            const title = prompt(
-                "Document title:",
-                `Document ${nextDocumentId}`,
-            );
-            if (title === null) return;
-
-            const doc = {
-                id: nextDocumentId++,
-                title: title.trim() || "Untitled document",
-                text: "",
-                source: "",
-            };
-            documents.push(doc);
-            activeDocumentId = doc.id;
-            draftSpans = [];
-            renderAll();
+            const doc = activeDocument();
+            if (doc) doc.text = event.target.value;
         };
 
         $("markClaim").onclick = () => markSelection("claim");
@@ -431,6 +452,11 @@
 
             if (!claim || !evidence.length) {
                 alert("Mark one claim and at least one evidence span first.");
+                return;
+            }
+
+            if (!activeDocument()) {
+                alert("Load a directory of documents first.");
                 return;
             }
 
@@ -461,6 +487,88 @@
 
             relations.push({ a, type: "contradicts", b });
             renderRelations();
+        };
+
+        $("loadAnnotations").onclick = async () => {
+            const files = Array.from($("annotationsInput").files);
+
+            if (!files.length) {
+                alert("Select one or more annotation JSON files first.");
+                return;
+            }
+
+            let parsedFiles;
+            try {
+                parsedFiles = await Promise.all(
+                    files.map(async (file) => {
+                        const data = JSON.parse(await file.text());
+                        if (
+                            !data ||
+                            !Array.isArray(data.documents) ||
+                            !Array.isArray(data.arguments) ||
+                            (data.relations !== undefined &&
+                                !Array.isArray(data.relations))
+                        ) {
+                            throw new Error(
+                                `${file.name} is not a valid annotation file.`,
+                            );
+                        }
+                        return data;
+                    }),
+                );
+            } catch (error) {
+                alert(error.message || "Could not read the annotation files.");
+                return;
+            }
+
+            for (const data of parsedFiles) {
+                const documentIdMap = new Map();
+                const argumentIdMap = new Map();
+
+                for (const doc of data.documents) {
+                    const newId = nextDocumentId++;
+                    documentIdMap.set(String(doc.id), newId);
+                    documents.push({
+                        id: newId,
+                        title: doc.title || "Untitled document",
+                        text: typeof doc.text === "string" ? doc.text : "",
+                        source:
+                            typeof doc.source === "string" ? doc.source : "",
+                    });
+                }
+
+                for (const argument of data.arguments) {
+                    const newId = nextArgumentId++;
+                    argumentIdMap.set(String(argument.id), newId);
+                    argumentsList.push({
+                        ...argument,
+                        id: newId,
+                        documentId: documentIdMap.get(
+                            String(argument.documentId),
+                        ),
+                        claim: argument.claim,
+                        evidence: Array.isArray(argument.evidence)
+                            ? argument.evidence
+                            : [],
+                    });
+                }
+
+                for (const relation of data.relations ?? []) {
+                    const a = argumentIdMap.get(String(relation.a));
+                    const b = argumentIdMap.get(String(relation.b));
+                    if (a !== undefined && b !== undefined) {
+                        relations.push({ ...relation, a, b });
+                    }
+                }
+            }
+
+            if (documents.length) {
+                activeDocumentId = documents[documents.length - 1].id;
+            }
+
+            draftSpans = [];
+            renderAll();
+            alert(`Loaded ${files.length} annotation file(s).`);
         };
 
         $("download").onclick = () => {
