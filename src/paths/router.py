@@ -60,12 +60,17 @@ class PathRouter:
     """
     Route caller-scoped paths under the data, cache and tmp roots.
 
-    Every resolved path is `<root>/<module_slice>/<subpath>`: the slice
-    comes from call-stack inspection or an explicit `target_module`,
-    directories are created on access, and a directory claimed by a second
+    Every resolved path looks like: `<root>/<module_slice>/<subpath>`
+
+    Slice comes from:
+    - call-stack inspection
+    - explicit `target_module`
+
+    Directories are created on access, and a directory claimed by a second
     module slice (or by the `shared` pseudo-slice of the dynamic helpers)
-    needs `force=True`. The shared contract for all getters lives in
-    `docs/UPS.md`.
+    needs `force=True`.
+
+    Contract for all getters lives in `docs/UPS.md`.
     """
 
     def __init__(self) -> None:
@@ -73,6 +78,7 @@ class PathRouter:
         self._data_root: Path | None = None
         self._cache_root: Path | None = None
         self._tmp_root: Path | None = None
+        self._root_map: dict[PathRoot, Path] | None = None
         self._ledger = GrantLedger()
         self._environment = RepositoryEnvironment()
 
@@ -132,6 +138,7 @@ class PathRouter:
 
         if changed:
             self._ledger.clear()
+            self._root_map = None
 
     def get_data_path(
         self,
@@ -279,14 +286,14 @@ class PathRouter:
         return resolved
 
     def _root_for(self, root_kind: PathRoot) -> Path:
-        """Return the active root of the given kind."""
-        match root_kind:
-            case PathRoot.DATA:
-                return self.data_root
-            case PathRoot.CACHE:
-                return self.cache_root
-            case PathRoot.TMP:
-                return self.tmp_root
+        """Return the active root of the given kind (mapping built once)."""
+        if self._root_map is None:
+            self._root_map = {
+                PathRoot.DATA: self.data_root,
+                PathRoot.CACHE: self.cache_root,
+                PathRoot.TMP: self.tmp_root,
+            }
+        return self._root_map[root_kind]
 
     def _detect_caller_slice(self) -> str:
         """Return the module slice of the first stack frame outside this package."""
