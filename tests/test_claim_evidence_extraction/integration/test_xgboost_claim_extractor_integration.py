@@ -15,26 +15,30 @@ from src.data_models.data_models import SubsetName
 
 
 class MiniIntegrationDataset(ArgumentDetectionDataset):
-    """
-    Provides a small, deterministic dataset for integration tests.
-
-    The dataset is fully local and does not require access to Kaggle or any
-    external network resources.
-    """
+    """Provide a small deterministic dataset for integration tests."""
 
     def __init__(self) -> None:
         """Initialize the deterministic integration-test dataset."""
-
-    async def prepare(self) -> None:
-        """Mark the dataset as prepared."""
-        self._is_prepared = True
+        super().__init__()
 
     def get_claim_split(
         self,
-        subset: SubsetName,
+        split: SubsetName,
         max_samples: int | None = None,
     ) -> pd.DataFrame:
-        """Return a small deterministic claim classification dataset."""
+        """
+        Return a deterministic claim classification dataset.
+
+        Args:
+            split: Dataset subset to retrieve. The minimal test dataset
+                returns the same data for every subset.
+            max_samples: Maximum number of samples to return.
+
+        Returns:
+            DataFrame containing sentences and their claim labels.
+        """
+        del split
+
         data = pd.DataFrame(
             {
                 "sentence": [
@@ -48,7 +52,11 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
                 "is_claim": [1, 1, 1, 0, 0, 0],
             }
         )
-        return data.head(max_samples) if max_samples is not None else data
+
+        if max_samples is not None:
+            data = data.head(max_samples)
+
+        return data.reset_index(drop=True)
 
 
 @pytest.fixture

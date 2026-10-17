@@ -57,7 +57,6 @@ class Configuration(BaseModel):
         ge=1,
         description="A maximum number of characters a reference text can have.",
     )
-    vector_search_max_candidates: int = Field(10, ge=1)
 
     # Contradictor pipeline implementations
     search_pipeline: SearchPipelineImplementation = (

@@ -8,7 +8,6 @@ import numpy as np
 import optuna
 from diskcache import Cache
 from optuna.samplers import TPESampler
-from sklearn.metrics import f1_score
 from sklearn.model_selection import cross_val_score
 from xgboost import XGBClassifier
 
@@ -189,56 +188,6 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         if not train_if_missing:
             raise RuntimeError("Model does not exist.")
         self._model = await self._train_model()
-
-    def _find_best_threshold(
-        self,
-        probabilities: np.ndarray,
-        labels: np.ndarray,
-    ) -> tuple[float, float]:
-        """
-        Find the threshold with the best F1 score.
-
-        Args:
-            probabilities (np.ndarray): Predicted probabilities for the positive class.
-            labels (np.ndarray): Ground-truth binary labels.
-
-        Returns:
-            tuple[float, float]: Best threshold and corresponding F1 score.
-        """
-        threshold_cfg = self._config.threshold
-
-        best_threshold = threshold_cfg.default_threshold
-        best_score = -1.0
-
-        for threshold in np.linspace(
-            threshold_cfg.min_threshold,
-            threshold_cfg.max_threshold,
-            threshold_cfg.num_thresholds,
-        ):
-            predictions = probabilities >= threshold
-
-            score = f1_score(
-                labels,
-                predictions,
-            )
-
-            if score > best_score:
-                best_score = score
-                best_threshold = float(threshold)
-
-        return (
-            best_threshold,
-            float(best_score),
-        )
-
-    def _save_threshold(
-        self,
-        threshold: float,
-    ) -> None:
-        self._cache.set(
-            "threshold",
-            threshold,
-        )
 
     def _tune_hyperparameters(
         self,
