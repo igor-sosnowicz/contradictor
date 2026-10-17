@@ -1,20 +1,13 @@
 """
 PathRouter: the single source of filesystem truth.
 
-The full usage contract:
-- routing rule
-- slice derivation
-- mkdir-on-access guards
-- collisions
-- ledger
-- root injection
-
-Details in `docs/UPS.md`.
+The full usage contract (routing rule, slice derivation, guards,
+collisions, ledger, root injection) lives in `docs/UPS.md`.
 """
 
 import inspect
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from src.paths.core import (
     PathRoot,
@@ -60,51 +53,60 @@ class PathRouter:
     """
     Route caller-scoped paths under the data, cache and tmp roots.
 
-    Every resolved path looks like: `<root>/<module_slice>/<subpath>`
-
-    Slice comes from:
-    - call-stack inspection
-    - explicit `target_module`
-
-    Directories are created on access, and a directory claimed by a second
-    module slice (or by the `shared` pseudo-slice of the dynamic helpers)
-    needs `force=True`.
-
-    Contract for all getters lives in `docs/UPS.md`.
+    Every resolved path looks like `<root>/<module_slice>/<subpath>`;
+    the slice comes from stack inspection or an explicit `target_module`.
+    Full contract (guards, collisions, ledger): `docs/UPS.md`.
     """
 
+    # --- Roots ---
     def __init__(self) -> None:
         """Initialise the router with lazily resolved, unclaimed roots."""
         self._data_root: Path | None = None
         self._cache_root: Path | None = None
         self._tmp_root: Path | None = None
         self._root_map: dict[PathRoot, Path] | None = None
+        self._config_cache: Configuration | None = None
         self._ledger = GrantLedger()
         self._environment = RepositoryEnvironment()
+
+    def _config(self) -> "Configuration":
+        """Project configuration, cached on the router after first use."""
+        if self._config_cache is None:
+            self._config_cache = _configuration()
+        return self._config_cache
+
+    def _resolve_unset_roots(self) -> None:
+        """
+        Populate every still-unset root from the configuration.
+
+        Single configuration touch: one access resolves data, cache and
+        tmp together. Roots injected via `initialise()` are never overwritten.
+        """
+        config = self._config()
+        self._data_root = self._data_root or config.data_directory
+        self._cache_root = self._cache_root or config.cache_directory
+        self._tmp_root = self._tmp_root or config.tmp_directory
 
     @property
     def data_root(self) -> Path:
         """Data root, resolved lazily from the configuration."""
         if self._data_root is None:
-            self._data_root = _configuration().data_directory
-
-        return self._data_root
+            self._resolve_unset_roots()
+        return cast("Path", self._data_root)
 
     @property
     def cache_root(self) -> Path:
         """Cache root, resolved lazily from the configuration."""
         if self._cache_root is None:
-            self._cache_root = _configuration().cache_directory
-
-        return self._cache_root
+            self._resolve_unset_roots()
+        return cast("Path", self._cache_root)
 
     @property
     def tmp_root(self) -> Path:
         """Temporary root, resolved lazily from the configuration."""
         if self._tmp_root is None:
-            self._tmp_root = _configuration().tmp_directory
-
-        return self._tmp_root
+            self._resolve_unset_roots()
+        return cast("Path", self._tmp_root)
 
     @property
     def ledger(self) -> tuple[PathGrant, ...]:
@@ -125,21 +127,29 @@ class PathRouter:
         arguments keeps the currently active roots. Never creates
         directories in bulk — creation happens on access.
         """
+
+        def changed_root(root: Path | None, current: Path | None) -> bool:
+            """Whether the given root is a real change."""
+            return root is not None and root != current
+
         changed = False
-        if data_root is not None and data_root != self._data_root:
+
+        if changed_root(data_root, self._data_root):
             self._data_root = data_root
             changed = True
-        if cache_root is not None and cache_root != self._cache_root:
+        if changed_root(cache_root, self._cache_root):
             self._cache_root = cache_root
             changed = True
-        if tmp_root is not None and tmp_root != self._tmp_root:
+        if changed_root(tmp_root, self._tmp_root):
             self._tmp_root = tmp_root
             changed = True
 
         if changed:
             self._ledger.clear()
             self._root_map = None
+            self._config_cache = None
 
+    # --- Sliced getters ---
     def get_data_path(
         self,
         subpath: str = "",
@@ -170,33 +180,31 @@ class PathRouter:
         """Resolve a path under the temporary root for the calling module."""
         return self._resolve(PathRoot.TMP, subpath, target_module, force=force)
 
+    # --- Dynamic helpers ---
     def model_path(self, name: str, *, force: bool = False) -> Path:
         """Resolve a sanitised dynamic name under the shared models directory."""
-        config = _configuration()
         return self._dynamic(
             PathRoot.DATA,
-            (config.model_subdirectory, "model_subdirectory"),
+            (self._config().model_subdirectory, "model_subdirectory"),
             (name, "model name"),
             force=force,
         )
 
     def raw_dataset_path(self, name: str, *, force: bool = False) -> Path:
         """Resolve a sanitised dynamic name under the shared raw datasets directory."""
-        config = _configuration()
         return self._dynamic(
             PathRoot.DATA,
-            (config.raw_dataset_subdirectory, "raw_dataset_subdirectory"),
+            (self._config().raw_dataset_subdirectory, "raw_dataset_subdirectory"),
             (name, "raw dataset name"),
             force=force,
         )
 
     def processed_dataset_path(self, name: str, *, force: bool = False) -> Path:
         """Resolve a dynamic name under the shared processed datasets directory."""
-        config = _configuration()
         return self._dynamic(
             PathRoot.DATA,
             (
-                config.preprocessed_dataset_subdirectory,
+                self._config().preprocessed_dataset_subdirectory,
                 "preprocessed_dataset_subdirectory",
             ),
             (name, "processed dataset name"),
@@ -211,6 +219,9 @@ class PathRouter:
             (name, "cache name"),
             force=force,
         )
+
+    # NOTE: Shared-directory shortcuts (dynamic helpers) are defined here.
+    # Docs: docs/UPS.md, "API quick reference" — add new shortcuts to that table too.
 
     def _dynamic(
         self,
@@ -243,6 +254,7 @@ class PathRouter:
         )
         return self._grant(root_kind, SHARED_SLICE, resolved, force=force)
 
+    # --- Routing internals ---
     def _resolve(
         self,
         root_kind: PathRoot,
@@ -334,8 +346,9 @@ class PathRouter:
         return single_segment(sanitise_segment(name), label)
 
 
+# --- Singleton facade ---
+"""Singleton router instance."""
 paths = PathRouter()
-"""Singleton router; the single source of filesystem truth."""
 
 
 def initialise(

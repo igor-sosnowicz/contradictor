@@ -1,5 +1,5 @@
 """
-Unified Path System v2: the single source of filesystem truth (docs/UPS.md).
+Unified Path System v2: the single source of filesystem truth.
 
 Usage patterns and the full contract: `docs/UPS.md`.
 """
