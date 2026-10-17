@@ -33,7 +33,7 @@ INTERACTIVE_SLICE = "interactive"
 
 SHARED_SLICE = "shared"
 """
-Pseudo-slice attributing dynamic-helper claims to shared locations (spec §3, A1).
+Pseudo-slice attributing dynamic-helper claims to shared locations.
 
 Dynamic helpers address shared root-level directories by design
 (`<data>/models`, `<data>/raw_datasets/`, …), so their claims belong to no
@@ -112,7 +112,7 @@ class PathRouter:
         tmp_root: Path | None = None,
     ) -> None:
         """
-        Override roots; the single sanctioned injection point (spec §4).
+        Override roots; the single sanctioned injection point.
 
         Clears the usage ledger when any root actually changes, because
         outstanding grants refer to the previous roots. Calling without
@@ -220,7 +220,7 @@ class PathRouter:
         the arguments in validation errors. Validation order (subdirectory,
         then root, then name) matches the helpers this coalesces.
 
-        Amendment A1 (spec §3): the helper's directory claim — and its
+        Shared-dir exception: the helper's directory claim — and its
         ledger record — are attributed to the `shared` pseudo-slice, not to
         the caller's slice, because these locations are shared by design.
         """
@@ -262,7 +262,7 @@ class PathRouter:
         *,
         force: bool,
     ) -> Path:
-        """Claim, materialise and record one resolved path (spec Q7)."""
+        """Claim, materialise and record one resolved path."""
         is_file = PurePosixPath(resolved.name).suffix != ""
         directory = resolved.parent if is_file else resolved
 
@@ -328,7 +328,7 @@ class PathRouter:
 
 
 paths = PathRouter()
-"""Singleton router; the single source of filesystem truth (spec §3)."""
+"""Singleton router; the single source of filesystem truth."""
 
 
 def initialise(
