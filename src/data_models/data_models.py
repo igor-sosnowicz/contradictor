@@ -148,8 +148,7 @@ class ArgumentFramerImplementation(StrEnum):
 class ArgumentExtractorImplementation(StrEnum):
     """Name of argument extractor implementation."""
 
-    NOT_IMPLEMENTED = auto()
-    XGBOOST = auto()
+    XGBOOST = "xgboost"
 
 
 class NLIImplementation(StrEnum):

@@ -149,7 +149,7 @@ async def pipeline() -> ClaimEvidenceExtractor:
     evidence_extractor._config = evidence_extractor._config.model_copy(
         update={
             "threshold": evidence_extractor._config.threshold.model_copy(
-                update={"evidence": 0.5},  # Zmieniono z "claim" na "evidence"
+                update={"evidence": 0.5},
             ),
         },
     )
@@ -165,7 +165,7 @@ async def test_pipeline_extracts_claim_evidence_pairs(
     pipeline: ClaimEvidenceExtractor,
 ) -> None:
     """Verify that the real pipeline extracts claim-evidence pairs."""
-    result_batch = await pipeline._process_batch(
+    result_batch = await pipeline.extract_batch(
         ["Cats are intelligent animals. Cats learn quickly."],
     )
     result = result_batch[0]
@@ -178,3 +178,17 @@ async def test_pipeline_extracts_claim_evidence_pairs(
         and pair.evidence == "Cats learn quickly."
         for pair in result
     )
+
+
+@pytest.mark.asyncio
+async def test_pipeline_sync_call_raises_runtime_error_in_async_loop(
+    pipeline: ClaimEvidenceExtractor,
+) -> None:
+    """
+    Verify that calling the extractor synchronously inside an async
+    loop raises RuntimeError.
+    """
+    with pytest.raises(
+        RuntimeError, match="__call__\\(\\) cannot be called from a running event loop"
+    ):
+        pipeline(["Cats are intelligent animals."])

@@ -12,6 +12,7 @@ processing flow:
 """
 
 import asyncio
+from typing import override
 
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import (
@@ -35,13 +36,46 @@ class ClaimEvidenceExtractor(ArgumentExtractor):
         claim_extractor: XGBoostClaimExtractor,
         evidence_extractor: XGBoostEvidenceExtractor,
     ) -> None:
-        """Initialize the claim-evidence extraction pipeline."""
+        """
+        Initialise the claim-evidence extraction pipeline.
+
+        Args:
+            claim_extractor (XGBoostClaimExtractor): Component responsible for
+                extracting claims from text.
+            evidence_extractor (XGBoostEvidenceExtractor): Component
+                responsible for extracting evidence supporting claims.
+        """
         self._claim_extractor = claim_extractor
         self._evidence_extractor = evidence_extractor
 
+    @override
     def __call__(self, texts: list[str]) -> list[list[Argument]]:
         """
-        Extract arguments (claim+evidence) from multiple texts.
+        Provide a synchronous entry point for ordinary scripts.
+
+        Args:
+            texts (list[str]): Texts, from which arguments should be extracted.
+
+        Returns:
+            list[list[Argument]]: Lists of extracted arguments.
+                One per input document. Order is preserved.
+
+        Raises:
+            RuntimeError: If called from inside a running event loop.
+        """
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(self._process_batch(texts))
+
+        raise RuntimeError(
+            "__call_sync__() cannot be called from a running event loop; "
+            "use 'await extractor(...)' instead"
+        )
+
+    async def extract_batch(self, texts: list[str]) -> list[list[Argument]]:
+        """
+        Extract arguments from multiple texts asynchronously.
 
         Args:
             texts (list[str]): Texts, from which arguments should be extracted.
@@ -50,16 +84,7 @@ class ClaimEvidenceExtractor(ArgumentExtractor):
             list[list[Argument]]: Lists of extracted arguments.
                 One per input document. Order is preserved.
         """
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-
-        if loop and loop.is_running():
-            with asyncio.Runner() as runner:
-                return runner.run(self._process_batch(texts))
-        else:
-            return asyncio.run(self._process_batch(texts))
+        return await self._process_batch(texts)
 
     # pylint: disable=too-many-locals
     # Reason: Managing batch document indexes, flat claims, flat texts,

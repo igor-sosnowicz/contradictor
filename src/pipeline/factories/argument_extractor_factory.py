@@ -28,8 +28,6 @@ def build_argument_extractor(
     extractor_implementation = extractor_implementation or config.argument_extractor
 
     match extractor_implementation:
-        case ArgumentExtractorImplementation.NOT_IMPLEMENTED:
-            raise NotImplementedError("No argument extractor is implemented yet.")
         case ArgumentExtractorImplementation.XGBOOST:
             dataset = ArgumentDetectionDataset()
 

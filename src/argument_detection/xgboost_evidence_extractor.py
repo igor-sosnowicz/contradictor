@@ -200,7 +200,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
     # pylint: disable=too-many-locals
     # Reason: Vectorised batch processing requires flattening data pipelines and
     # tracking original indices,
-    # which elevates the local variable count for efficiency.
+    # which increases local variable count.
     async def extract_evidence_batch(
         self,
         claims: list[str],
@@ -218,11 +218,11 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
                 for each input claim.
 
         Raises:
-            RuntimeError: If the model cannot be initialized.
+            RuntimeError: If the model cannot be initialised.
         """
         await self._initialise_model()
         if self._model is None:
-            raise ModelNotTrainedError("Model was not initialized.")
+            raise ModelNotTrainedError("Model was not initialised.")
 
         def normalise(sentence: str) -> str:
             return " ".join(sentence.lower().split())

@@ -169,7 +169,7 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         """
         await self._initialise_model()
         if self._model is None:
-            raise ModelNotTrainedError("Model was not initialized.")
+            raise ModelNotTrainedError("Model was not initialised.")
 
         all_candidates: list[str] = []
         doc_mapping: list[int] = []
