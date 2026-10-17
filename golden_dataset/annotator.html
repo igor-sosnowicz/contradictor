@@ -90,7 +90,9 @@
         </div>
         <p class="muted">
             Select a folder containing .txt files to load them all at once.
-            Loading a directory replaces the current project.
+            Texts are (re)loaded straight from the .txt files every time. If a
+            file with the same name already exists in the project, its text is
+            overridden instead of creating a duplicate.
         </p>
     </section>
 
@@ -173,6 +175,160 @@
             documents.find((doc) => doc.id === activeDocumentId);
         const getArgument = (id) =>
             argumentsList.find((argument) => argument.id === Number(id));
+
+        function validateSpan(span) {
+            const errors = [];
+            if (span == null || typeof span !== "object") {
+                errors.push("span must be an object");
+                return errors;
+            }
+            if (!["claim", "evidence"].includes(span.kind)) {
+                errors.push("span.kind must be 'claim' or 'evidence'");
+            }
+            if (
+                typeof span.start !== "number" ||
+                !Number.isInteger(span.start) ||
+                span.start < 0
+            ) {
+                errors.push("span.start must be a non-negative integer");
+            }
+            if (
+                typeof span.end !== "number" ||
+                !Number.isInteger(span.end) ||
+                span.end <= span.start
+            ) {
+                errors.push("span.end must be an integer greater than span.start");
+            }
+            if (typeof span.text !== "string") {
+                errors.push("span.text must be a string");
+            }
+            return errors;
+        }
+
+        function validateDocument(doc) {
+            const errors = [];
+            if (doc == null || typeof doc !== "object") {
+                errors.push("document must be an object");
+                return errors;
+            }
+            if (
+                typeof doc.id !== "number" ||
+                !Number.isInteger(doc.id) ||
+                doc.id <= 0
+            ) {
+                errors.push("document.id must be a positive integer");
+            }
+            if (typeof doc.title !== "string" || !doc.title.trim()) {
+                errors.push("document.title must be a non-empty string");
+            }
+            if (typeof doc.text !== "string") {
+                errors.push("document.text must be a string");
+            }
+            // source is optional
+            return errors;
+        }
+
+        function validateArgument(arg) {
+            const errors = [];
+            if (arg == null || typeof arg !== "object") {
+                errors.push("argument must be an object");
+                return errors;
+            }
+            if (
+                typeof arg.id !== "number" ||
+                !Number.isInteger(arg.id) ||
+                arg.id <= 0
+            ) {
+                errors.push("argument.id must be a positive integer");
+            }
+            // documentId is optional; if missing it defaults to the first
+            // loaded document below. Dangling references are caught by
+            // validateReferences().
+            if (arg.documentId !== undefined && arg.documentId !== null) {
+                if (typeof arg.documentId !== "number" || !Number.isFinite(arg.documentId)) {
+                    errors.push("argument.documentId must be a number");
+                }
+            }
+            if (!arg.claim || typeof arg.claim !== "object") {
+                errors.push("argument.claim must be an object");
+            } else {
+                errors.push(...validateSpan(arg.claim));
+            }
+            if (!Array.isArray(arg.evidence) || !arg.evidence.length) {
+                errors.push("argument.evidence must be a non-empty array");
+            } else {
+                arg.evidence.forEach((span, index) => {
+                    errors.push(
+                        ...validateSpan(span).map(
+                            (error) => `evidence[${index}]: ${error}`,
+                        ),
+                    );
+                });
+            }
+            return errors;
+        }
+
+        function validateRelation(rel) {
+            const errors = [];
+            if (rel == null || typeof rel !== "object") {
+                errors.push("relation must be an object");
+                return errors;
+            }
+            if (
+                typeof rel.a !== "number" ||
+                !Number.isInteger(rel.a) ||
+                rel.a <= 0
+            ) {
+                errors.push("relation.a must be a positive integer");
+            }
+            if (
+                typeof rel.b !== "number" ||
+                !Number.isInteger(rel.b) ||
+                rel.b <= 0
+            ) {
+                errors.push("relation.b must be a positive integer");
+            }
+            if (rel.a === rel.b) {
+                errors.push("relation.a and relation.b must reference different arguments");
+            }
+            if (rel.type !== "contradicts") {
+                errors.push("relation.type must be 'contradicts'");
+            }
+            return errors;
+        }
+
+        function validateReferences() {
+            const errors = [];
+            const argumentIds = new Set(argumentsList.map((a) => a.id));
+            const documentIds = new Set(documents.map((d) => d.id));
+
+            argumentsList.forEach((arg) => {
+                if (
+                    arg.documentId === undefined ||
+                    arg.documentId === null ||
+                    !documentIds.has(arg.documentId)
+                ) {
+                    errors.push(
+                        `Argument ${arg.id} references unknown document ${arg.documentId}`,
+                    );
+                }
+            });
+
+            relations.forEach((rel, index) => {
+                if (!argumentIds.has(rel.a)) {
+                    errors.push(
+                        `Relation ${index} references unknown argument a=${rel.a}`,
+                    );
+                }
+                if (!argumentIds.has(rel.b)) {
+                    errors.push(
+                        `Relation ${index} references unknown argument b=${rel.b}`,
+                    );
+                }
+            });
+
+            return errors;
+        }
 
         function optionLabel(argument) {
             const doc = documents.find(
@@ -346,7 +502,15 @@
 
                 const card = document.createElement("div");
                 card.className = "card";
-                card.textContent = `${optionLabel(a)}  <b>contradicts</b>  ${optionLabel(b)}`;
+                card.append(
+                    document.createTextNode(optionLabel(a)),
+                    document.createTextNode("  "),
+                    Object.assign(document.createElement("b"), {
+                        textContent: "contradicts",
+                    }),
+                    document.createTextNode("  "),
+                    document.createTextNode(optionLabel(b))
+                );
 
                 const remove = document.createElement("button");
                 remove.textContent = "Delete link";
@@ -406,28 +570,48 @@
                 return;
             }
 
-            const loadedDocuments = [];
+            let added = 0;
+            let overridden = 0;
 
             for (const file of txtFiles) {
+                // Always (re)load the text straight from the .txt file.
                 const { text, source } = parseDocument(await file.text());
-                loadedDocuments.push({
-                    id: loadedDocuments.length + 1,
-                    title: file.name.replace(/\.txt$/i, ""),
-                    text,
-                    source,
-                });
+                const title = file.name.replace(/\.txt$/i, "");
+                const existing = documents.find((doc) => doc.title === title);
+
+                if (existing) {
+                    // Override the document in place: same filename is never
+                    // duplicated, and the document id stays the same so any
+                    // existing arguments/relations still point at it.
+                    existing.text = text;
+                    existing.source = source;
+                    overridden++;
+                } else {
+                    documents.push({
+                        id: nextDocumentId++,
+                        title,
+                        text,
+                        source,
+                    });
+                    added++;
+                }
             }
 
-            documents = loadedDocuments;
-            activeDocumentId = documents[0]?.id ?? null;
-            nextDocumentId = documents.length + 1;
+            // Keep document ids unique after merging/reloading.
+            nextDocumentId =
+                documents.reduce((maxId, doc) => Math.max(maxId, doc.id), 0) + 1;
+
+            if (!documents.some((doc) => doc.id === activeDocumentId)) {
+                activeDocumentId = documents[0]?.id ?? null;
+            }
+
+            // The current selection/draft no longer matches the reloaded text.
             draftSpans = [];
-            argumentsList = [];
-            relations = [];
-            nextArgumentId = 1;
 
             renderAll();
-            alert(`Loaded ${txtFiles.length} document(s).`);
+            alert(
+                `Loaded ${txtFiles.length} document(s) (${added} new, ${overridden} overridden by filename).`,
+            );
         };
 
         $("documentPicker").onchange = (event) => {
@@ -460,12 +644,20 @@
                 return;
             }
 
-            argumentsList.push({
+            const argument = {
                 id: nextArgumentId++,
                 documentId: activeDocumentId,
                 claim,
                 evidence,
-            });
+            };
+
+            const argumentErrors = validateArgument(argument);
+            if (argumentErrors.length) {
+                alert("Invalid argument:\n" + argumentErrors.join("\n"));
+                return;
+            }
+
+            argumentsList.push(argument);
 
             draftSpans = [];
             renderAll();
@@ -482,6 +674,14 @@
 
             if (a === b) {
                 alert("Choose two different arguments.");
+                return;
+            }
+
+            const duplicate = relations.some(
+                (rel) => rel.a === a && rel.b === b,
+            );
+            if (duplicate) {
+                alert("This link already exists.");
                 return;
             }
 
@@ -521,6 +721,37 @@
                 return;
             }
 
+            // Validate every record before mutating state.
+            const loadErrors = [];
+            for (const data of parsedFiles) {
+                data.documents.forEach((doc, index) => {
+                    loadErrors.push(
+                        ...validateDocument(doc).map(
+                            (error) => `documents[${index}]: ${error}`,
+                        ),
+                    );
+                });
+                data.arguments.forEach((arg, index) => {
+                    loadErrors.push(
+                        ...validateArgument(arg).map(
+                            (error) => `arguments[${index}]: ${error}`,
+                        ),
+                    );
+                });
+                (data.relations ?? []).forEach((rel, index) => {
+                    loadErrors.push(
+                        ...validateRelation(rel).map(
+                            (error) => `relations[${index}]: ${error}`,
+                        ),
+                    );
+                });
+            }
+
+            if (loadErrors.length) {
+                alert("Invalid annotation data:\n" + loadErrors.join("\n"));
+                return;
+            }
+
             for (const data of parsedFiles) {
                 const documentIdMap = new Map();
                 const argumentIdMap = new Map();
@@ -540,12 +771,16 @@
                 for (const argument of data.arguments) {
                     const newId = nextArgumentId++;
                     argumentIdMap.set(String(argument.id), newId);
+                    // Default a missing documentId to the first loaded document.
+                    const docId =
+                        argument.documentId !== undefined &&
+                        argument.documentId !== null
+                            ? argument.documentId
+                            : data.documents[0]?.id;
                     argumentsList.push({
                         ...argument,
                         id: newId,
-                        documentId: documentIdMap.get(
-                            String(argument.documentId),
-                        ),
+                        documentId: documentIdMap.get(String(docId)),
                         claim: argument.claim,
                         evidence: Array.isArray(argument.evidence)
                             ? argument.evidence
@@ -560,6 +795,12 @@
                         relations.push({ ...relation, a, b });
                     }
                 }
+            }
+
+            const referenceErrors = validateReferences();
+            if (referenceErrors.length) {
+                alert("Invalid references:\n" + referenceErrors.join("\n"));
+                return;
             }
 
             if (documents.length) {

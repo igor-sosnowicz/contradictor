@@ -20,7 +20,7 @@ def normalise(text: str) -> str:
     # Treat lines indented by four or more spaces as new paragraphs.
     text = re.sub(r"\n[ \t]{4,}(?=\S)", "\n\n", text)
 
-    # Remove other line-edge whitespace and normalize paragraph breaks.
+    # Remove other line-edge whitespace and normalise paragraph breaks.
     text = re.sub(r"[ \t]*\n[ \t]*", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
 
@@ -56,7 +56,7 @@ def normalise_file(path: Path) -> None:
 def main() -> None:
     """Parse arguments, normalise files to a consistent format."""
     parser = argparse.ArgumentParser(
-        description="Normalize line breaks and whitespace in text files."
+        description="Normalise line breaks and whitespace in text files."
     )
     parser.add_argument("path", type=Path, help="Path to a text file or directory")
     args = parser.parse_args()
