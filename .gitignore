@@ -22,3 +22,8 @@ data/
 
 # Cache
 .cache/
+
+# Private
+.cc-history/*
+priv_notes/*
+z_moved_from_*
