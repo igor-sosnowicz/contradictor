@@ -62,7 +62,6 @@ class Configuration(BaseModel):
         ge=1,
         description="A maximum number of characters a reference text can have.",
     )
-    vector_search_max_candidates: int = Field(10, ge=1)
 
     # Contradictor pipeline implementations
     search_pipeline: SearchPipelineImplementation = (
@@ -75,9 +74,7 @@ class Configuration(BaseModel):
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
     style_extractor: StyleExtractorImplementation = StyleExtractorImplementation.SPACY
     encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
-    vector_search: VectorSearchImplementation = (
-        VectorSearchImplementation.NOT_IMPLEMENTED
-    )
+    vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
 
 def load_configuration(file: Path) -> Configuration:

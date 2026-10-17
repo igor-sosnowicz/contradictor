@@ -40,12 +40,6 @@ class XGBoostTrainingConfig(BaseModel):
 class ThresholdConfig(BaseModel):
     """Classification thresholds."""
 
-    default_threshold: float = 0.5
-
-    min_threshold: float = 0.0
-    max_threshold: float = 1.0
-    num_thresholds: int = 101
-
     claim: float = Field(default=0.45, ge=0, le=1)
     evidence: float = Field(default=0.35, ge=0, le=1)
 

@@ -10,22 +10,16 @@ class SearchConfig(BaseModel):
 
     max_results: int = Field(default=5, ge=1)
     region: str = "wt-wt"  # alt: "us-en"
-    safesearch: str = "moderate"
 
 
 class DownloadConfig(BaseModel):
     """Downloader configuration."""
 
     timeout: float = Field(default=10.0, gt=0)
-    max_retries: int = Field(default=2, ge=0)
     user_agent: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/130.0.0.0 Safari/537.36"
-    )
-    max_content_size_mb: int = Field(
-        default=10,
-        ge=1,
     )
 
 
@@ -64,14 +58,12 @@ class CacheConfig(BaseModel):
     # Resolved lazily on instantiation (never at import time) so that root
     # injection stays possible; defaults to this module's cache slice.
     directory: str = Field(default_factory=lambda: str(paths.get_cache_path()))
-    version: str = "v1"
 
 
 class KeywordConfig(BaseModel):
     """Keyword extraction configuration."""
 
     max_keywords: int = Field(default=5, ge=1)
-    min_word_length: int = Field(default=3, ge=1)
     min_ngram_size: int = Field(default=2, ge=1)
     max_ngram_size: int = Field(default=3, ge=1)
     stop_words: set[str] = Field(

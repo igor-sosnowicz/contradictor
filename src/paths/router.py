@@ -347,8 +347,8 @@ class PathRouter:
 
 
 # --- Singleton facade ---
-"""Singleton router instance."""
 paths = PathRouter()
+"""Singleton router instance."""
 
 
 def initialise(
