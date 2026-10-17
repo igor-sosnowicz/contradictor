@@ -15,30 +15,30 @@ from xgboost import XGBClassifier
 from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.configuration import XGBoostConfig
-from src.configuration import config
 from src.data_models.data_models import (
     LABEL_TO_FRAME,
     Argument,
     FramedArgument,
     SubsetName,
 )
+from src.paths import paths
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
 
 
 class XGBoostFrameClassifier(ArgumentFramer):
     """XGBoost classifier assigning interpretative frames to arguments."""
 
-    PATH_TO_MODEL: Final = Path(
-        config.data_directory
-        / config.model_subdirectory
-        / "xgboost_frame_classifier.pkl"
-    )
-
-    PATH_TO_VECTORIZER: Final = Path(
-        config.data_directory / config.model_subdirectory / "tfidf_vectorizer.pkl"
-    )
-
     NUM_CLASSES: Final = 15
+
+    @property
+    def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
+        """Path to the persisted classifier, resolved at use time."""
+        return paths.model_path("xgboost_frame_classifier.pkl")
+
+    @property
+    def PATH_TO_VECTORIZER(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
+        """Path to the persisted vectoriser, resolved at use time."""
+        return paths.model_path("tfidf_vectorizer.pkl")
 
     def __init__(
         self,
@@ -59,8 +59,6 @@ class XGBoostFrameClassifier(ArgumentFramer):
             configuration (XGBoostConfig | None): Internal configuration of the XGBoost
                 and TF-IDF vectoriser models. None means default values will be used.
         """
-        self.PATH_TO_MODEL.parent.mkdir(parents=True, exist_ok=True)
-
         self._model = self._load()
         self._vectorizer = self._load_vectorizer()
         self._dataset = dataset

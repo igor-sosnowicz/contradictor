@@ -1,6 +1,8 @@
 """Module with a project-wide configuration object."""
 
+import tempfile
 import tomllib
+from getpass import getuser
 from pathlib import Path
 
 import pydantic
@@ -39,6 +41,9 @@ class Configuration(BaseModel):
 
     # Persistent application data.
     data_directory: Path = directories.user_data_path
+
+    # Ephemeral application files that may be discarded by the OS between runs.
+    tmp_directory: Path = Path(tempfile.gettempdir()) / f"Contradictor-{getuser()}"
 
     # A sub-directory of the data directory storing raw versions of downloaded datasets.
     raw_dataset_subdirectory: str = "raw_datasets"
