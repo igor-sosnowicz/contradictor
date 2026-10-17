@@ -58,7 +58,7 @@ def isolated_ml_env(tmp_path: Path) -> Iterator[Path]:
     Create an isolated filesystem environment with a test XGBoost model.
 
     All three path roots are redirected into pytest's temporary tree through
-    `initialise()` — the single sanctioned injection point (spec §4) — and
+    `initialise()` — the single sanctioned injection point — and
     the previous roots are restored afterwards, mirroring `tests/conftest.py`.
     The model is trained using the real embedder and XGBoost classifier. All
     model artifacts are written to pytest's temporary directory.

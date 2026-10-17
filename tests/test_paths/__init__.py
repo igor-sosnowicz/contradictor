@@ -1,1 +1,1 @@
-"""Tests for the Unified Path System v2 router (spec: SPEC-v2.md)."""
+"""Tests for the Unified Path System v2 router (see docs/UPS.md)."""

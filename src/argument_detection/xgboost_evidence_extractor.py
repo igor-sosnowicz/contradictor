@@ -35,7 +35,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
 
     @property
     def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for base-class symmetry.
-        """Path to the persisted model, resolved at use time (spec-v2 §5)."""
+        """Path to the persisted model, resolved at use time."""
         return paths.model_path("xgboost_evidence_extractor.pkl")
 
     def __init__(

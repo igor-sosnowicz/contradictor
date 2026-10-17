@@ -24,7 +24,7 @@ class GrantLedger:
     """
     Owns the grants list and the per-directory slice claims.
 
-    Collision rule (spec Q7): a directory claimed by two different module
+    Collision rule: a directory claimed by two different module
     slices raises unless `force=True` allows the override. Full contract:
     `docs/UPS.md`.
     """
@@ -45,7 +45,7 @@ class GrantLedger:
 
     def claim(self, directory: Path, module_slice: str, *, force: bool) -> None:
         """
-        Record a module slice's claim on a physical directory (spec Q7).
+        Record a module slice's claim on a physical directory.
 
         Args:
             directory (Path): The physical directory being claimed.

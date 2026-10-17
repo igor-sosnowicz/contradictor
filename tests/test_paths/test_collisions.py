@@ -8,7 +8,7 @@ SHARED = "shared"
 
 
 def test_slice_claim_colliding_with_shared_raises() -> None:
-    """A module-slice grant colliding with a `shared` claim raises (spec Q7)."""
+    """A module-slice grant colliding with a `shared` claim raises."""
     paths.model_path("classifier.pkl")
 
     with pytest.raises(ValueError, match="already claimed by module slice 'shared'"):
@@ -49,7 +49,7 @@ def test_force_on_a_sliced_override_is_recorded_with_the_slice() -> None:
 
 
 def test_same_slice_regrant_does_not_raise() -> None:
-    """Re-claiming your own slice never raises (spec Q7)."""
+    """Re-claiming your own slice never raises."""
     first = paths.get_data_path("metrics.parquet", target_module="search_module")
     second = paths.get_data_path("metrics.parquet", target_module="search_module")
 
@@ -62,7 +62,7 @@ def test_shared_regrant_does_not_raise() -> None:
     """
     Dynamic helpers from different callers share their root directories.
 
-    Amendment A1 (spec §3): the helpers claim as `shared` regardless of the
+    Shared-dir exception: the helpers claim as `shared` regardless of the
     calling module, so the production pipeline (framer + extractors in one
     process) never trips the collision guard.
     """

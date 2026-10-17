@@ -32,12 +32,12 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @property
     def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
-        """Path to the persisted classifier, resolved at use time (spec-v2 §5)."""
+        """Path to the persisted classifier, resolved at use time."""
         return paths.model_path("xgboost_frame_classifier.pkl")
 
     @property
     def PATH_TO_VECTORIZER(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
-        """Path to the persisted vectoriser, resolved at use time (spec-v2 §5)."""
+        """Path to the persisted vectoriser, resolved at use time."""
         return paths.model_path("tfidf_vectorizer.pkl")
 
     def __init__(

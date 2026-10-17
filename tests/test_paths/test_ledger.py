@@ -22,7 +22,7 @@ def test_ledger_records_grants_in_order() -> None:
 
 
 def test_dynamic_helper_grants_carry_the_shared_slice() -> None:
-    """Amendment A1: dynamic-helper grants are recorded under `shared`."""
+    """Shared-dir exception: dynamic-helper grants are recorded under `shared`."""
     resolved = paths.raw_dataset_path("persuade")
 
     grant = paths.ledger[-1]

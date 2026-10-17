@@ -48,7 +48,7 @@ def test_caller_slice_comes_from_the_repo_relative_path() -> None:
 
 
 def test_target_module_overrides_the_caller_slice() -> None:
-    """An explicit `target_module` wins over stack inspection (spec Q3)."""
+    """An explicit `target_module` wins over stack inspection."""
     resolved = paths.get_cache_path("checkpoint.pt", target_module="argument_detection")
 
     assert resolved == paths.cache_root / "argument_detection" / "checkpoint.pt"
