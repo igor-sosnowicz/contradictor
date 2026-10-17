@@ -1,9 +1,14 @@
-"""Safety guards shared by the unified path system."""
+"""
+Safety guards shared by the unified path system.
+
+Guard contract: `docs/UPS.md` ("Guards (portability + sanitisation)").
+"""
 
 from enum import StrEnum, auto
 from pathlib import PurePosixPath, PureWindowsPath
 
 
+# --- Root kinds ---
 class PathRoot(StrEnum):
     """Root that resolved path is anchored at."""
 
@@ -12,6 +17,7 @@ class PathRoot(StrEnum):
     TMP = auto()
 
 
+# --- Portability guards ---
 def escapes_root(relative: str) -> bool:
     """
     Report whether a root-relative path is absolute or steps above its root.
