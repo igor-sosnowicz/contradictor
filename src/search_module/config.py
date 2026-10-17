@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field
 
-from src.configuration import config
+from src.paths import paths
 
 
 class SearchConfig(BaseModel):
@@ -61,7 +61,9 @@ class CacheConfig(BaseModel):
 
     enabled: bool = True
     ttl_seconds: int = Field(default=7 * 24 * 60 * 60, ge=1)
-    directory: str = str(config.cache_directory / "search")
+    # Resolved lazily on instantiation (never at import time) so that root
+    # injection stays possible; defaults to this module's cache slice.
+    directory: str = Field(default_factory=lambda: str(paths.get_cache_path()))
     version: str = "v1"
 
 

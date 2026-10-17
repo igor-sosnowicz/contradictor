@@ -2,7 +2,7 @@
 
 import pickle
 from pathlib import Path
-from typing import Final, override
+from typing import override
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -13,8 +13,8 @@ from src.argument_detection.argument_detection_dataset import (
 from src.argument_detection.base_xgboost_extractor import (
     BaseXGBoostExtractor,
 )
-from src.configuration import config
 from src.data_models.data_models import SubsetName
+from src.paths import paths
 from src.utils.errors import ModelNotTrainedError
 
 
@@ -33,13 +33,10 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
     - tuning the classification threshold.
     """
 
-    PATH_TO_MODEL: Final = Path(
-        config.data_directory
-        / config.model_subdirectory
-        / "xgboost_evidence_extractor.pkl"
-    )
-
-    CACHE_DIRECTORY: Final = Path(config.cache_directory / "evidence_extractor")
+    @property
+    def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for base-class symmetry.
+        """Path to the persisted model, resolved at use time (spec-v2 §5)."""
+        return paths.model_path("xgboost_evidence_extractor.pkl")
 
     def __init__(
         self,
