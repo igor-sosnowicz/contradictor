@@ -188,7 +188,6 @@ async def test_pipeline_sync_call_raises_runtime_error_in_async_loop(
     Verify that calling the extractor synchronously inside an async
     loop raises RuntimeError.
     """
-    with pytest.raises(
-        RuntimeError, match="__call__\\(\\) cannot be called from a running event loop"
-    ):
+    msg = "cannot be called from a running event loop"
+    with pytest.raises(RuntimeError, match=msg):
         pipeline(["Cats are intelligent animals."])
