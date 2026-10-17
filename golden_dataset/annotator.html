@@ -90,7 +90,9 @@
         </div>
         <p class="muted">
             Select a folder containing .txt files to load them all at once.
-            Loading a directory replaces the current project.
+            Texts are (re)loaded straight from the .txt files every time. If a
+            file with the same name already exists in the project, its text is
+            overridden instead of creating a duplicate.
         </p>
     </section>
 
@@ -406,28 +408,48 @@
                 return;
             }
 
-            const loadedDocuments = [];
+            let added = 0;
+            let overridden = 0;
 
             for (const file of txtFiles) {
+                // Always (re)load the text straight from the .txt file.
                 const { text, source } = parseDocument(await file.text());
-                loadedDocuments.push({
-                    id: loadedDocuments.length + 1,
-                    title: file.name.replace(/\.txt$/i, ""),
-                    text,
-                    source,
-                });
+                const title = file.name.replace(/\.txt$/i, "");
+                const existing = documents.find((doc) => doc.title === title);
+
+                if (existing) {
+                    // Override the document in place: same filename is never
+                    // duplicated, and the document id stays the same so any
+                    // existing arguments/relations still point at it.
+                    existing.text = text;
+                    existing.source = source;
+                    overridden++;
+                } else {
+                    documents.push({
+                        id: nextDocumentId++,
+                        title,
+                        text,
+                        source,
+                    });
+                    added++;
+                }
             }
 
-            documents = loadedDocuments;
-            activeDocumentId = documents[0]?.id ?? null;
-            nextDocumentId = documents.length + 1;
+            // Keep document ids unique after merging/reloading.
+            nextDocumentId =
+                documents.reduce((maxId, doc) => Math.max(maxId, doc.id), 0) + 1;
+
+            if (!documents.some((doc) => doc.id === activeDocumentId)) {
+                activeDocumentId = documents[0]?.id ?? null;
+            }
+
+            // The current selection/draft no longer matches the reloaded text.
             draftSpans = [];
-            argumentsList = [];
-            relations = [];
-            nextArgumentId = 1;
 
             renderAll();
-            alert(`Loaded ${txtFiles.length} document(s).`);
+            alert(
+                `Loaded ${txtFiles.length} document(s) (${added} new, ${overridden} overridden by filename).`,
+            );
         };
 
         $("documentPicker").onchange = (event) => {
