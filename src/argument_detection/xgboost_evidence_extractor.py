@@ -186,7 +186,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         probabilities = self._model.predict_proba(X)[:, 1]
         if "threshold" not in self._cache:
             await self.perform_tuning()
-        threshold = self._config.threshold.claim
+        threshold = self._config.threshold.evidence
         return [
             evidence
             for evidence, probability in zip(
@@ -196,6 +196,77 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             )
             if (probability >= threshold and normalise(evidence) != normalised_claim)
         ]
+
+    # pylint: disable=too-many-locals
+    # Reason: Vectorised batch processing requires flattening data pipelines and
+    # tracking original indices,
+    # which increases local variable count.
+    async def extract_evidence_batch(
+        self,
+        claims: list[str],
+        texts: list[str],
+    ) -> list[list[str]]:
+        """
+        Extract evidence for a batch of claims in a vectorised manner.
+
+        Args:
+            claims (list[str]): List of claims for which evidence should be found.
+            texts (list[str]): List of full documents corresponding to each claim.
+
+        Returns:
+            list[list[str]]: A list containing lists of evidence sentences
+                for each input claim.
+
+        Raises:
+            RuntimeError: If the model cannot be initialised.
+        """
+        await self._initialise_model()
+        if self._model is None:
+            raise ModelNotTrainedError("Model was not initialised.")
+
+        def normalise(sentence: str) -> str:
+            return " ".join(sentence.lower().split())
+
+        flat_claims_for_features: list[str] = []
+        flat_candidates_for_features: list[str] = []
+        claim_mapping: list[int] = []
+
+        for idx, (claim, text) in enumerate(zip(claims, texts, strict=True)):
+            normalised_claim = normalise(claim)
+            candidates = [s.strip() for s in self._sentence_splitter(text) if s.strip()]
+
+            candidates = [c for c in candidates if normalise(c) != normalised_claim]
+
+            for candidate in candidates:
+                flat_claims_for_features.append(claim)
+                flat_candidates_for_features.append(candidate)
+                claim_mapping.append(idx)
+
+        if not flat_candidates_for_features:
+            return [[] for _ in claims]
+
+        X = self._create_features(
+            flat_claims_for_features,
+            flat_candidates_for_features,
+        )
+        probabilities = self._model.predict_proba(X)[:, 1]
+
+        if "threshold" not in self._cache:
+            await self.perform_tuning()
+        threshold = self._config.threshold.evidence
+
+        results: list[list[str]] = [[] for _ in claims]
+        zipped_data = zip(
+            flat_candidates_for_features,
+            probabilities,
+            claim_mapping,
+            strict=True,
+        )
+        for candidate, prob, idx in zipped_data:
+            if prob >= threshold:
+                results[idx].append(candidate)
+
+        return results
 
     @override
     async def perform_tuning(

@@ -1,71 +1,67 @@
-"""Tests for claim extractor module."""
+"""Unit tests for the claim-evidence extraction pipeline."""
 
-import asyncio
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 from src.argument_detection.claim_evidence_extractor import (
     ClaimEvidenceExtractor,
 )
-from src.data_models.data_models import ClaimEvidencePair
+from src.data_models.data_models import Argument
 
 
-class FakeClaimExtractor:
-    """Fake claim extractor."""
+@pytest.fixture
+def mock_pipeline() -> ClaimEvidenceExtractor:
+    """Create a pipeline with mocked components for unit tests."""
+    claim_extractor = MagicMock()
+    evidence_extractor = MagicMock()
 
-    async def extract_claims(
-        self,
-        text: str,
-    ) -> list[str]:
-        """Return a predefined claim."""
-        return ["Cats are intelligent animals."]
+    claim_extractor.extract_claims_batch = AsyncMock()
+    evidence_extractor.extract_evidence_batch = AsyncMock()
 
-
-class FakeEvidenceExtractor:
-    """Fake evidence extractor."""
-
-    async def extract_evidence(
-        self,
-        claim: str,
-        text: str,
-    ) -> list[str]:
-        """Return predefined evidence for a claim."""
-        return ["Cats learn quickly."]
-
-
-def test_pipeline_extracts_pairs() -> None:
-    """Verify pipeline creates claim-evidence pairs."""
-    pipeline = ClaimEvidenceExtractor(
-        claim_extractor=FakeClaimExtractor(),
-        evidence_extractor=FakeEvidenceExtractor(),
+    return ClaimEvidenceExtractor(
+        claim_extractor=claim_extractor,
+        evidence_extractor=evidence_extractor,
     )
 
-    result = asyncio.run(
-        pipeline.extract_pairs("Cats are intelligent animals."),
+
+@pytest.mark.asyncio
+async def test_pipeline_extracts_pairs(
+    mock_pipeline: ClaimEvidenceExtractor,
+) -> None:
+    """Verify that the pipeline orchestrates component steps to extract pairs."""
+    mock_pipeline._claim_extractor.extract_claims_batch = AsyncMock(
+        return_value=[["Cats are smart."]]
     )
+    mock_pipeline._evidence_extractor.extract_evidence_batch = AsyncMock(
+        return_value=[["Cats learn quickly."]]
+    )
+
+    result_batch = await mock_pipeline._process_batch(["Some full document text"])
+    result = result_batch[0]
 
     assert len(result) == 1
-    assert isinstance(result[0], ClaimEvidencePair)
-    assert result[0].claim == "Cats are intelligent animals."
+    assert isinstance(result[0], Argument)
+    assert result[0].claim == "Cats are smart."
     assert result[0].evidence == "Cats learn quickly."
 
-
-def test_pipeline_returns_empty_when_no_claims() -> None:
-    """Verify empty result when claims are missing."""
-
-    class EmptyClaimExtractor:
-        """Fake extractor returning no claims."""
-
-        async def extract_claims(
-            self,
-            text: str,
-        ) -> list[str]:
-            """Return an empty list of claims."""
-            return []
-
-    pipeline = ClaimEvidenceExtractor(
-        claim_extractor=EmptyClaimExtractor(),
-        evidence_extractor=FakeEvidenceExtractor(),
+    mock_pipeline._claim_extractor.extract_claims_batch.assert_called_once_with(
+        ["Some full document text"]
+    )
+    mock_pipeline._evidence_extractor.extract_evidence_batch.assert_called_once_with(
+        claims=["Cats are smart."],
+        texts=["Some full document text"],
     )
 
-    result = asyncio.run(pipeline.extract_pairs("text"))
 
-    assert result == []
+@pytest.mark.asyncio
+async def test_pipeline_returns_empty_when_no_claims(
+    mock_pipeline: ClaimEvidenceExtractor,
+) -> None:
+    """Verify that an empty list is returned if no claims are detected."""
+    mock_pipeline._claim_extractor.extract_claims_batch = AsyncMock(return_value=[[]])
+
+    result_batch = await mock_pipeline._process_batch(["Text without claims"])
+
+    assert result_batch == [[]]
+    mock_pipeline._evidence_extractor.extract_evidence_batch.assert_not_called()

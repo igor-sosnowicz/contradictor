@@ -152,3 +152,53 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
             x,
             y,
         )
+
+    async def extract_claims_batch(self, texts: list[str]) -> list[list[str]]:
+        """
+        Extract claim sentences from a batch of documents in a vectorised manner.
+
+        Args:
+            texts (list[str]): List of documents or text fragments to analyze.
+
+        Returns:
+            list[list[str]]: Lists of sentences classified as claims,
+                one list per input document. Order is preserved.
+
+        Raises:
+            ModelNotTrainedError: If the model is not trained or initialized.
+        """
+        await self._initialise_model()
+        if self._model is None:
+            raise ModelNotTrainedError("Model was not initialised.")
+
+        all_candidates: list[str] = []
+        doc_mapping: list[int] = []
+
+        for doc_idx, text in enumerate(texts):
+            sentences = [s.strip() for s in self._sentence_splitter(text) if s.strip()]
+            for sentence in sentences:
+                all_candidates.append(sentence)
+                doc_mapping.append(doc_idx)
+
+        if not all_candidates:
+            return [[] for _ in texts]
+
+        X = self._embedder.embed(all_candidates)
+        probabilities = self._model.predict_proba(X)[:, 1]
+
+        if "threshold" not in self._cache:
+            await self.perform_tuning()
+        threshold = self._config.threshold.claim
+
+        results: list[list[str]] = [[] for _ in texts]
+        zipped_data = zip(
+            all_candidates,
+            probabilities,
+            doc_mapping,
+            strict=True,
+        )
+        for sentence, prob, doc_idx in zipped_data:
+            if prob >= threshold:
+                results[doc_idx].append(sentence)
+
+        return results
