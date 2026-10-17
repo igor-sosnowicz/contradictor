@@ -32,6 +32,10 @@ schema_version
 # Populated from the NLI model's output score in _perform_inference.
 confidence
 
+# Pytest fixtures used implicitly by the framework (autouse/argument injection).
+isolated_path_roots
+fresh_router
+
 # Pytorch's `forward` is called implicitly.
 MLPEncoder.forward
 
