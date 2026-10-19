@@ -20,7 +20,9 @@ def test_roots_live_under_the_pytest_tmp_tree(
 
 def test_resolved_paths_land_under_the_redirected_roots() -> None:
     """A resolved path is created inside the redirected tree, not the real one."""
-    resolved = paths.get_data_path("isolation/probe.json", target_module="isolation")
+    resolved = paths.get_data_path(
+        "isolation/probe.json", target_module="isolation", is_file=True
+    )
 
     assert resolved.is_relative_to(paths.data_root)
     assert resolved.parent.is_dir()
@@ -29,7 +31,9 @@ def test_resolved_paths_land_under_the_redirected_roots() -> None:
 def test_nothing_is_written_to_the_real_user_directories() -> None:
     """A probe grant must not appear under the production platformdirs roots."""
     probe = f"ups-v2-probe-{uuid4().hex}"
-    resolved = paths.get_data_path(f"{probe}.json", target_module="isolation")
+    resolved = paths.get_data_path(
+        f"{probe}.json", target_module="isolation", is_file=True
+    )
 
     directories = PlatformDirs("Contradictor")
     real_data = directories.user_data_path

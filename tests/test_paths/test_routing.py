@@ -3,6 +3,7 @@
 import inspect
 import subprocess
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -42,7 +43,7 @@ def test_caller_slice_comes_from_the_repo_relative_path() -> None:
     This test file lives at `tests/test_paths/…`, so the first repo-relative
     component — the slice — is `tests`.
     """
-    resolved = paths.get_cache_path("probe.json")
+    resolved = paths.get_cache_path("probe.json", is_file=True)
 
     assert resolved == paths.cache_root / "tests" / "probe.json"
 
@@ -71,11 +72,15 @@ def test_slice_of_an_empty_canonical_id_is_interactive() -> None:
 
 def test_synthetic_frame_falls_back_to_interactive() -> None:
     """A frame whose `__file__` is not a real file attributes to `interactive`."""
+
+    def caller() -> Path:
+        return paths.get_tmp_path("probe.json", is_file=True)
+
     synthetic_globals = {"__file__": "/nonexistent/synthetic_frame.py", "paths": paths}
+    synthetic_caller = types.FunctionType(caller.__code__, synthetic_globals)
 
-    exec("resolved = paths.get_tmp_path('probe.json')", synthetic_globals)  # noqa: S102
+    resolved = synthetic_caller()
 
-    resolved = synthetic_globals["resolved"]
     assert resolved == paths.tmp_root / INTERACTIVE_SLICE / "probe.json"
     assert resolved.parent.is_dir()
 
@@ -89,12 +94,15 @@ def test_frames_outside_the_repo_are_skipped() -> None:
     file is used because in-repo tooling (`.venv/…`) *is* inside the repo
     and would map to its own slice.
     """
-    outside_file = inspect.__file__
-    synthetic_globals = {"__file__": outside_file, "paths": paths}
 
-    exec("resolved = paths.get_data_path('probe.json')", synthetic_globals)  # noqa: S102
+    def caller() -> Path:
+        return paths.get_data_path("probe.json", is_file=True)
 
-    resolved = synthetic_globals["resolved"]
+    synthetic_globals = {"__file__": inspect.__file__, "paths": paths}
+    synthetic_caller = types.FunctionType(caller.__code__, synthetic_globals)
+
+    resolved = synthetic_caller()
+
     assert resolved == paths.data_root / "tests" / "probe.json"
 
 
@@ -115,7 +123,7 @@ initialise(
     cache_root=Path({str(cache_root)!r}),
     tmp_root=Path({str(tmp_root)!r}),
 )
-print(paths.get_data_path('probe.json'))
+print(paths.get_data_path('probe.json', is_file=True))
 """
 
     result = subprocess.run(  # noqa: S603
@@ -140,7 +148,9 @@ def test_subpath_empty_names_the_slice_directory() -> None:
 
 def test_file_suffix_creates_only_the_parent_directory() -> None:
     """A final segment with a suffix is a file: only its parent is created."""
-    resolved = paths.get_cache_path("sub/out.json", target_module="search_module")
+    resolved = paths.get_cache_path(
+        "sub/out.json", target_module="search_module", is_file=True
+    )
 
     assert resolved.parent.is_dir()
     assert not resolved.exists()

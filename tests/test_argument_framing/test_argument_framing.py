@@ -53,8 +53,8 @@ async def test_xgboost_framer_initialization() -> None:
     mock_dataset = ArgumentFramingDataset()
     framer = XGBoostFrameClassifier(dataset=mock_dataset, proof_of_concept_mode=True)
 
-    assert framer.PATH_TO_MODEL.parent.exists()
-    assert framer.PATH_TO_VECTORIZER.parent.exists()
+    assert framer.path_to_model.parent.exists()
+    assert framer.path_to_vectorizer.parent.exists()
 
     # Ensure no cached vectorizer exists so perform_tuning() raises immediately.
     framer._vectorizer = None

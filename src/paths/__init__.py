@@ -1,8 +1,4 @@
-"""
-Unified Path System v2: the single source of filesystem truth.
-
-Usage patterns and the full contract: `docs/UPS.md`.
-"""
+"""Unified paths: the single source of filesystem truth."""
 
 from src.paths.router import (
     cache_path,

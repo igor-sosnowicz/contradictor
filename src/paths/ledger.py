@@ -1,8 +1,4 @@
-"""
-Usage ledger: granted paths and per-directory module-slice claims.
-
-The collision rule lives here. Usage contract: `docs/UPS.md`.
-"""
+"""Usage ledger: granted paths and per-directory module-slice claims."""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,7 +8,7 @@ from src.paths.core import PathRoot
 
 @dataclass(frozen=True)
 class PathGrant:
-    """A single usage-ledger entry: one granted path."""
+    """A ledger entry linking a granted path."""
 
     root_kind: PathRoot
     module_slice: str
@@ -25,8 +21,7 @@ class GrantLedger:
     Owns the grants list and the per-directory slice claims.
 
     Collision rule: a directory claimed by two different module
-    slices raises unless `force=True` allows the override. Full contract:
-    `docs/UPS.md`.
+    slices raises unless `force=True` allows the override.
     """
 
     def __init__(self) -> None:
@@ -36,7 +31,7 @@ class GrantLedger:
 
     @property
     def grants(self) -> tuple[PathGrant, ...]:
-        """Every recorded grant, in grant order."""
+        """Read-only snapshot of every recorded grant, in grant order."""
         return tuple(self._grants)
 
     def record(self, grant: PathGrant) -> None:
