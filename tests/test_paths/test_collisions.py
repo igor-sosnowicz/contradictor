@@ -1,5 +1,8 @@
 """Collision-rule tests: cross-claim raises, `force` overrides, `shared` semantics."""
 
+import types
+from pathlib import Path
+
 import pytest
 
 from src.paths import paths
@@ -66,14 +69,20 @@ def test_shared_regrant_does_not_raise() -> None:
     calling module, so the production pipeline (framer + extractors in one
     process) never trips the collision guard.
     """
-    synthetic_framer = {"__file__": "/synthetic/framer.py", "paths": paths}
-    synthetic_extractor = {"__file__": "/synthetic/extractor.py", "paths": paths}
 
-    exec("resolved = paths.model_path('classifier.pkl')", synthetic_framer)  # noqa: S102
-    exec("resolved = paths.model_path('classifier.pkl')", synthetic_extractor)  # noqa: S102
+    def caller() -> Path:
+        return paths.model_path("classifier.pkl")
 
-    framer_path = synthetic_framer["resolved"]
-    extractor_path = synthetic_extractor["resolved"]
+    synthetic_framer = types.FunctionType(
+        caller.__code__, {"__file__": "/synthetic/framer.py", "paths": paths}
+    )
+    synthetic_extractor = types.FunctionType(
+        caller.__code__, {"__file__": "/synthetic/extractor.py", "paths": paths}
+    )
+
+    framer_path = synthetic_framer()
+    extractor_path = synthetic_extractor()
+
     assert framer_path == extractor_path
     assert framer_path == paths.data_root / "models" / "classifier.pkl"
     assert all(grant.module_slice == SHARED for grant in paths.ledger)

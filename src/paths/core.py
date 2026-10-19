@@ -1,14 +1,9 @@
-"""
-Safety guards shared by the unified path system.
-
-Guard contract: `docs/UPS.md` ("Guards (portability + sanitisation)").
-"""
+"""Safety guards shared by the unified path system."""
 
 from enum import StrEnum, auto
 from pathlib import PurePosixPath, PureWindowsPath
 
 
-# --- Root kinds ---
 class PathRoot(StrEnum):
     """Root that resolved path is anchored at."""
 

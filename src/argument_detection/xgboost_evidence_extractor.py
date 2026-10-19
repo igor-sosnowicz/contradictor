@@ -1,7 +1,6 @@
 """XGBoost model for claim-evidence pair extraction."""
 
 import pickle
-from pathlib import Path
 from typing import override
 
 import numpy as np
@@ -33,11 +32,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
     - tuning the classification threshold.
     """
 
-    @property
-    def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for base-class symmetry.
-        """Path to the persisted model, resolved at use time."""
-        return paths.model_path("xgboost_evidence_extractor.pkl")
-
     def __init__(
         self,
         dataset: ArgumentDetectionDataset,
@@ -59,6 +53,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             cache_name="evidence_extractor",
             proof_of_concept_mode=proof_of_concept_mode,
         )
+        self.path_to_model = paths.model_path("xgboost_evidence_extractor.pkl")
 
     def _get_max_samples(self) -> int:
         """
@@ -131,7 +126,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             y,
         )
         self._model = model
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(
                 model,
                 file,

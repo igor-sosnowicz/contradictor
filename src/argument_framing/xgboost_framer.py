@@ -2,7 +2,6 @@
 
 import pickle
 from collections.abc import Collection, Iterable
-from pathlib import Path
 from typing import Final, override
 
 import optuna
@@ -30,16 +29,6 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     NUM_CLASSES: Final = 15
 
-    @property
-    def PATH_TO_MODEL(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
-        """Path to the persisted classifier, resolved at use time."""
-        return paths.model_path("xgboost_frame_classifier.pkl")
-
-    @property
-    def PATH_TO_VECTORIZER(self) -> Path:  # noqa: N802 - Name kept for test compatibility.
-        """Path to the persisted vectoriser, resolved at use time."""
-        return paths.model_path("tfidf_vectorizer.pkl")
-
     def __init__(
         self,
         dataset: ArgumentFramingDataset,
@@ -59,6 +48,8 @@ class XGBoostFrameClassifier(ArgumentFramer):
             configuration (XGBoostConfig | None): Internal configuration of the XGBoost
                 and TF-IDF vectoriser models. None means default values will be used.
         """
+        self.path_to_model = paths.model_path("xgboost_frame_classifier.pkl")
+        self.path_to_vectorizer = paths.model_path("tfidf_vectorizer.pkl")
         self._model = self._load()
         self._vectorizer = self._load_vectorizer()
         self._dataset = dataset
@@ -68,17 +59,17 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @override
     def _load(self) -> XGBClassifier | None:
-        if not self.PATH_TO_MODEL.exists():
+        if not self.path_to_model.exists():
             return None
 
-        with self.PATH_TO_MODEL.open("rb") as file:
+        with self.path_to_model.open("rb") as file:
             return pickle.load(file)  # noqa: S301, Trusted source.
 
     def _load_vectorizer(self) -> TfidfVectorizer | None:
-        if not self.PATH_TO_VECTORIZER.exists():
+        if not self.path_to_vectorizer.exists():
             return None
 
-        with self.PATH_TO_VECTORIZER.open("rb") as file:
+        with self.path_to_vectorizer.open("rb") as file:
             return pickle.load(file)  # noqa: S301, Trusted source.
 
     @override
@@ -121,10 +112,10 @@ class XGBoostFrameClassifier(ArgumentFramer):
             verbose=True,
         )
 
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(model, file)
 
-        with self.PATH_TO_VECTORIZER.open("wb") as file:
+        with self.path_to_vectorizer.open("wb") as file:
             pickle.dump(vectorizer, file)
 
         self._vectorizer = vectorizer
@@ -284,7 +275,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
         self._model.fit(x, y)
 
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(self._model, file)
 
         return {

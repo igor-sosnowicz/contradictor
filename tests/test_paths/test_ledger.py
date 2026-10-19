@@ -35,7 +35,7 @@ def test_dynamic_helper_grants_carry_the_shared_slice() -> None:
 
 def test_ledger_is_cleared_when_a_root_changes() -> None:
     """Outstanding grants refer to the previous roots, so a change clears them."""
-    paths.get_data_path("probe.json", target_module="search_module")
+    paths.get_data_path("probe.json", target_module="search_module", is_file=True)
     assert paths.ledger
 
     initialise(cache_root=paths.cache_root / "moved")
@@ -45,7 +45,7 @@ def test_ledger_is_cleared_when_a_root_changes() -> None:
 
 def test_noop_initialise_keeps_the_ledger() -> None:
     """Calling `initialise()` without arguments changes no root and clears nothing."""
-    paths.get_data_path("probe.json", target_module="search_module")
+    paths.get_data_path("probe.json", target_module="search_module", is_file=True)
     before = paths.ledger
 
     initialise()
@@ -55,7 +55,7 @@ def test_noop_initialise_keeps_the_ledger() -> None:
 
 def test_reinitialising_the_same_roots_keeps_the_ledger() -> None:
     """Only an actual root *change* clears the ledger, not a restatement."""
-    paths.get_data_path("probe.json", target_module="search_module")
+    paths.get_data_path("probe.json", target_module="search_module", is_file=True)
     before = paths.ledger
 
     initialise(

@@ -1,8 +1,4 @@
-"""
-Repository environment: root anchoring and canonical module identifiers.
-
-Usage contract: `docs/UPS.md`.
-"""
+"""Repository environment: root anchoring and canonical module identifiers."""
 
 from pathlib import Path
 
@@ -13,7 +9,7 @@ class RepositoryEnvironment:
 
     Root anchoring scans upward from a caller's file path until a sentinel
     (`pyproject.toml` or `.git`) is found, and the first root found is
-    cached. Full contract: `docs/UPS.md`.
+    cached.
     """
 
     _SENTINELS: tuple[str, ...] = ("pyproject.toml", ".git")
@@ -22,8 +18,8 @@ class RepositoryEnvironment:
         """Initialise an environment with an unresolved repository root."""
         self._repo_root: Path | None = None
 
-    def repo_root_for(self, start: Path) -> Path:
-        """Return the repository root containing the given file (cached)."""
+    def _repo_root_for(self, start: Path) -> Path:
+        """Return the repository root containing the given file."""
         if self._repo_root is not None:
             return self._repo_root
 
@@ -38,9 +34,20 @@ class RepositoryEnvironment:
         raise ValueError(message)
 
     def get_canonical_id(self, file_path: Path) -> str:
-        """Return the file's repo-relative, `/`-joined id with `src` stripped."""
+        """
+        Return the file's repo-relative, `/`-joined id with `src` stripped.
+
+        Args:
+            file_path (Path): A file inside the repository.
+
+        Returns:
+            str: The canonical identifier, e.g. `search_module/cache`.
+
+        Raises:
+            ValueError: If the file lies outside the repository.
+        """
         resolved = Path(file_path).resolve()
-        root = self.repo_root_for(resolved)
+        root = self._repo_root_for(resolved)
 
         try:
             relative = resolved.relative_to(root)
