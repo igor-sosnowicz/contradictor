@@ -14,12 +14,12 @@ processing flow:
 import asyncio
 from typing import override
 
+from src.argument_detection.argument_extractor import ArgumentExtractor
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import (
     XGBoostEvidenceExtractor,
 )
 from src.data_models.data_models import Argument
-from src.pipeline.argument_extractor import ArgumentExtractor
 
 
 class ClaimEvidenceExtractor(ArgumentExtractor):

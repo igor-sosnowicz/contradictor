@@ -47,7 +47,6 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         super().__init__(
             dataset,
             model_name="xgboost_claim_extractor.json",
-            cache_name="claim_extractor",
             proof_of_concept_mode=proof_of_concept_mode,
         )
 
@@ -186,8 +185,6 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
         X = self._embedder.embed(all_candidates)
         probabilities = self._model.predict_proba(X)[:, 1]
 
-        if "threshold" not in self._cache:
-            await self.perform_tuning()
         threshold = self._config.threshold.claim
 
         results: list[list[str]] = [[] for _ in texts]

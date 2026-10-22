@@ -57,7 +57,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
         super().__init__(
             dataset,
             model_name="xgboost_evidence_extractor.json",
-            cache_name="evidence_extractor",
             proof_of_concept_mode=proof_of_concept_mode,
         )
 
@@ -184,8 +183,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             candidates,
         )
         probabilities = self._model.predict_proba(X)[:, 1]
-        if "threshold" not in self._cache:
-            await self.perform_tuning()
         threshold = self._config.threshold.evidence
         return [
             evidence
@@ -250,9 +247,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             flat_candidates_for_features,
         )
         probabilities = self._model.predict_proba(X)[:, 1]
-
-        if "threshold" not in self._cache:
-            await self.perform_tuning()
         threshold = self._config.threshold.evidence
 
         results: list[list[str]] = [[] for _ in claims]

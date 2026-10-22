@@ -1,12 +1,12 @@
 """Module with an argument extractor factory function."""
 
 from src.argument_detection.argument_detection_dataset import ArgumentDetectionDataset
+from src.argument_detection.argument_extractor import ArgumentExtractor
 from src.argument_detection.claim_evidence_extractor import ClaimEvidenceExtractor
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import XGBoostEvidenceExtractor
 from src.configuration import config
 from src.data_models.data_models import ArgumentExtractorImplementation
-from src.pipeline.argument_extractor import ArgumentExtractor
 
 
 def build_argument_extractor(
