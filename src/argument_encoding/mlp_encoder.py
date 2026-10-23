@@ -225,6 +225,8 @@ def _validate_epoch(
 
 
 class DataLoaders(NamedTuple):
+    """Tuple with loader used for a neural network training."""
+
     train: DataLoader
     validation: DataLoader
 
