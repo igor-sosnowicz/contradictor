@@ -19,7 +19,8 @@ def build_encoder(
             pre-configured implementation.
         output_dimensions (int): A number of dimensions of the representation vector
         kwargs: Additional parameters passed on directly to the constructor
-            of an encoder.
+            of an encoder. Accepts ``proof_of_concept_mode`` (bool) to use a tiny
+            subset of training data for faster test runs.
 
     Returns:
         ArgumentEncoder: An initialised instance of the encoder.
@@ -28,7 +29,8 @@ def build_encoder(
         NotImplementedError: Raised if not implemented variant was requested.
     """
     encoder_implementation = encoder_implementation or config.encoder
-    dataset = ArgumentEncodingDataset()
+    proof_of_concept_mode = kwargs.pop("proof_of_concept_mode", False)
+    dataset = ArgumentEncodingDataset(proof_of_concept_mode=proof_of_concept_mode)
 
     match encoder_implementation:
         case EncoderImplementation.MLP:

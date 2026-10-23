@@ -6,7 +6,6 @@ import faker
 from loguru import logger
 
 from src.argument_encoding.argument_encoder import ArgumentEncoder
-from src.argument_encoding.argument_encoding_dataset import ArgumentEncodingDataset
 from src.argument_encoding.mlp_encoder import TrainingConfig
 from src.data_models.data_models import (
     Argument,
@@ -38,16 +37,15 @@ def get_argument_encoders(
         list[ArgumentEncoder]: A list of instances of argument encoders.
     """
     encoders: list[ArgumentEncoder] = []
-    tiny_dataset = ArgumentEncodingDataset(max_samples=10)
     for encoder in EncoderImplementation:
         kwargs = {
             "training_config": FAST_TRAINING_CONFIG,
             "fine_tuning_config": FAST_TRAINING_CONFIG,
             "n_optuna_trials": 2,
-            "dataset": tiny_dataset,
+            "proof_of_concept_mode": True,
         }
         if output_dimensions is None:
-            encoders.append(build_encoder(encoder, **kwargs))
+            encoders.append(build_encoder(encoder, **kwargs))  # type: ignore[arg-type]
         else:
             encoders.append(
                 build_encoder(encoder, output_dimensions=output_dimensions, **kwargs)

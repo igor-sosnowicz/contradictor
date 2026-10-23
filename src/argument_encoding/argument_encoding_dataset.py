@@ -40,6 +40,8 @@ class ArgumentEncodingDataset(Dataset):
         self,
         max_samples: int = MAX_SAMPLES_DEFAULT,
         random_seed: int | None = None,
+        *,
+        proof_of_concept_mode: bool = False,
     ) -> None:
         """
         Initialise the argument encoding dataset.
@@ -48,10 +50,17 @@ class ArgumentEncodingDataset(Dataset):
             max_samples (int): Maximum number of FEVER arguments to load.
                 In every split of the dataset, arguments create N^2 rows.
                 For example, training split with 10 samples results in 100 rows.
+                Leave it unchanged if `proof_of_concept_mode` is provided.
             random_seed (int | None): Random seed for argument splitting.
+            proof_of_concept_mode (bool): Whether to use a tiny subset of training
+                data for faster test runs. Defaults to False.
         """
         super().__init__(random_seed=random_seed)
-        self.max_samples = max_samples
+        self.proof_of_concept_mode = proof_of_concept_mode
+        if proof_of_concept_mode:
+            self.max_samples = 10
+        else:
+            self.max_samples = max_samples
 
     @classmethod
     def _sbert(cls) -> SentenceTransformer:
@@ -256,7 +265,7 @@ class ArgumentEncodingDataset(Dataset):
         )
 
         t0 = time.time()
-        framer = build_argument_framer()
+        framer = build_argument_framer(proof_of_concept_mode=self.proof_of_concept_mode)
         logger.debug(f"[PERF] framer created (dataset): {time.time() - t0:.1f}s")
 
         t0 = time.time()
