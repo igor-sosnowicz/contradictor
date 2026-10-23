@@ -129,7 +129,7 @@ class ArgumentEncodingDataset(Dataset):
         other_texts = reference_texts
         t0 = time.time()
         agreements = await nli(reference_texts, other_texts)
-        logger.info(
+        logger.debug(
             f"[PERF] nli({len(reference_texts)}x{len(other_texts)} pairs): "
             f"{time.time() - t0:.1f}s"
         )
@@ -235,7 +235,7 @@ class ArgumentEncodingDataset(Dataset):
     ]:
         t0 = time.time()
         arguments_data = self.load_fever_supports_pairs(self.max_samples)
-        logger.info(
+        logger.debug(
             f"[PERF] load_fever_supports_pairs({self.max_samples}): "
             f"{time.time() - t0:.1f}s"
         )
@@ -244,7 +244,7 @@ class ArgumentEncodingDataset(Dataset):
         t0 = time.time()
         style_extractor = SpacyStyleExtractor()
         await style_extractor.prepare()
-        logger.info(
+        logger.debug(
             f"[PERF] style_extractor.prepare (dataset): {time.time() - t0:.1f}s"
         )
 
@@ -257,21 +257,21 @@ class ArgumentEncodingDataset(Dataset):
 
         t0 = time.time()
         framer = build_argument_framer()
-        logger.info(f"[PERF] framer created (dataset): {time.time() - t0:.1f}s")
+        logger.debug(f"[PERF] framer created (dataset): {time.time() - t0:.1f}s")
 
         t0 = time.time()
         await framer.prepare()
-        logger.info(f"[PERF] framer.prepare (dataset): {time.time() - t0:.1f}s")
+        logger.debug(f"[PERF] framer.prepare (dataset): {time.time() - t0:.1f}s")
 
         t0 = time.time()
         framed_arguments = list(framer.frame(arguments_data))
-        logger.info(
+        logger.debug(
             f"[PERF] framer.frame ({len(arguments_data)} args, dataset): "
             f"{time.time() - t0:.1f}s"
         )
 
         total = time.time() - t0
-        logger.info(
+        logger.debug(
             f"[PERF] _get_styled_arguments_from_fever_dataset total: {total:.1f}s"
         )
 
@@ -339,13 +339,13 @@ class ArgumentEncodingDataset(Dataset):
 
         t0 = time.time()
         with TransformersNLI() as nli:
-            logger.info(
+            logger.debug(
                 f"[PERF] TransformersNLI context entered: {time.time() - t0:.1f}s"
             )
 
             t0 = time.time()
             train_df = await self._generate_argument_encoding_dataset(train_args, nli)
-            logger.info(
+            logger.debug(
                 f"[PERF] _generate_argument_encoding_dataset (train, "
                 f"{len(train_args)} args, {len(train_df)} rows): "
                 f"{time.time() - t0:.1f}s"
@@ -353,7 +353,7 @@ class ArgumentEncodingDataset(Dataset):
 
             t0 = time.time()
             val_df = await self._generate_argument_encoding_dataset(val_args, nli)
-            logger.info(
+            logger.debug(
                 f"[PERF] _generate_argument_encoding_dataset (val, "
                 f"{len(val_args)} args, {len(val_df)} rows): "
                 f"{time.time() - t0:.1f}s"
@@ -361,7 +361,7 @@ class ArgumentEncodingDataset(Dataset):
 
             t0 = time.time()
             test_df = await self._generate_argument_encoding_dataset(test_args, nli)
-            logger.info(
+            logger.debug(
                 f"[PERF] _generate_argument_encoding_dataset (test, "
                 f"{len(test_args)} args, {len(test_df)} rows): "
                 f"{time.time() - t0:.1f}s"

@@ -1,10 +1,12 @@
 """Module with HuggingFace transformers implementation of NLI."""
 
 import asyncio
+import time
 from concurrent.futures import ThreadPoolExecutor
 from types import TracebackType
 from typing import Self, override
 
+from loguru import logger
 from transformers import pipeline
 
 from src.configuration import config
@@ -45,9 +47,11 @@ class TransformersNLI(NLI):
                 "A maximum number of workers (`max_workers`) has to be a positive "
                 "integer."
             )
+        t0 = time.time()
         self._nli_model = pipeline(
             "text-classification", model=model, batch_size=batch_size
         )
+        logger.debug(f"[PERF] NLI pipeline constructor: {time.time() - t0:.1f}s")
         self.max_workers = max_workers
         self._executor: ThreadPoolExecutor | None = None
         self._prepared = False
@@ -87,7 +91,12 @@ class TransformersNLI(NLI):
             for reference_text in reference_texts
             for hypothesis in other_texts
         ]
+        t0 = time.time()
         inferences = self._nli_model(pairs)
+        logger.debug(
+            f"[PERF] ModernBERT NLI inference on {len(pairs)} pairs: "
+            f"{time.time() - t0:.1f}s"
+        )
 
         flat_output = [
             NLIPrediction(
@@ -100,6 +109,7 @@ class TransformersNLI(NLI):
     @override
     def __enter__(self) -> Self:
         # The first usage triggers download of the model files.
+        t0 = time.time()
         self._nli_model(
             [
                 {
@@ -108,6 +118,7 @@ class TransformersNLI(NLI):
                 }
             ]
         )
+        logger.debug(f"[PERF] ModernBERT NLI model load: {time.time() - t0:.1f}s")
         self._executor = ThreadPoolExecutor(max_workers=self.max_workers)
         self._prepared = True
         return self

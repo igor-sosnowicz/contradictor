@@ -389,7 +389,7 @@ class MLPEncoder(ArgumentEncoder):
             logger.info("The model will be trained now. It may take a long time.")
             t0 = time.time()
             mlp, _config = await self._train_best_model(input_dimensions=dims)
-            logger.info(f"[PERF] _train_best_model: {time.time() - t0:.1f}s")
+            logger.debug(f"[PERF] _train_best_model: {time.time() - t0:.1f}s")
         else:
             mlp, _config = loaded_model
         self._model = mlp
@@ -440,7 +440,7 @@ class MLPEncoder(ArgumentEncoder):
     ) -> tuple[torch.nn.Module, MLPConfig]:
         t0 = time.time()
         await self._dataset.prepare()
-        logger.info(f"[PERF] dataset.prepare: {time.time() - t0:.1f}s")
+        logger.debug(f"[PERF] dataset.prepare: {time.time() - t0:.1f}s")
         train_df = self._dataset.get_split(SubsetName.TRAINING)
         validation_df = self._dataset.get_split(SubsetName.VALIDATION)
 
@@ -538,7 +538,7 @@ class MLPEncoder(ArgumentEncoder):
                 config=self._fine_tuning_config,
             ),
         )
-        logger.info(f"[PERF] fine-tuning train_mlp: {time.time() - fine_tune_t0:.1f}s")
+        logger.debug(f"[PERF] fine-tuning train_mlp: {time.time() - fine_tune_t0:.1f}s")
         self._save_model(best_mlp, best_config)
         return best_mlp, best_config
 

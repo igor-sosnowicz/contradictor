@@ -147,7 +147,7 @@ class SpacyStyleExtractor(StyleExtractor):
         self._nlp = self._prepare_spacy_nlp_pipeline()
         t0 = time.time()
         self._sentiment_pipeline = self._get_sentiment_pipeline()
-        logger.info(
+        logger.debug(
             f"[PERF] _get_sentiment_pipeline (RoBERTa load): {time.time() - t0:.1f}s"
         )
 
@@ -250,7 +250,7 @@ class SpacyStyleExtractor(StyleExtractor):
             )
 
         positivity_scores = await sentiment_task
-        logger.info(
+        logger.debug(
             f"[PERF] sentiment_pipeline on {len(texts)} texts: "
             f"{time.time() - _sentiment_t0:.1f}s"
         )

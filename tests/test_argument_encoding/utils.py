@@ -73,24 +73,24 @@ async def get_random_styled_and_framed_texts(n: int) -> list[StyledFramedArgumen
 
     t0 = time.time()
     style_extractor = build_style_extractor()
-    logger.info(f"[PERF] style_extractor created: {time.time() - t0:.1f}s")
+    logger.debug(f"[PERF] style_extractor created: {time.time() - t0:.1f}s")
 
     t0 = time.time()
     await style_extractor.prepare()
-    logger.info(f"[PERF] style_extractor.prepare: {time.time() - t0:.1f}s")
+    logger.debug(f"[PERF] style_extractor.prepare: {time.time() - t0:.1f}s")
 
     t0 = time.time()
     framer = build_argument_framer()
-    logger.info(f"[PERF] framer created: {time.time() - t0:.1f}s")
+    logger.debug(f"[PERF] framer created: {time.time() - t0:.1f}s")
 
     t0 = time.time()
     await framer.prepare()
-    logger.info(f"[PERF] framer.prepare: {time.time() - t0:.1f}s")
+    logger.debug(f"[PERF] framer.prepare: {time.time() - t0:.1f}s")
 
     arguments = [
         Argument(claim=fake.paragraph(), evidence=fake.paragraph()) for _ in range(n)
     ]
-    logger.info(f"[PERF] {n} fake arguments created: {time.time() - t0:.1f}s")
+    logger.debug(f"[PERF] {n} fake arguments created: {time.time() - t0:.1f}s")
 
     t0 = time.time()
     framed_arguments = framer.frame(arguments)
