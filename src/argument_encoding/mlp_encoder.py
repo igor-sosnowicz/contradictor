@@ -3,7 +3,7 @@
 import ast
 import pickle
 from pathlib import Path
-from typing import cast, override
+from typing import NamedTuple, cast, override
 
 import numpy as np
 import optuna
@@ -224,6 +224,11 @@ def _validate_epoch(
     return sum(losses) / len(losses)
 
 
+class DataLoaders(NamedTuple):
+    train: DataLoader
+    validation: DataLoader
+
+
 def train_mlp(
     mlp: torch.nn.Module,
     train: TensorDataset,
@@ -240,40 +245,45 @@ def train_mlp(
     config = config or TrainingConfig()
     device = torch.device(config.device)
     mlp.to(device)
+
     optimizer = torch.optim.Adam(mlp.parameters(), lr=config.learning_rate)
     criterion = torch.nn.MSELoss()
-
-    train_loader = DataLoader(train, batch_size=config.batch_size, shuffle=True)
-    val_loader = DataLoader(validation, batch_size=config.batch_size, shuffle=False)
+    loaders = DataLoaders(
+        train=DataLoader(train, batch_size=config.batch_size, shuffle=True),
+        validation=DataLoader(validation, batch_size=config.batch_size, shuffle=False),
+    )
 
     best_val_loss = float("inf")
     patience_counter = 0
     best_state: dict[str, torch.Tensor] | None = None
 
-    epoch_bar = tqdm(range(config.epochs), desc="Training epochs", leave=False)
-    for epoch in epoch_bar:
-        avg_train_loss = _train_epoch(mlp, train_loader, optimizer, criterion, device)
-        avg_val_loss = _validate_epoch(mlp, val_loader, criterion, device)
+    with tqdm(range(config.epochs), desc="Training epochs", leave=False) as epoch_bar:
+        for epoch in epoch_bar:
+            avg_train_loss = _train_epoch(
+                mlp, loaders.train, optimizer, criterion, device
+            )
+            avg_val_loss = _validate_epoch(mlp, loaders.validation, criterion, device)
 
-        epoch_bar.set_postfix(
-            train_loss=f"{avg_train_loss:.4f}",
-            val_loss=f"{avg_val_loss:.4f}",
-        )
-        logger.debug(
-            f"Epoch {epoch + 1}/{config.epochs}: "
-            f"train_loss={avg_train_loss:.4f}, val_loss={avg_val_loss:.4f}"
-        )
+            epoch_bar.set_postfix(
+                train_loss=f"{avg_train_loss:.4f}",
+                val_loss=f"{avg_val_loss:.4f}",
+            )
+            logger.debug(
+                f"Epoch {epoch + 1}/{config.epochs}: "
+                f"train_loss={avg_train_loss:.4f}, val_loss={avg_val_loss:.4f}"
+            )
 
-        if avg_val_loss < best_val_loss:
-            best_val_loss = avg_val_loss
-            patience_counter = 0
-            best_state = {k: v.cpu().clone() for k, v in mlp.state_dict().items()}
-        else:
-            patience_counter += 1
-            if patience_counter >= config.patience:
-                break
-
-    epoch_bar.close()
+            if avg_val_loss < best_val_loss:
+                best_val_loss = avg_val_loss
+                patience_counter = 0
+                best_state = {
+                    key: value.detach().cpu().clone()
+                    for key, value in mlp.state_dict().items()
+                }
+            else:
+                patience_counter += 1
+                if patience_counter >= config.patience:
+                    break
 
     if best_state is not None:
         mlp.load_state_dict(best_state)
