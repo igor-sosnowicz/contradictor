@@ -24,6 +24,8 @@ from src.data_models.data_models import (
 )
 from src.utils.errors import NotPreparedError
 
+# --- Configuration section
+
 
 class TrainingConfig(BaseModel):
     """Hyperparameters for training a neural network."""
@@ -66,6 +68,9 @@ class MLPConfig(BaseModel):
                     f"Provided: {value}"
                 )
         return value
+
+
+# --- A neural network
 
 
 class MLP(torch.nn.Module):
@@ -288,6 +293,9 @@ def mlp_encoder_filename(input_dim: int, output_dim: int) -> str:
         str: Filename for a model of given dimensionality.
     """
     return f"mlp_encoder_in{input_dim}_out{output_dim}.pkl"
+
+
+# --- Argument encoder wrapper
 
 
 class MLPEncoder(ArgumentEncoder):
@@ -570,6 +578,11 @@ class MLPEncoder(ArgumentEncoder):
                 encoded_vector = self._model(input_tensor)
                 results.append(encoded_vector.squeeze(0).cpu().numpy())
         return results
+
+    @override
+    def clear(self) -> None:
+        if self._model_path is not None:
+            self._model_path.unlink(missing_ok=True)
 
 
 __all__ = ["MLPConfig", "MLPEncoder", "TrainingConfig"]

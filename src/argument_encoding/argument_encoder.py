@@ -29,3 +29,7 @@ class ArgumentEncoder(ABC):
     @abstractmethod
     async def prepare(self) -> None:
         """Prepare the dataset to be used."""
+
+    @abstractmethod
+    def clear(self) -> None:
+        """Clear a cached version of the encoder."""

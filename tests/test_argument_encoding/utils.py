@@ -21,8 +21,18 @@ FAST_TRAINING_CONFIG = TrainingConfig(
 )
 
 
-def get_argument_encoders(output_dimensions: int | None) -> list[ArgumentEncoder]:
-    """Fixture providing an instance of each implementation of an argument encoder."""
+def get_argument_encoders(
+    output_dimensions: int | None = None,
+) -> list[ArgumentEncoder]:
+    """
+    Get an instance of every implementation of an argument encoder.
+
+    Args:
+        output_dimensions (int | None): A number of outputs of the encoder.
+
+    Returns:
+        list[ArgumentEncoder]: A list of instances of argument encoders.
+    """
     encoders: list[ArgumentEncoder] = []
     for encoder in EncoderImplementation:
         kwargs = {
