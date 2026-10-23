@@ -80,7 +80,7 @@ async def get_random_styled_and_framed_texts(n: int) -> list[StyledFramedArgumen
     logger.debug(f"[PERF] style_extractor.prepare: {time.time() - t0:.1f}s")
 
     t0 = time.time()
-    framer = build_argument_framer()
+    framer = build_argument_framer(proof_of_concept_mode=True)
     logger.debug(f"[PERF] framer created: {time.time() - t0:.1f}s")
 
     t0 = time.time()
