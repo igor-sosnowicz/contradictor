@@ -13,7 +13,8 @@ from tests.test_argument_encoding.utils import (
 )
 
 
-@pytest_asyncio.fixture
+# The session scope saves a lot of time.
+@pytest_asyncio.fixture(scope="session")
 async def styled_and_framed_arguments() -> list[StyledFramedArgument]:
     """Fixture providing a shared list of styled and framed arguments."""
     return await get_random_styled_and_framed_texts(n=5)
