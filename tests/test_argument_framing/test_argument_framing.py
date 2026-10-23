@@ -33,5 +33,8 @@ async def test_xgboost_framer_initialization() -> None:
     assert framer.PATH_TO_MODEL.parent.exists()
     assert framer.PATH_TO_VECTORIZER.parent.exists()
 
+    # Ensure no cached vectorizer exists so perform_tuning() raises immediately.
+    framer._vectorizer = None
+
     with pytest.raises(ModelNotTrainedError):
         await framer.perform_tuning()
