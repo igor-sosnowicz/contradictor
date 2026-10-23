@@ -1,10 +1,10 @@
 """Module with project-wide data models."""
 
-from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from typing import Final
 
-from pydantic import BaseModel, Field
+import numpy as np
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SubsetName(StrEnum):
@@ -89,17 +89,12 @@ class FramedArgument(Argument):
     )
 
 
-@dataclass(slots=True, frozen=True)
-class ClaimEvidencePair:
-    """
-    Data structure representing a claim-evidence pair.
+class StyledFramedArgument(FramedArgument):
+    """A framed argument with a style vector assigned to it."""
 
-    Attributes: claim (str): Extracted claim statement.
-                evidence (str): Supporting evidence associated with the claim.
-    """
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    claim: str
-    evidence: str
+    style_vector: np.ndarray
 
 
 class ArgumentWithCounterarguments(BaseModel):
@@ -143,7 +138,7 @@ class ComputingBackend(StrEnum):
 class EncoderImplementation(StrEnum):
     """Encoder implementation name."""
 
-    NOT_IMPLEMENTED = auto()
+    MLP = auto()
 
 
 class SearchPipelineImplementation(StrEnum):

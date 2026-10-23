@@ -34,3 +34,9 @@ cleaning
 
 # Populated from the NLI model's output score in _perform_inference.
 confidence
+
+# Pytorch's `forward` is called implicitly.
+MLPEncoder.forward
+
+# Pydantic calls this method during an object initialisation.
+MLPEncoder.validate_layers

@@ -3,7 +3,6 @@
 import asyncio
 from collections.abc import Collection, Iterable
 
-import numpy as np
 from loguru import logger
 
 from src.configuration import config
@@ -14,6 +13,7 @@ from src.data_models.data_models import (
     FramedArgument,
     InterpretativeFrame,
     NLIResult,
+    StyledFramedArgument,
 )
 from src.pipeline.config import PipelineConfiguration
 from src.utils.errors import UnsupportedError
@@ -131,10 +131,22 @@ class ContradictorPipeline:
 
     async def _extract_style(
         self, framed_arguments: list[FramedArgument]
-    ) -> list[np.ndarray]:
-        return await self._pipes.style_extractor.extract(
+    ) -> list[StyledFramedArgument]:
+        style_vectors = await self._pipes.style_extractor.extract(
             [str(argument) for argument in framed_arguments]
         )
+        return [
+            StyledFramedArgument(
+                claim=argument.claim,
+                evidence=argument.evidence,
+                primary_frame=argument.primary_frame,
+                frame_probabilities=argument.frame_probabilities,
+                style_vector=style_vector,
+            )
+            for argument, style_vector in zip(
+                framed_arguments, style_vectors, strict=True
+            )
+        ]
 
     async def _match_counterarguments_to_arguments_by_frame(
         self,
@@ -159,18 +171,16 @@ class ContradictorPipeline:
             return []
 
         logger.debug("Style vectors extraction started.")
-        counterarguments_style = await self._extract_style(
+        counterarguments_style_and_frame = await self._extract_style(
             shared_frame_counterarguments
         )
-        arguments_style = await self._extract_style(shared_frame_arguments)
+        arguments_style_and_frame = await self._extract_style(shared_frame_arguments)
         logger.debug("Style vectors extracted.")
 
         logger.debug("Representation encoding has started.")
-        arguments_representation = await self._pipes.encoder(
-            shared_frame_arguments, arguments_style
-        )
+        arguments_representation = await self._pipes.encoder(arguments_style_and_frame)
         counterarguments_representation = await self._pipes.encoder(
-            shared_frame_counterarguments, counterarguments_style
+            counterarguments_style_and_frame
         )
         logger.debug("Representation encoding has finished.")
 

@@ -4,16 +4,14 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 
-from src.data_models.data_models import FramedArgument
+from src.data_models.data_models import StyledFramedArgument
 
 
-class Encoder(ABC):
+class ArgumentEncoder(ABC):
     """An interface for a unified argument and style encoder."""
 
     @abstractmethod
-    async def __call__(
-        self, arguments: list[FramedArgument], arguments_style: list[np.ndarray]
-    ) -> list[np.ndarray]:
+    async def __call__(self, arguments: list[StyledFramedArgument]) -> list[np.ndarray]:
         """
         Encode arguments and their style in a vector representation.
 
@@ -21,10 +19,13 @@ class Encoder(ABC):
         counterarguments with a vector search.
 
         Args:
-            arguments (list[FramedArgument]): List of framed arguments sharing
-                the same frame.
-            arguments_style (list[np.ndarray]): List of style vectors of the arguments.
+            arguments (list[FramedArgument]): List of styled and framed arguments
+                sharing the same frame.
 
         Returns:
             list[np.ndarray]: List of vector representations of the input arguments.
         """
+
+    @abstractmethod
+    async def prepare(self) -> None:
+        """Prepare the dataset to be used."""

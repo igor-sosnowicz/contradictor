@@ -13,7 +13,7 @@ processing flow:
 
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import XGBoostEvidenceExtractor
-from src.data_models.data_models import ClaimEvidencePair
+from src.data_models.data_models import Argument
 
 
 class ClaimEvidenceExtractor:
@@ -50,7 +50,7 @@ class ClaimEvidenceExtractor:
     async def extract_pairs(
         self,
         text: str,
-    ) -> list[ClaimEvidencePair]:
+    ) -> list[Argument]:
         """
         Extract claim-evidence pairs from input text.
 
@@ -64,14 +64,14 @@ class ClaimEvidenceExtractor:
             ModelNotTrainedError: If either extractor's model is not trained.
         """
         claims = await self._claim_extractor.extract_claims(text)
-        pairs: list[ClaimEvidencePair] = []
+        pairs: list[Argument] = []
         for claim in claims:
             evidences = await self._evidence_extractor.extract_evidence(
                 claim,
                 text,
             )
             pairs.extend(
-                ClaimEvidencePair(
+                Argument(
                     claim=claim,
                     evidence=evidence,
                 )

@@ -4,6 +4,7 @@ import pytest
 
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
+from src.data_models.data_models import SubsetName
 from src.utils.errors import ModelNotTrainedError
 
 
@@ -20,7 +21,7 @@ def test_argument_framing_dataset_prepare_error() -> None:
         ValueError,
         match=r"You have to prepare a dataset before getting one of its splits\.",
     ):
-        _ = dataset.get_split("train")
+        _ = dataset.get_split(SubsetName.TRAINING)
 
 
 @pytest.mark.asyncio
