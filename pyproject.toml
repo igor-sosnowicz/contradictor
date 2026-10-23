@@ -32,6 +32,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "faker>=40.43.0",
     "mypy>=2.1.0",
     "pandas-stubs>=3.0.3.260530",
     "pre-commit>=4.6.0",

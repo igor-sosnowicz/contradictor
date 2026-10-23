@@ -9,6 +9,7 @@ import numpy as np
 import optuna
 import pandas as pd
 import torch
+from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -31,7 +32,7 @@ class TrainingConfig(BaseModel):
     batch_size: int = Field(default=32, gt=0)
     learning_rate: float = Field(default=1e-3, gt=0.0)
     patience: int = Field(default=10, gt=0)
-    device: str | torch.device = "cpu"
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 class MLPConfig(BaseModel):
@@ -191,7 +192,7 @@ def _train_epoch(
         expected_distance = batch_distance.to(device)
         optimizer.zero_grad()
         distances = _cosine_distance(mlp(first_input), mlp(second_input))
-        loss = criterion(distances, expected_distance)
+        loss = criterion(distances, expected_distance.squeeze(-1))
         loss.backward()
         optimizer.step()
         losses.append(loss.item())
@@ -213,7 +214,7 @@ def _validate_epoch(
             second_input = batch_second.to(device)
             expected_distance = batch_distance.to(device)
             distances = _cosine_distance(mlp(first_input), mlp(second_input))
-            loss = criterion(distances, expected_distance)
+            loss = criterion(distances, expected_distance.squeeze(-1))
             losses.append(loss.item())
     return sum(losses) / len(losses)
 
@@ -245,13 +246,17 @@ def train_mlp(
     best_state: dict[str, torch.Tensor] | None = None
 
     epoch_bar = tqdm(range(config.epochs), desc="Training epochs", leave=False)
-    for _ in epoch_bar:
+    for epoch in epoch_bar:
         avg_train_loss = _train_epoch(mlp, train_loader, optimizer, criterion, device)
         avg_val_loss = _validate_epoch(mlp, val_loader, criterion, device)
 
         epoch_bar.set_postfix(
             train_loss=f"{avg_train_loss:.4f}",
             val_loss=f"{avg_val_loss:.4f}",
+        )
+        logger.debug(
+            f"Epoch {epoch + 1}/{config.epochs}: "
+            f"train_loss={avg_train_loss:.4f}, val_loss={avg_val_loss:.4f}"
         )
 
         if avg_val_loss < best_val_loss:
@@ -271,14 +276,24 @@ def train_mlp(
     return mlp
 
 
+def mlp_encoder_filename(input_dim: int, output_dim: int) -> str:
+    """
+    Build the filename for an encoder saved with input/output dimensionality.
+
+    Args:
+        input_dim (int): A number of features.
+        output_dim (int): A number of outputs.
+
+    Returns:
+        str: Filename for a model of given dimensionality.
+    """
+    return f"mlp_encoder_in{input_dim}_out{output_dim}.pkl"
+
+
 class MLPEncoder(ArgumentEncoder):
     """Implementation of an argument encoder as a Multi-Layer Perceptron."""
 
-    MODEL_PATH: Path = (
-        global_config.data_directory
-        / global_config.model_subdirectory
-        / "mlp_encoder.pkl"
-    )
+    MODEL_DIR: Path = global_config.data_directory / global_config.model_subdirectory
 
     def __init__(
         self,
@@ -286,6 +301,7 @@ class MLPEncoder(ArgumentEncoder):
         output_dimensions: int,
         fine_tuning_config: TrainingConfig | None = None,
         training_config: TrainingConfig | None = None,
+        n_optuna_trials: int = 20,
     ) -> None:
         """
         Initialise basic configuration of the encoder.
@@ -300,6 +316,9 @@ class MLPEncoder(ArgumentEncoder):
                 configuration is used.
             training_config (TrainingConfig | None): Configuration of training a
                 MLP during the final training. If None, a default configuration is used.
+            n_optuna_trials (int): Number of Optuna hyperparameter search trials
+                executed when no cached model exists. Lower this (e.g. to 1-2) in
+                tests to keep them fast.
 
         Raises:
             ValueError: Raised if a non-positive number of output dimensions was given.
@@ -310,10 +329,10 @@ class MLPEncoder(ArgumentEncoder):
                 "greater than zero."
             )
         self._output_dimensions = output_dimensions
-        self.MODEL_PATH.parent.mkdir(exist_ok=True, parents=True)
+        self._input_dimensions: int | None = None
+        self.MODEL_DIR.mkdir(exist_ok=True, parents=True)
         self._model: torch.nn.Module | None = None
         self._dataset = dataset
-        self._input_dimensions: int | None = None
         self._training_config = training_config or TrainingConfig(
             epochs=50,
             batch_size=32,
@@ -326,22 +345,60 @@ class MLPEncoder(ArgumentEncoder):
             learning_rate=1e-3,
             patience=10,
         )
+        self._n_optuna_trials = n_optuna_trials
+
+    @property
+    def _model_path(self) -> Path | None:
+        """Path to the saved encoder for the current input/output dimensionality."""
+        if self._input_dimensions is None:
+            return None
+        return self.MODEL_DIR / mlp_encoder_filename(
+            self._input_dimensions, self._output_dimensions
+        )
 
     @override
     async def prepare(self) -> None:
+        if self._model is not None:
+            logger.debug("The model is cached and will not be retrained.")
+            return
+        dims = await self._compute_input_dimensions()
+        logger.debug(f"Detected {dims} features as the encoder input.")
         loaded_model = self._load_model()
         if loaded_model is None:
-            mlp, _config = await self._train_best_model()
+            logger.info("The model will be trained now. It may take a long time.")
+            mlp, _config = await self._train_best_model(input_dimensions=dims)
         else:
             mlp, _config = loaded_model
         self._model = mlp
 
     def _load_model(self) -> tuple[torch.nn.Module, MLPConfig] | None:
-        if not self.MODEL_PATH.exists() or not self.MODEL_PATH.is_file():
+        model_path = self._model_path
+        if model_path is None or not model_path.exists() or not model_path.is_file():
+            logger.info(
+                f"There is no trained model for {self._input_dimensions} features and "
+                f"{self._output_dimensions} outputs."
+            )
             return None
-        with self.MODEL_PATH.open("rb") as file:
+        with model_path.open("rb") as file:
             saved = pickle.load(file)  # noqa: S301, Self-generated model file is safe.
         config = saved["config"]
+        # Retrain if layer dimensions do not match target dimensionality.
+        if (
+            config.layers[0] != self._input_dimensions
+            or config.layers[-1] != self._output_dimensions
+        ):
+            logger.warning(
+                "A matching model was found, but after loading into memory, it turned "
+                "out to be incompatible."
+            )
+            logger.debug(
+                f"Expected a model with {self._input_dimensions} features and "
+                f"{self._output_dimensions} outputs. Got {config.layers[0]} "
+                f"features and {config.layers[-1]} outputs."
+            )
+            logger.warning("This model file is likely corrupted and will be deleted.")
+            model_path.unlink()
+            return None
         state_dict = saved["state_dict"]
         mlp = MLP(config=config)
         mlp.load_state_dict(state_dict)
@@ -349,11 +406,15 @@ class MLPEncoder(ArgumentEncoder):
         return mlp, config
 
     def _save_model(self, mlp: torch.nn.Module, config: MLPConfig) -> None:
-        with self.MODEL_PATH.open("wb") as file:
+        model_path = self._model_path
+        if model_path is None:
+            raise RuntimeError("Cannot save model before input dimensions are known.")
+        with model_path.open("wb") as file:
             pickle.dump({"config": config, "state_dict": mlp.state_dict()}, file)
 
-    async def _train_best_model(self) -> tuple[torch.nn.Module, MLPConfig]:
-        input_dimensions = await self._compute_input_dimensions()
+    async def _train_best_model(
+        self, input_dimensions: int
+    ) -> tuple[torch.nn.Module, MLPConfig]:
         await self._dataset.prepare()
         train_df = self._dataset.get_split(SubsetName.TRAINING)
         validation_df = self._dataset.get_split(SubsetName.VALIDATION)
@@ -397,13 +458,33 @@ class MLPEncoder(ArgumentEncoder):
                     first_vector = mlp(batch_first)
                     second_vector = mlp(batch_second)
                     distances = _cosine_distance(first_vector, second_vector)
-                    loss = torch.nn.functional.mse_loss(distances, batch_distance)
+                    loss = torch.nn.functional.mse_loss(
+                        distances, batch_distance.squeeze(-1)
+                    )
                     val_losses.append(loss.item())
             return sum(val_losses) / len(val_losses)
 
-        trial_bar = tqdm(desc="Optuna trials", leave=False)
-        study = optuna.create_study(direction="minimize")
-        study.optimize(objective, n_trials=20)
+        logger.info(
+            f"Starting Optuna hyperparameter search with {self._n_optuna_trials} trials"
+            f" (this may take a long time on CPU)."
+        )
+        trial_bar = tqdm(total=self._n_optuna_trials, desc="Optuna trials", leave=False)
+
+        def _update_trial_bar(
+            _study: optuna.Study, _trial: optuna.trial.FrozenTrial
+        ) -> None:
+            trial_bar.n = len(_study.trials)
+            trial_bar.refresh()
+
+        study = optuna.create_study(
+            direction="minimize",
+            pruner=optuna.pruners.MedianPruner(
+                n_startup_trials=5, n_warmup_steps=10, interval_steps=1
+            ),
+        )
+        study.optimize(
+            objective, n_trials=self._n_optuna_trials, callbacks=[_update_trial_bar]
+        )
         trial_bar.close()
 
         best_config = MLPConfig(
@@ -433,8 +514,8 @@ class MLPEncoder(ArgumentEncoder):
         """
         Compute input dimensions dynamically from the dataset's style vectors.
 
-        Style vector length varies by SpacyStyleExtractor version, so we
-        derive it from the actual data rather than hardcoding it.
+        Style vector length varies, so we derive it from the actual data
+        rather than hardcoding it.
         """
         if self._input_dimensions is not None:
             return self._input_dimensions
@@ -475,7 +556,7 @@ class MLPEncoder(ArgumentEncoder):
     async def __call__(self, arguments: list[StyledFramedArgument]) -> list[np.ndarray]:
         if self._model is None:
             raise NotPreparedError(
-                "Cannot run not prepared model. Call `prepare()` first."
+                "Cannot infer with the unprepared model. Call `prepare()` first."
             )
         self._model.eval()
         device = next(self._model.parameters()).device

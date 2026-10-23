@@ -2,11 +2,12 @@
 
 import shutil
 from pathlib import Path
-from typing import override
+from typing import cast, override
 
 import numpy as np
 import pandas as pd
 from datasets import load_dataset
+from loguru import logger
 from sentence_transformers import SentenceTransformer
 from sklearn.model_selection import train_test_split
 
@@ -250,8 +251,36 @@ class ArgumentEncodingDataset(Dataset):
             style_vectors,
         )
 
+    async def _load_from_disk(self) -> bool:
+        """
+        Load a previously prepared dataset from disk instead of regenerating it.
+
+        Returns:
+            bool: True if the dataset was loaded from disk.
+        """
+        candidate_path = (
+            config.data_directory
+            / config.preprocessed_dataset_subdirectory
+            / self.processed_folder_name
+        )
+        training_csv = candidate_path / f"{SubsetName.TRAINING.value}.csv"
+        if not training_csv.exists():
+            return False
+        self._splits_path = candidate_path
+        logger.debug(f"Loaded a dataset from disk at: {candidate_path}")
+        return True
+
     @override
     async def prepare(self) -> Path:
+        if self._splits_path is not None:
+            logger.debug(
+                "The dataset is already prepared. Its cached version will be used."
+            )
+            return self._splits_path
+
+        if await self._load_from_disk():
+            return cast("Path", self._splits_path)
+
         self._splits_path = (
             config.data_directory
             / config.preprocessed_dataset_subdirectory

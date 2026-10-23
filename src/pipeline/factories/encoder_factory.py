@@ -7,7 +7,9 @@ from src.data_models.data_models import EncoderImplementation
 
 
 def build_encoder(
-    encoder_implementation: EncoderImplementation | None = None, **kwargs
+    encoder_implementation: EncoderImplementation | None = None,
+    output_dimensions: int = config.encoder_output_dimensions,
+    **kwargs,
 ) -> ArgumentEncoder:
     """
     Construct a ready-made encoder from pre-configured implementations.
@@ -15,6 +17,7 @@ def build_encoder(
     Args:
         encoder_implementation (EncoderImplementation): Choice of a
             pre-configured implementation.
+        output_dimensions (int): A number of dimensions of the representation vector
         kwargs: Additional parameters passed on directly to the constructor
             of an encoder.
 
@@ -35,6 +38,6 @@ def build_encoder(
 
             return MLPEncoder(
                 dataset=dataset,
-                output_dimensions=config.encoder_output_dimensions,
+                output_dimensions=output_dimensions,
                 **kwargs,
             )
