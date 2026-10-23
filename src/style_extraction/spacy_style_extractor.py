@@ -145,11 +145,10 @@ class SpacyStyleExtractor(StyleExtractor):
             await self._download_spacy_model(uv_path)
 
         self._nlp = self._prepare_spacy_nlp_pipeline()
-        t0 = time.perf_counter()
+        t0 = time.time()
         self._sentiment_pipeline = self._get_sentiment_pipeline()
         logger.info(
-            f"[PERF] _get_sentiment_pipeline (RoBERTa load): "
-            f"{time.perf_counter() - t0:.1f}s"
+            f"[PERF] _get_sentiment_pipeline (RoBERTa load): {time.time() - t0:.1f}s"
         )
 
     def _get_sentiment_pipeline(self) -> transformers.Pipeline:
@@ -184,7 +183,7 @@ class SpacyStyleExtractor(StyleExtractor):
                 f"Call {self.prepare.__name__}() first."
             )
 
-        _sentiment_t0 = time.perf_counter()
+        _sentiment_t0 = time.time()
         sentiment_task = asyncio.create_task(
             self._calculate_positivity(
                 texts=texts, sentiment_pipeline=self._sentiment_pipeline
