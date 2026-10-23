@@ -1,0 +1,81 @@
+"""Module with utilities for testing argument encoders."""
+
+import faker
+
+from src.argument_encoding.argument_encoder import ArgumentEncoder
+from src.argument_encoding.mlp_encoder import TrainingConfig
+from src.data_models.data_models import (
+    Argument,
+    EncoderImplementation,
+    StyledFramedArgument,
+)
+from src.pipeline.factories.argument_framer_factory import build_argument_framer
+from src.pipeline.factories.encoder_factory import build_encoder
+from src.pipeline.factories.style_extractor_factory import build_style_extractor
+
+FAST_TRAINING_CONFIG = TrainingConfig(
+    epochs=2,
+    batch_size=32,
+    learning_rate=1e-3,
+    patience=1,
+)
+
+
+def get_argument_encoders(output_dimensions: int | None) -> list[ArgumentEncoder]:
+    """Fixture providing an instance of each implementation of an argument encoder."""
+    encoders: list[ArgumentEncoder] = []
+    for encoder in EncoderImplementation:
+        kwargs = {
+            "training_config": FAST_TRAINING_CONFIG,
+            "fine_tuning_config": FAST_TRAINING_CONFIG,
+            "n_optuna_trials": 2,
+        }
+        if output_dimensions is None:
+            encoders.append(build_encoder(encoder, **kwargs))
+        else:
+            encoders.append(
+                build_encoder(encoder, output_dimensions=output_dimensions, **kwargs)
+            )
+    return encoders
+
+
+async def get_random_styled_and_framed_texts(n: int) -> list[StyledFramedArgument]:
+    """
+    Get `n` random styled arguments with a frame assigned to them.
+
+    These are not arguments because their content is random text.
+    However, they occupy a DTO called `Argument`.
+
+    Args:
+        n (int): A number of "arguments".
+
+    Returns:
+        list[StyledFramedArgument]: List of `n` styled and framed "arguments".
+    """
+    fake = faker.Faker()
+    fake.seed_instance(1)
+
+    style_extractor = build_style_extractor()
+    await style_extractor.prepare()
+
+    framer = build_argument_framer()
+    await framer.prepare()
+
+    arguments = [
+        Argument(claim=fake.paragraph(), evidence=fake.paragraph()) for _ in range(n)
+    ]
+    framed_arguments = framer.frame(arguments)
+
+    style_vectors = await style_extractor.extract(
+        [str(argument) for argument in framed_arguments]
+    )
+    return [
+        StyledFramedArgument(
+            claim=argument.claim,
+            evidence=argument.evidence,
+            primary_frame=argument.primary_frame,
+            frame_probabilities=argument.frame_probabilities,
+            style_vector=style_vector,
+        )
+        for argument, style_vector in zip(framed_arguments, style_vectors, strict=True)
+    ]
