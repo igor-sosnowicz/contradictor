@@ -1,6 +1,9 @@
 """Module with utilities for testing argument encoders."""
 
+import time
+
 import faker
+from loguru import logger
 
 from src.argument_encoding.argument_encoder import ArgumentEncoder
 from src.argument_encoding.mlp_encoder import TrainingConfig
@@ -65,19 +68,40 @@ async def get_random_styled_and_framed_texts(n: int) -> list[StyledFramedArgumen
     fake = faker.Faker()
     fake.seed_instance(1)
 
+    t0 = time.time()
     style_extractor = build_style_extractor()
-    await style_extractor.prepare()
+    logger.info(f"[PERF] style_extractor created: {time.time() - t0:.1f}s")
 
+    t0 = time.time()
+    await style_extractor.prepare()
+    logger.info(f"[PERF] style_extractor.prepare: {time.time() - t0:.1f}s")
+
+    t0 = time.time()
     framer = build_argument_framer()
+    logger.info(f"[PERF] framer created: {time.time() - t0:.1f}s")
+
+    t0 = time.time()
     await framer.prepare()
+    logger.info(f"[PERF] framer.prepare: {time.time() - t0:.1f}s")
 
     arguments = [
         Argument(claim=fake.paragraph(), evidence=fake.paragraph()) for _ in range(n)
     ]
-    framed_arguments = framer.frame(arguments)
+    logger.info(f"[PERF] {n} fake arguments created: {time.time() - t0:.1f}s")
 
+    t0 = time.time()
+    framed_arguments = framer.frame(arguments)
+    logger.info(
+        f"[PERF] framer.frame({len(framed_arguments)}): {time.time() - t0:.1f}s"
+    )
+
+    t0 = time.time()
     style_vectors = await style_extractor.extract(
         [str(argument) for argument in framed_arguments]
+    )
+    logger.info(
+        f"[PERF] style_extractor.extract({len(framed_arguments)} texts): "
+        f"{time.time() - t0:.1f}s"
     )
     return [
         StyledFramedArgument(
