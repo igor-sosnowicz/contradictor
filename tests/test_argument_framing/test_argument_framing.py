@@ -28,7 +28,7 @@ def test_argument_framing_dataset_prepare_error() -> None:
 async def test_xgboost_framer_initialization() -> None:
     """Test if XGBoost framer sets up defaults correctly."""
     mock_dataset = ArgumentFramingDataset()
-    framer = XGBoostFrameClassifier(dataset=mock_dataset)
+    framer = XGBoostFrameClassifier(dataset=mock_dataset, proof_of_concept_mode=True)
 
     assert framer.PATH_TO_MODEL.parent.exists()
     assert framer.PATH_TO_VECTORIZER.parent.exists()
