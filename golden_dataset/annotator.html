@@ -1,0 +1,834 @@
+<!--Disclaimer: The below website for annotating is a helper tool and has been vibe-coded.-->
+<!doctype html>
+<html lang="en">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Argument Annotator</title>
+    <style>
+        body {
+            font:
+                16px system-ui,
+                sans-serif;
+            max-width: 950px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            color: #222;
+        }
+        textarea {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 220px;
+            padding: 0.75rem;
+            font: inherit;
+        }
+        input,
+        select,
+        button {
+            font: inherit;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+        }
+        button {
+            cursor: pointer;
+        }
+        button:disabled,
+        textarea:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.75rem 0;
+        }
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .row select {
+            flex: 1;
+            min-width: 180px;
+        }
+        .quote {
+            white-space: pre-wrap;
+            margin: 0.4rem 0;
+        }
+        .label {
+            color: #555;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .muted {
+            color: #555;
+        }
+        .source-url {
+            color: #0066cc;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            word-break: break-all;
+        }
+    </style>
+
+    <h1>Argument Annotator</h1>
+
+    <section class="card">
+        <h2>Load Documents</h2>
+        <div class="row">
+            <input
+                type="file"
+                id="directoryInput"
+                webkitdirectory
+                directory
+                multiple
+                accept=".txt"
+                aria-label="Select directory with .txt files"
+            />
+            <button id="loadDirectory">Load .txt files</button>
+        </div>
+        <p class="muted">
+            Select a folder containing .txt files to load them all at once.
+            Texts are (re)loaded straight from the .txt files every time. If a
+            file with the same name already exists in the project, its text is
+            overridden instead of creating a duplicate.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Load Annotations</h2>
+        <div class="row">
+            <input
+                type="file"
+                id="annotationsInput"
+                accept=".json,application/json"
+                multiple
+                aria-label="Select annotation JSON files"
+            />
+            <button id="loadAnnotations">Load annotation file(s)</button>
+        </div>
+        <p class="muted">
+            Select annotation JSON files exported from this tool. Their
+            documents, arguments, and relations will be added to the current
+            project.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>Source document</h2>
+        <div class="row">
+            <select id="documentPicker" aria-label="Choose document"></select>
+        </div>
+        <textarea
+            id="documentText"
+            placeholder="Load a directory of .txt files to begin"
+            disabled
+        ></textarea>
+        <div class="source-url" id="sourceUrl"></div>
+        <p class="muted">
+            Select a passage in the text, then mark it as a claim or evidence.
+        </p>
+        <button id="markClaim" disabled>Mark selection as claim</button>
+        <button id="markEvidence" disabled>Mark selection as evidence</button>
+    </section>
+
+    <section class="card">
+        <h2>Current argument</h2>
+        <div id="draft"></div>
+        <button id="createArgument">Create argument from these spans</button>
+    </section>
+
+    <section>
+        <h2>Arguments</h2>
+        <div id="arguments"></div>
+    </section>
+
+    <section class="card">
+        <h2>Link two arguments</h2>
+        <div class="row">
+            <select id="argumentA" aria-label="First argument"></select>
+            <span><b>contradicts</b></span>
+            <select id="argumentB" aria-label="Second argument"></select>
+            <button id="addRelation">Add link</button>
+        </div>
+    </section>
+
+    <section>
+        <h2>Argument relations</h2>
+        <div id="relations"></div>
+    </section>
+
+    <button id="download">Download annotations as JSON</button>
+
+    <script>
+        let documents = [];
+        let activeDocumentId = null;
+        let draftSpans = [];
+        let argumentsList = [];
+        let relations = [];
+        let nextDocumentId = 1;
+        let nextArgumentId = 1;
+
+        const $ = (id) => document.getElementById(id);
+        const activeDocument = () =>
+            documents.find((doc) => doc.id === activeDocumentId);
+        const getArgument = (id) =>
+            argumentsList.find((argument) => argument.id === Number(id));
+
+        function validateSpan(span) {
+            const errors = [];
+            if (span == null || typeof span !== "object") {
+                errors.push("span must be an object");
+                return errors;
+            }
+            if (!["claim", "evidence"].includes(span.kind)) {
+                errors.push("span.kind must be 'claim' or 'evidence'");
+            }
+            if (
+                typeof span.start !== "number" ||
+                !Number.isInteger(span.start) ||
+                span.start < 0
+            ) {
+                errors.push("span.start must be a non-negative integer");
+            }
+            if (
+                typeof span.end !== "number" ||
+                !Number.isInteger(span.end) ||
+                span.end <= span.start
+            ) {
+                errors.push("span.end must be an integer greater than span.start");
+            }
+            if (typeof span.text !== "string") {
+                errors.push("span.text must be a string");
+            }
+            return errors;
+        }
+
+        function validateDocument(doc) {
+            const errors = [];
+            if (doc == null || typeof doc !== "object") {
+                errors.push("document must be an object");
+                return errors;
+            }
+            if (
+                typeof doc.id !== "number" ||
+                !Number.isInteger(doc.id) ||
+                doc.id <= 0
+            ) {
+                errors.push("document.id must be a positive integer");
+            }
+            if (typeof doc.title !== "string" || !doc.title.trim()) {
+                errors.push("document.title must be a non-empty string");
+            }
+            if (typeof doc.text !== "string") {
+                errors.push("document.text must be a string");
+            }
+            // source is optional
+            return errors;
+        }
+
+        function validateArgument(arg) {
+            const errors = [];
+            if (arg == null || typeof arg !== "object") {
+                errors.push("argument must be an object");
+                return errors;
+            }
+            if (
+                typeof arg.id !== "number" ||
+                !Number.isInteger(arg.id) ||
+                arg.id <= 0
+            ) {
+                errors.push("argument.id must be a positive integer");
+            }
+            // documentId is optional; if missing it defaults to the first
+            // loaded document below. Dangling references are caught by
+            // validateReferences().
+            if (arg.documentId !== undefined && arg.documentId !== null) {
+                if (typeof arg.documentId !== "number" || !Number.isFinite(arg.documentId)) {
+                    errors.push("argument.documentId must be a number");
+                }
+            }
+            if (!arg.claim || typeof arg.claim !== "object") {
+                errors.push("argument.claim must be an object");
+            } else {
+                errors.push(...validateSpan(arg.claim));
+            }
+            if (!Array.isArray(arg.evidence) || !arg.evidence.length) {
+                errors.push("argument.evidence must be a non-empty array");
+            } else {
+                arg.evidence.forEach((span, index) => {
+                    errors.push(
+                        ...validateSpan(span).map(
+                            (error) => `evidence[${index}]: ${error}`,
+                        ),
+                    );
+                });
+            }
+            return errors;
+        }
+
+        function validateRelation(rel) {
+            const errors = [];
+            if (rel == null || typeof rel !== "object") {
+                errors.push("relation must be an object");
+                return errors;
+            }
+            if (
+                typeof rel.a !== "number" ||
+                !Number.isInteger(rel.a) ||
+                rel.a <= 0
+            ) {
+                errors.push("relation.a must be a positive integer");
+            }
+            if (
+                typeof rel.b !== "number" ||
+                !Number.isInteger(rel.b) ||
+                rel.b <= 0
+            ) {
+                errors.push("relation.b must be a positive integer");
+            }
+            if (rel.a === rel.b) {
+                errors.push("relation.a and relation.b must reference different arguments");
+            }
+            if (rel.type !== "contradicts") {
+                errors.push("relation.type must be 'contradicts'");
+            }
+            return errors;
+        }
+
+        function validateReferences() {
+            const errors = [];
+            const argumentIds = new Set(argumentsList.map((a) => a.id));
+            const documentIds = new Set(documents.map((d) => d.id));
+
+            argumentsList.forEach((arg) => {
+                if (
+                    arg.documentId === undefined ||
+                    arg.documentId === null ||
+                    !documentIds.has(arg.documentId)
+                ) {
+                    errors.push(
+                        `Argument ${arg.id} references unknown document ${arg.documentId}`,
+                    );
+                }
+            });
+
+            relations.forEach((rel, index) => {
+                if (!argumentIds.has(rel.a)) {
+                    errors.push(
+                        `Relation ${index} references unknown argument a=${rel.a}`,
+                    );
+                }
+                if (!argumentIds.has(rel.b)) {
+                    errors.push(
+                        `Relation ${index} references unknown argument b=${rel.b}`,
+                    );
+                }
+            });
+
+            return errors;
+        }
+
+        function optionLabel(argument) {
+            const doc = documents.find(
+                (item) => item.id === argument.documentId,
+            );
+            const claim = argument.claim?.text ?? "(no claim)";
+            return `Argument ${argument.id} (${doc ? doc.title : "document"}): ${claim}`;
+        }
+
+        function parseDocument(fileContent) {
+            const parts = fileContent.split(/^source:\s*/m);
+            return {
+                text: parts[0].trim(),
+                source: parts[1] ? parts[1].trim() : "",
+            };
+        }
+
+        function renderDocuments() {
+            const picker = $("documentPicker");
+            picker.replaceChildren();
+
+            documents.forEach((doc) => {
+                const option = document.createElement("option");
+                option.value = doc.id;
+                option.textContent = doc.title;
+                picker.append(option);
+            });
+
+            if (!documents.some((doc) => doc.id === activeDocumentId)) {
+                activeDocumentId = documents[0]?.id ?? null;
+            }
+
+            const doc = activeDocument();
+            picker.disabled = documents.length === 0;
+            if (doc) picker.value = doc.id;
+
+            $("documentText").value = doc?.text ?? "";
+            $("documentText").disabled = !doc;
+            $("markClaim").disabled = !doc;
+            $("markEvidence").disabled = !doc;
+
+            const sourceUrlDiv = $("sourceUrl");
+            if (doc?.source) {
+                sourceUrlDiv.textContent = `Source: ${doc.source}`;
+                sourceUrlDiv.style.display = "block";
+            } else {
+                sourceUrlDiv.textContent = "";
+                sourceUrlDiv.style.display = "none";
+            }
+        }
+
+        function renderDraft() {
+            const box = $("draft");
+            box.replaceChildren();
+
+            if (!draftSpans.length) {
+                box.textContent = "No spans marked yet.";
+                return;
+            }
+
+            draftSpans.forEach((span, index) => {
+                const card = document.createElement("div");
+                card.className = "card";
+
+                const label = document.createElement("div");
+                label.className = "label";
+                label.textContent = span.kind;
+
+                const quote = document.createElement("div");
+                quote.className = "quote";
+                quote.textContent = `"${span.text}"`;
+
+                const remove = document.createElement("button");
+                remove.textContent = "Remove span";
+                remove.onclick = () => {
+                    draftSpans.splice(index, 1);
+                    renderDraft();
+                };
+
+                card.append(label, quote, remove);
+                box.append(card);
+            });
+        }
+
+        function renderArguments() {
+            const box = $("arguments");
+            box.replaceChildren();
+
+            argumentsList.forEach((argument) => {
+                const doc = documents.find(
+                    (item) => item.id === argument.documentId,
+                );
+                const card = document.createElement("div");
+                card.className = "card";
+
+                const title = document.createElement("div");
+                title.className = "label";
+                title.textContent = `Argument ${argument.id} · ${doc ? doc.title : "Unknown document"}`;
+
+                const claimLabel = document.createElement("strong");
+                claimLabel.textContent = "Claim";
+
+                const claim = document.createElement("div");
+                claim.className = "quote";
+                claim.textContent = argument.claim?.text ?? "";
+
+                const evidenceLabel = document.createElement("strong");
+                evidenceLabel.textContent = "Evidence";
+                card.append(title, claimLabel, claim, evidenceLabel);
+
+                (argument.evidence ?? []).forEach((span) => {
+                    const evidence = document.createElement("div");
+                    evidence.className = "quote";
+                    evidence.textContent = `• ${span.text}`;
+                    card.append(evidence);
+                });
+
+                const remove = document.createElement("button");
+                remove.textContent = "Delete argument";
+                remove.onclick = () => {
+                    argumentsList = argumentsList.filter(
+                        (item) => item.id !== argument.id,
+                    );
+                    relations = relations.filter(
+                        (relation) =>
+                            relation.a !== argument.id &&
+                            relation.b !== argument.id,
+                    );
+                    renderAll();
+                };
+
+                card.append(remove);
+                box.append(card);
+            });
+
+            ["argumentA", "argumentB"].forEach((id) => {
+                const select = $(id);
+                const previous = select.value;
+                select.replaceChildren();
+
+                argumentsList.forEach((argument) => {
+                    const option = document.createElement("option");
+                    option.value = argument.id;
+                    option.textContent = optionLabel(argument);
+                    select.append(option);
+                });
+
+                if (
+                    [...select.options].some(
+                        (option) => option.value === previous,
+                    )
+                ) {
+                    select.value = previous;
+                }
+            });
+        }
+
+        function renderRelations() {
+            const box = $("relations");
+            box.replaceChildren();
+
+            if (!relations.length) {
+                box.textContent = "No relations added yet.";
+                return;
+            }
+
+            relations.forEach((relation, index) => {
+                const a = getArgument(relation.a);
+                const b = getArgument(relation.b);
+                if (!a || !b) return;
+
+                const card = document.createElement("div");
+                card.className = "card";
+                card.append(
+                    document.createTextNode(optionLabel(a)),
+                    document.createTextNode("  "),
+                    Object.assign(document.createElement("b"), {
+                        textContent: "contradicts",
+                    }),
+                    document.createTextNode("  "),
+                    document.createTextNode(optionLabel(b))
+                );
+
+                const remove = document.createElement("button");
+                remove.textContent = "Delete link";
+                remove.onclick = () => {
+                    relations.splice(index, 1);
+                    renderRelations();
+                };
+
+                card.append(document.createElement("br"), remove);
+                box.append(card);
+            });
+        }
+
+        function renderAll() {
+            renderDocuments();
+            renderDraft();
+            renderArguments();
+            renderRelations();
+        }
+
+        function markSelection(kind) {
+            const textArea = $("documentText");
+            const start = textArea.selectionStart;
+            const end = textArea.selectionEnd;
+
+            if (start === end) {
+                alert("Select a passage in the document first.");
+                return;
+            }
+
+            if (
+                kind === "claim" &&
+                draftSpans.some((span) => span.kind === "claim")
+            ) {
+                alert(
+                    "This argument already has a claim. Remove it first if you want to replace it.",
+                );
+                return;
+            }
+
+            draftSpans.push({
+                kind,
+                start,
+                end,
+                text: textArea.value.slice(start, end),
+            });
+            renderDraft();
+        }
+
+        $("loadDirectory").onclick = async () => {
+            const txtFiles = Array.from($("directoryInput").files).filter(
+                (file) => file.name.toLowerCase().endsWith(".txt"),
+            );
+
+            if (txtFiles.length === 0) {
+                alert("Select a directory containing .txt files first.");
+                return;
+            }
+
+            let added = 0;
+            let overridden = 0;
+
+            for (const file of txtFiles) {
+                // Always (re)load the text straight from the .txt file.
+                const { text, source } = parseDocument(await file.text());
+                const title = file.name.replace(/\.txt$/i, "");
+                const existing = documents.find((doc) => doc.title === title);
+
+                if (existing) {
+                    // Override the document in place: same filename is never
+                    // duplicated, and the document id stays the same so any
+                    // existing arguments/relations still point at it.
+                    existing.text = text;
+                    existing.source = source;
+                    overridden++;
+                } else {
+                    documents.push({
+                        id: nextDocumentId++,
+                        title,
+                        text,
+                        source,
+                    });
+                    added++;
+                }
+            }
+
+            // Keep document ids unique after merging/reloading.
+            nextDocumentId =
+                documents.reduce((maxId, doc) => Math.max(maxId, doc.id), 0) + 1;
+
+            if (!documents.some((doc) => doc.id === activeDocumentId)) {
+                activeDocumentId = documents[0]?.id ?? null;
+            }
+
+            // The current selection/draft no longer matches the reloaded text.
+            draftSpans = [];
+
+            renderAll();
+            alert(
+                `Loaded ${txtFiles.length} document(s) (${added} new, ${overridden} overridden by filename).`,
+            );
+        };
+
+        $("documentPicker").onchange = (event) => {
+            activeDocumentId = Number(event.target.value);
+            draftSpans = [];
+            renderAll();
+        };
+
+        $("documentText").oninput = (event) => {
+            const doc = activeDocument();
+            if (doc) doc.text = event.target.value;
+        };
+
+        $("markClaim").onclick = () => markSelection("claim");
+        $("markEvidence").onclick = () => markSelection("evidence");
+
+        $("createArgument").onclick = () => {
+            const claim = draftSpans.find((span) => span.kind === "claim");
+            const evidence = draftSpans.filter(
+                (span) => span.kind === "evidence",
+            );
+
+            if (!claim || !evidence.length) {
+                alert("Mark one claim and at least one evidence span first.");
+                return;
+            }
+
+            if (!activeDocument()) {
+                alert("Load a directory of documents first.");
+                return;
+            }
+
+            const argument = {
+                id: nextArgumentId++,
+                documentId: activeDocumentId,
+                claim,
+                evidence,
+            };
+
+            const argumentErrors = validateArgument(argument);
+            if (argumentErrors.length) {
+                alert("Invalid argument:\n" + argumentErrors.join("\n"));
+                return;
+            }
+
+            argumentsList.push(argument);
+
+            draftSpans = [];
+            renderAll();
+        };
+
+        $("addRelation").onclick = () => {
+            if (argumentsList.length < 2) {
+                alert("Create at least two arguments first.");
+                return;
+            }
+
+            const a = Number($("argumentA").value);
+            const b = Number($("argumentB").value);
+
+            if (a === b) {
+                alert("Choose two different arguments.");
+                return;
+            }
+
+            const duplicate = relations.some(
+                (rel) => rel.a === a && rel.b === b,
+            );
+            if (duplicate) {
+                alert("This link already exists.");
+                return;
+            }
+
+            relations.push({ a, type: "contradicts", b });
+            renderRelations();
+        };
+
+        $("loadAnnotations").onclick = async () => {
+            const files = Array.from($("annotationsInput").files);
+
+            if (!files.length) {
+                alert("Select one or more annotation JSON files first.");
+                return;
+            }
+
+            let parsedFiles;
+            try {
+                parsedFiles = await Promise.all(
+                    files.map(async (file) => {
+                        const data = JSON.parse(await file.text());
+                        if (
+                            !data ||
+                            !Array.isArray(data.documents) ||
+                            !Array.isArray(data.arguments) ||
+                            (data.relations !== undefined &&
+                                !Array.isArray(data.relations))
+                        ) {
+                            throw new Error(
+                                `${file.name} is not a valid annotation file.`,
+                            );
+                        }
+                        return data;
+                    }),
+                );
+            } catch (error) {
+                alert(error.message || "Could not read the annotation files.");
+                return;
+            }
+
+            // Validate every record before mutating state.
+            const loadErrors = [];
+            for (const data of parsedFiles) {
+                data.documents.forEach((doc, index) => {
+                    loadErrors.push(
+                        ...validateDocument(doc).map(
+                            (error) => `documents[${index}]: ${error}`,
+                        ),
+                    );
+                });
+                data.arguments.forEach((arg, index) => {
+                    loadErrors.push(
+                        ...validateArgument(arg).map(
+                            (error) => `arguments[${index}]: ${error}`,
+                        ),
+                    );
+                });
+                (data.relations ?? []).forEach((rel, index) => {
+                    loadErrors.push(
+                        ...validateRelation(rel).map(
+                            (error) => `relations[${index}]: ${error}`,
+                        ),
+                    );
+                });
+            }
+
+            if (loadErrors.length) {
+                alert("Invalid annotation data:\n" + loadErrors.join("\n"));
+                return;
+            }
+
+            for (const data of parsedFiles) {
+                const documentIdMap = new Map();
+                const argumentIdMap = new Map();
+
+                for (const doc of data.documents) {
+                    const newId = nextDocumentId++;
+                    documentIdMap.set(String(doc.id), newId);
+                    documents.push({
+                        id: newId,
+                        title: doc.title || "Untitled document",
+                        text: typeof doc.text === "string" ? doc.text : "",
+                        source:
+                            typeof doc.source === "string" ? doc.source : "",
+                    });
+                }
+
+                for (const argument of data.arguments) {
+                    const newId = nextArgumentId++;
+                    argumentIdMap.set(String(argument.id), newId);
+                    // Default a missing documentId to the first loaded document.
+                    const docId =
+                        argument.documentId !== undefined &&
+                        argument.documentId !== null
+                            ? argument.documentId
+                            : data.documents[0]?.id;
+                    argumentsList.push({
+                        ...argument,
+                        id: newId,
+                        documentId: documentIdMap.get(String(docId)),
+                        claim: argument.claim,
+                        evidence: Array.isArray(argument.evidence)
+                            ? argument.evidence
+                            : [],
+                    });
+                }
+
+                for (const relation of data.relations ?? []) {
+                    const a = argumentIdMap.get(String(relation.a));
+                    const b = argumentIdMap.get(String(relation.b));
+                    if (a !== undefined && b !== undefined) {
+                        relations.push({ ...relation, a, b });
+                    }
+                }
+            }
+
+            const referenceErrors = validateReferences();
+            if (referenceErrors.length) {
+                alert("Invalid references:\n" + referenceErrors.join("\n"));
+                return;
+            }
+
+            if (documents.length) {
+                activeDocumentId = documents[documents.length - 1].id;
+            }
+
+            draftSpans = [];
+            renderAll();
+            alert(`Loaded ${files.length} annotation file(s).`);
+        };
+
+        $("download").onclick = () => {
+            const data = JSON.stringify(
+                { documents, arguments: argumentsList, relations },
+                null,
+                2,
+            );
+            const url = URL.createObjectURL(
+                new Blob([data], { type: "application/json" }),
+            );
+            const link = Object.assign(document.createElement("a"), {
+                href: url,
+                download: "argument-annotations.json",
+            });
+            link.click();
+            URL.revokeObjectURL(url);
+        };
+
+        renderAll();
+    </script>
+</html>
