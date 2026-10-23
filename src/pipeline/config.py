@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass
 
+from src.argument_detection.argument_extractor import ArgumentExtractor
 from src.argument_framing.argument_framer import ArgumentFramer
 from src.nli.nli import NLI
-from src.pipeline.argument_extractor import ArgumentExtractor
 from src.pipeline.encoder import Encoder
 from src.search_module.pipeline import SearchPipeline
 from src.style_extraction.style_extractor import StyleExtractor

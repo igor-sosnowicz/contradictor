@@ -63,7 +63,7 @@ class Configuration(BaseModel):
         SearchPipelineImplementation.SELF_IMPLEMENTED
     )
     argument_extractor: ArgumentExtractorImplementation = (
-        ArgumentExtractorImplementation.NOT_IMPLEMENTED
+        ArgumentExtractorImplementation.XGBOOST
     )
     argument_framer: ArgumentFramerImplementation = ArgumentFramerImplementation.XGBOOST
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
