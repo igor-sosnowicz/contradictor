@@ -144,7 +144,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @override
     async def prepare(self) -> None:
-        if self._model is None:
+        if self._model is None or self._vectorizer is None:
             self._model = await self._train()
 
     @override
