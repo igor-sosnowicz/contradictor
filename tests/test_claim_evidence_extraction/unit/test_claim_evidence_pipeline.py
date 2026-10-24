@@ -5,7 +5,7 @@ import asyncio
 from src.argument_detection.claim_evidence_extractor import (
     ClaimEvidenceExtractor,
 )
-from src.data_models.data_models import ClaimEvidencePair
+from src.data_models.data_models import Argument
 
 
 class FakeClaimExtractor:
@@ -43,7 +43,7 @@ def test_pipeline_extracts_pairs() -> None:
     )
 
     assert len(result) == 1
-    assert isinstance(result[0], ClaimEvidencePair)
+    assert isinstance(result[0], Argument)
     assert result[0].claim == "Cats are intelligent animals."
     assert result[0].evidence == "Cats learn quickly."
 

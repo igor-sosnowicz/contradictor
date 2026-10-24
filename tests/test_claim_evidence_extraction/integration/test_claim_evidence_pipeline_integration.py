@@ -17,7 +17,7 @@ from src.argument_detection.xgboost_claim_extractor import (
 from src.argument_detection.xgboost_evidence_extractor import (
     XGBoostEvidenceExtractor,
 )
-from src.data_models.data_models import ClaimEvidencePair, SubsetName
+from src.data_models.data_models import Argument, SubsetName
 
 
 class MiniPipelineDataset(ArgumentDetectionDataset):
@@ -170,7 +170,7 @@ async def test_pipeline_extracts_claim_evidence_pairs(
     )
 
     assert result
-    assert all(isinstance(pair, ClaimEvidencePair) for pair in result)
+    assert all(isinstance(pair, Argument) for pair in result)
 
     assert any(
         pair.claim == "Cats are intelligent animals."

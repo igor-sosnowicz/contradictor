@@ -2,6 +2,7 @@
 
 import asyncio
 import shutil
+import time
 from collections import Counter
 from typing import Final, Literal, cast, get_args, override
 
@@ -15,6 +16,7 @@ from transformers import pipeline
 
 from src.style_extraction.style_extractor import StyleExtractor
 from src.utils.errors import NotPreparedError
+from src.utils.timer import Timer
 
 type SpacyModel = Literal[
     "en_core_web_sm", "en_core_web_md", "en_core_web_lg", "en_core_web_trf"
@@ -144,7 +146,8 @@ class SpacyStyleExtractor(StyleExtractor):
             await self._download_spacy_model(uv_path)
 
         self._nlp = self._prepare_spacy_nlp_pipeline()
-        self._sentiment_pipeline = self._get_sentiment_pipeline()
+        with Timer(f"{self._get_sentiment_pipeline.__name__}()"):
+            self._sentiment_pipeline = self._get_sentiment_pipeline()
 
     def _get_sentiment_pipeline(self) -> transformers.Pipeline:
         return pipeline(
@@ -178,6 +181,7 @@ class SpacyStyleExtractor(StyleExtractor):
                 f"Call {self.prepare.__name__}() first."
             )
 
+        _sentiment_t0 = time.time()
         sentiment_task = asyncio.create_task(
             self._calculate_positivity(
                 texts=texts, sentiment_pipeline=self._sentiment_pipeline
@@ -244,6 +248,10 @@ class SpacyStyleExtractor(StyleExtractor):
             )
 
         positivity_scores = await sentiment_task
+        logger.debug(
+            f"[PERF] sentiment_pipeline on {len(texts)} texts: "
+            f"{time.time() - _sentiment_t0:.1f}s"
+        )
         # Add positivity score calculated in parallel to the end of each vector.
         return [
             np.append(vector, positivity_score)
