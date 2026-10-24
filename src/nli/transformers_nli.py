@@ -1,12 +1,10 @@
 """Module with HuggingFace transformers implementation of NLI."""
 
 import asyncio
-import time
 from concurrent.futures import ThreadPoolExecutor
 from types import TracebackType
 from typing import Self, override
 
-from loguru import logger
 from transformers import pipeline
 
 from src.configuration import config
@@ -14,6 +12,7 @@ from src.data_models.data_models import NLIPrediction
 from src.nli.nli import NLI
 from src.nli.utils import to_nli_enum
 from src.utils.errors import NotPreparedError
+from src.utils.timer import Timer
 
 
 class TransformersNLI(NLI):
@@ -47,11 +46,10 @@ class TransformersNLI(NLI):
                 "A maximum number of workers (`max_workers`) has to be a positive "
                 "integer."
             )
-        t0 = time.time()
-        self._nli_model = pipeline(
-            "text-classification", model=model, batch_size=batch_size
-        )
-        logger.debug(f"[PERF] NLI pipeline constructor: {time.time() - t0:.1f}s")
+        with Timer("NLI pipeline constructor"):
+            self._nli_model = pipeline(
+                "text-classification", model=model, batch_size=batch_size
+            )
         self.max_workers = max_workers
         self._executor: ThreadPoolExecutor | None = None
         self._prepared = False
@@ -91,12 +89,8 @@ class TransformersNLI(NLI):
             for reference_text in reference_texts
             for hypothesis in other_texts
         ]
-        t0 = time.time()
-        inferences = self._nli_model(pairs)
-        logger.debug(
-            f"[PERF] ModernBERT NLI inference on {len(pairs)} pairs: "
-            f"{time.time() - t0:.1f}s"
-        )
+        with Timer(f"ModernBERT NLI inference on {len(pairs)} pairs"):
+            inferences = self._nli_model(pairs)
 
         flat_output = [
             NLIPrediction(
@@ -109,16 +103,15 @@ class TransformersNLI(NLI):
     @override
     def __enter__(self) -> Self:
         # The first usage triggers download of the model files.
-        t0 = time.time()
-        self._nli_model(
-            [
-                {
-                    "text": "Download the model.",  # Premise/reference
-                    "text_pair": "He is from France.",  # Hypothesis
-                }
-            ]
-        )
-        logger.debug(f"[PERF] ModernBERT NLI model load: {time.time() - t0:.1f}s")
+        with Timer("TransformersNLI NLI model load"):
+            self._nli_model(
+                [
+                    {
+                        "text": "Download the model.",  # Premise/reference
+                        "text_pair": "He is from France.",  # Hypothesis
+                    }
+                ]
+            )
         self._executor = ThreadPoolExecutor(max_workers=self.max_workers)
         self._prepared = True
         return self

@@ -19,7 +19,7 @@ class ArgumentEncoder(ABC):
         counterarguments with a vector search.
 
         Args:
-            arguments (list[FramedArgument]): List of styled and framed arguments
+            arguments (list[StyledFramedArgument]): List of styled and framed arguments
                 sharing the same frame.
 
         Returns:

@@ -1,13 +1,11 @@
 """Module with XGBoost for interpretative frame classification."""
 
 import pickle
-import time
 from collections.abc import Collection, Iterable
 from pathlib import Path
 from typing import Final, override
 
 import optuna
-from loguru import logger
 from optuna.samplers import TPESampler
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import cross_val_score
@@ -25,6 +23,7 @@ from src.data_models.data_models import (
     SubsetName,
 )
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
+from src.utils.timer import Timer
 
 
 class XGBoostFrameClassifier(ArgumentFramer):
@@ -110,11 +109,9 @@ class XGBoostFrameClassifier(ArgumentFramer):
         df = self._dataset.get_split(SubsetName.TRAINING, max_samples=self.max_samples)
 
         tqdm.pandas(desc="Creating TF-IDF features")
-        t0 = time.time()
-        x = vectorizer.fit_transform(df["text"])
-        logger.debug(
-            f"[PERF] TF-IDF fit_transform on {len(df)} texts: {time.time() - t0:.1f}s"
-        )
+        with Timer(f"TF-IDF fit_transform on {len(df)} texts"):
+            x = vectorizer.fit_transform(df["text"])
+
         y = df["interpretative_frame"].astype("int32")
 
         # validation split
@@ -122,16 +119,13 @@ class XGBoostFrameClassifier(ArgumentFramer):
         x_val = vectorizer.transform(validation_df["text"])
         y_val = validation_df["interpretative_frame"].astype("int32")
 
-        t0 = time.time()
-        model.fit(
-            x,
-            y,
-            eval_set=[(x_val, y_val)],
-            verbose=True,
-        )
-        logger.debug(
-            f"[PERF] XGBoost model.fit on {len(df)} samples: {time.time() - t0:.1f}s"
-        )
+        with Timer(f"XGBoost model.fit on {len(df)} samples"):
+            model.fit(
+                x,
+                y,
+                eval_set=[(x_val, y_val)],
+                verbose=True,
+            )
 
         with self.PATH_TO_MODEL.open("wb") as file:
             pickle.dump(model, file)

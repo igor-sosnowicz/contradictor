@@ -2,7 +2,6 @@
 
 import ast
 import pickle
-import time
 from pathlib import Path
 from typing import NamedTuple, cast, override
 
@@ -24,6 +23,7 @@ from src.data_models.data_models import (
     SubsetName,
 )
 from src.utils.errors import NotPreparedError
+from src.utils.timer import AsyncTimer, Timer
 
 # --- Configuration section
 
@@ -387,9 +387,8 @@ class MLPEncoder(ArgumentEncoder):
         loaded_model = self._load_model()
         if loaded_model is None:
             logger.info("The model will be trained now. It may take a long time.")
-            t0 = time.time()
-            mlp, _config = await self._train_best_model(input_dimensions=dims)
-            logger.debug(f"[PERF] _train_best_model: {time.time() - t0:.1f}s")
+            async with AsyncTimer("[PERF] _train_best_model"):
+                mlp, _config = await self._train_best_model(input_dimensions=dims)
         else:
             mlp, _config = loaded_model
         self._model = mlp
@@ -438,9 +437,8 @@ class MLPEncoder(ArgumentEncoder):
     async def _train_best_model(
         self, input_dimensions: int
     ) -> tuple[torch.nn.Module, MLPConfig]:
-        t0 = time.time()
-        await self._dataset.prepare()
-        logger.debug(f"[PERF] dataset.prepare: {time.time() - t0:.1f}s")
+        async with AsyncTimer("[PERF] dataset.prepare"):
+            await self._dataset.prepare()
         train_df = self._dataset.get_split(SubsetName.TRAINING)
         validation_df = self._dataset.get_split(SubsetName.VALIDATION)
 
@@ -465,34 +463,17 @@ class MLPEncoder(ArgumentEncoder):
                 dropout_rate=trial.suggest_float("dropout_rate", 0.0, 0.95),
             )
             mlp = MLP(config=hyperparameters)
-            trial_t0 = time.time()
-            mlp = cast(
-                "MLP",
-                train_mlp(
-                    mlp, train_dataset, validation_dataset, config=self._training_config
-                ),
-            )
-            logger.debug(
-                f"[PERF] Optuna trial {trial.number} train_mlp: "
-                f"{time.time() - trial_t0:.1f}s"
-            )
-            val_loader = DataLoader(
-                validation_dataset,
-                batch_size=self._training_config.batch_size,
-                shuffle=False,
-            )
-            mlp.eval()
-            val_losses = []
-            with torch.no_grad():
-                for batch_first, batch_second, batch_distance in val_loader:
-                    first_vector = mlp(batch_first)
-                    second_vector = mlp(batch_second)
-                    distances = _cosine_distance(first_vector, second_vector)
-                    loss = torch.nn.functional.mse_loss(
-                        distances, batch_distance.squeeze(-1)
-                    )
-                    val_losses.append(loss.item())
-            return sum(val_losses) / len(val_losses)
+            with Timer(f"[PERF] Optuna trial {trial.number} train_mlp"):
+                mlp = cast(
+                    "MLP",
+                    train_mlp(
+                        mlp,
+                        train_dataset,
+                        validation_dataset,
+                        config=self._training_config,
+                    ),
+                )
+            return self._validation_loss(mlp, validation_dataset)
 
         logger.info(
             f"Starting Optuna hyperparameter search with {self._n_optuna_trials} trials"
@@ -528,19 +509,50 @@ class MLPEncoder(ArgumentEncoder):
             dropout_rate=study.best_params["dropout_rate"],
         )
         best_mlp = MLP(config=best_config)
-        fine_tune_t0 = time.time()
-        best_mlp = cast(
-            "MLP",
-            train_mlp(
-                best_mlp,
-                train_dataset,
-                validation_dataset,
-                config=self._fine_tuning_config,
-            ),
-        )
-        logger.debug(f"[PERF] fine-tuning train_mlp: {time.time() - fine_tune_t0:.1f}s")
+        with Timer("[PERF] fine-tuning train_mlp"):
+            best_mlp = cast(
+                "MLP",
+                train_mlp(
+                    best_mlp,
+                    train_dataset,
+                    validation_dataset,
+                    config=self._fine_tuning_config,
+                ),
+            )
         self._save_model(best_mlp, best_config)
         return best_mlp, best_config
+
+    def _validation_loss(
+        self, mlp: torch.nn.Module, validation_dataset: TensorDataset
+    ) -> float:
+        """
+        Compute the average validation loss of a model.
+
+        Args:
+            mlp (torch.nn.Module): The model to evaluate.
+            validation_dataset (TensorDataset): The validation dataset.
+
+        Returns:
+            float: The mean mean-squared error between predicted and expected
+                cosine distances.
+        """
+        val_loader = DataLoader(
+            validation_dataset,
+            batch_size=self._training_config.batch_size,
+            shuffle=False,
+        )
+        mlp.eval()
+        val_losses = []
+        with torch.no_grad():
+            for batch_first, batch_second, batch_distance in val_loader:
+                first_vector = mlp(batch_first)
+                second_vector = mlp(batch_second)
+                distances = _cosine_distance(first_vector, second_vector)
+                loss = torch.nn.functional.mse_loss(
+                    distances, batch_distance.squeeze(-1)
+                )
+                val_losses.append(loss.item())
+        return sum(val_losses) / len(val_losses)
 
     async def _compute_input_dimensions(self) -> int:
         """
