@@ -1,9 +1,6 @@
 """Module with utilities for testing argument encoders."""
 
-import time
-
 import faker
-from loguru import logger
 
 from src.argument_encoding.argument_encoder import ArgumentEncoder
 from src.argument_encoding.mlp_encoder import TrainingConfig
@@ -15,6 +12,7 @@ from src.data_models.data_models import (
 from src.pipeline.factories.argument_framer_factory import build_argument_framer
 from src.pipeline.factories.encoder_factory import build_encoder
 from src.pipeline.factories.style_extractor_factory import build_style_extractor
+from src.utils.timer import AsyncTimer, Timer
 
 FAST_TRAINING_CONFIG = TrainingConfig(
     epochs=2,
@@ -69,41 +67,34 @@ async def get_random_styled_and_framed_texts(n: int) -> list[StyledFramedArgumen
     fake = faker.Faker()
     fake.seed_instance(1)
 
-    t0 = time.time()
-    style_extractor = build_style_extractor()
-    logger.debug(f"[PERF] style_extractor created: {time.time() - t0:.1f}s")
+    with Timer("style_extractor created"):
+        style_extractor = build_style_extractor()
 
-    t0 = time.time()
-    await style_extractor.prepare()
-    logger.debug(f"[PERF] style_extractor.prepare: {time.time() - t0:.1f}s")
+    async with AsyncTimer("style_extractor.prepare"):
+        await style_extractor.prepare()
 
-    t0 = time.time()
-    framer = build_argument_framer(proof_of_concept_mode=True)
-    logger.debug(f"[PERF] framer created: {time.time() - t0:.1f}s")
+    with Timer("framer created"):
+        framer = build_argument_framer(proof_of_concept_mode=True)
 
-    t0 = time.time()
-    await framer.prepare()
-    logger.debug(f"[PERF] framer.prepare: {time.time() - t0:.1f}s")
+    async with AsyncTimer("framer.prepare"):
+        await framer.prepare()
 
-    arguments = [
-        Argument(claim=fake.paragraph(), evidence=fake.paragraph()) for _ in range(n)
-    ]
-    logger.debug(f"[PERF] {n} fake arguments created: {time.time() - t0:.1f}s")
+    with Timer(f"{n} fake arguments created"):
+        arguments = [
+            Argument(claim=fake.paragraph(), evidence=fake.paragraph())
+            for _ in range(n)
+        ]
 
-    t0 = time.time()
-    framed_arguments = framer.frame(arguments)
-    logger.info(
-        f"[PERF] framer.frame({len(framed_arguments)}): {time.time() - t0:.1f}s"
-    )
+    with Timer(f"framer.frame({n})", log_level="INFO"):
+        framed_arguments = framer.frame(arguments)
 
-    t0 = time.time()
-    style_vectors = await style_extractor.extract(
-        [str(argument) for argument in framed_arguments]
-    )
-    logger.info(
-        f"[PERF] style_extractor.extract({len(framed_arguments)} texts): "
-        f"{time.time() - t0:.1f}s"
-    )
+    async with AsyncTimer(
+        f"style_extractor.extract({len(framed_arguments)} texts)",
+        log_level="INFO",
+    ):
+        style_vectors = await style_extractor.extract(
+            [str(argument) for argument in framed_arguments]
+        )
     return [
         StyledFramedArgument(
             claim=argument.claim,

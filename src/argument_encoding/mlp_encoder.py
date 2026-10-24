@@ -387,7 +387,7 @@ class MLPEncoder(ArgumentEncoder):
         loaded_model = self._load_model()
         if loaded_model is None:
             logger.info("The model will be trained now. It may take a long time.")
-            async with AsyncTimer("[PERF] _train_best_model"):
+            async with AsyncTimer("_train_best_model"):
                 mlp, _config = await self._train_best_model(input_dimensions=dims)
         else:
             mlp, _config = loaded_model
@@ -437,7 +437,7 @@ class MLPEncoder(ArgumentEncoder):
     async def _train_best_model(
         self, input_dimensions: int
     ) -> tuple[torch.nn.Module, MLPConfig]:
-        async with AsyncTimer("[PERF] dataset.prepare"):
+        async with AsyncTimer("dataset.prepare"):
             await self._dataset.prepare()
         train_df = self._dataset.get_split(SubsetName.TRAINING)
         validation_df = self._dataset.get_split(SubsetName.VALIDATION)
@@ -463,7 +463,7 @@ class MLPEncoder(ArgumentEncoder):
                 dropout_rate=trial.suggest_float("dropout_rate", 0.0, 0.95),
             )
             mlp = MLP(config=hyperparameters)
-            with Timer(f"[PERF] Optuna trial {trial.number} train_mlp"):
+            with Timer(f"Optuna trial {trial.number} train_mlp"):
                 mlp = cast(
                     "MLP",
                     train_mlp(
@@ -509,7 +509,7 @@ class MLPEncoder(ArgumentEncoder):
             dropout_rate=study.best_params["dropout_rate"],
         )
         best_mlp = MLP(config=best_config)
-        with Timer("[PERF] fine-tuning train_mlp"):
+        with Timer("fine-tuning train_mlp"):
             best_mlp = cast(
                 "MLP",
                 train_mlp(

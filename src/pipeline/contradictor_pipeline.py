@@ -171,7 +171,7 @@ class ContradictorPipeline:
             return []
 
         logger.debug("Style vectors extraction started.")
-        counterarguments_style_and_frame = await self._extract_style(
+        framed_and_styled_counterarguments = await self._extract_style(
             shared_frame_counterarguments
         )
         framed_and_styled_arguments = await self._extract_style(shared_frame_arguments)
@@ -182,7 +182,7 @@ class ContradictorPipeline:
             framed_and_styled_arguments
         )
         counterarguments_representation = await self._pipes.encoder(
-            counterarguments_style_and_frame
+            framed_and_styled_counterarguments
         )
         logger.debug("Representation encoding has finished.")
 

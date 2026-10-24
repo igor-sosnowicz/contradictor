@@ -16,6 +16,7 @@ from transformers import pipeline
 
 from src.style_extraction.style_extractor import StyleExtractor
 from src.utils.errors import NotPreparedError
+from src.utils.timer import Timer
 
 type SpacyModel = Literal[
     "en_core_web_sm", "en_core_web_md", "en_core_web_lg", "en_core_web_trf"
@@ -145,11 +146,8 @@ class SpacyStyleExtractor(StyleExtractor):
             await self._download_spacy_model(uv_path)
 
         self._nlp = self._prepare_spacy_nlp_pipeline()
-        t0 = time.time()
-        self._sentiment_pipeline = self._get_sentiment_pipeline()
-        logger.debug(
-            f"[PERF] _get_sentiment_pipeline (RoBERTa load): {time.time() - t0:.1f}s"
-        )
+        with Timer(f"{self._get_sentiment_pipeline.__name__}()"):
+            self._sentiment_pipeline = self._get_sentiment_pipeline()
 
     def _get_sentiment_pipeline(self) -> transformers.Pipeline:
         return pipeline(

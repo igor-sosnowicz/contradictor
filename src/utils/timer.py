@@ -11,6 +11,9 @@ class Timer:
     """
     Synchronous context manager for measuring & logging execution time.
 
+    The elapsed time is logged with a "[PERF]" prefix, so that performance logs
+    can be filtered out from the rest of the application logs.
+
     Usage:
         with Timer("Dataset load"):
             dataset = load_dataset(...)
@@ -44,12 +47,18 @@ class Timer:
     ) -> None:
         """Stop measuring and log the elapsed time. Exceptions propagate unchanged."""
         self.elapsed = time.perf_counter() - self._start
-        logger.log(self.log_level, f"Task '{self.task_name}' took {self.elapsed:.3f}s")
+        logger.log(
+            self.log_level,
+            f"[PERF] Task '{self.task_name}' took {self.elapsed:.3f}s",
+        )
 
 
 class AsyncTimer:
     """
     Asynchronous context manager for measuring & logging execution time.
+
+    The elapsed time is logged with a "[PERF]" prefix, so that performance logs
+    can be filtered out from the rest of the application logs.
 
     Usage:
         async with AsyncTimer("Encoder run"):
@@ -84,4 +93,7 @@ class AsyncTimer:
     ) -> None:
         """Stop measuring and log the elapsed time. Exceptions propagate unchanged."""
         self.elapsed = time.perf_counter() - self._start
-        logger.log(self.log_level, f"Task '{self.task_name}' took {self.elapsed:.3f}s")
+        logger.log(
+            self.log_level,
+            f"[PERF] Task '{self.task_name}' took {self.elapsed:.3f}s",
+        )
