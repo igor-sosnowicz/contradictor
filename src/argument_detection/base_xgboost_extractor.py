@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, TypeVar
 
 import numpy as np
 import optuna
-from diskcache import Cache
 from optuna.samplers import TPESampler
 from sklearn.model_selection import cross_val_score
 from xgboost import XGBClassifier
@@ -40,7 +39,6 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         dataset: ArgumentDetectionDataset,
         *,
         model_name: str,
-        cache_name: str,
         proof_of_concept_mode: bool = False,
     ) -> None:
         """
@@ -49,7 +47,6 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         Args:
             dataset (ArgumentDetectionDataset): Dataset for training and validation.
             model_name (str): Name of the persisted model file.
-            cache_name (str): Name of the cache directory used for storing metadata.
             proof_of_concept_mode (bool): Limit dataset size for fast experiments.
         """
         self._config: XGBoostExtractorConfig = config.xgboost_extractor
@@ -64,7 +61,6 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
             exist_ok=True,
         )
 
-        self._cache = Cache(config.cache_directory / cache_name)
         self._max_samples = self._get_max_samples() if proof_of_concept_mode else 0
 
     def _get_model_path(self) -> Path:

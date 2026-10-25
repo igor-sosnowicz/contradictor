@@ -1,6 +1,5 @@
 """Module with project-wide data models."""
 
-from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
 from typing import Final
 
@@ -89,19 +88,6 @@ class FramedArgument(Argument):
     )
 
 
-@dataclass(slots=True, frozen=True)
-class ClaimEvidencePair:
-    """
-    Data structure representing a claim-evidence pair.
-
-    Attributes: claim (str): Extracted claim statement.
-                evidence (str): Supporting evidence associated with the claim.
-    """
-
-    claim: str
-    evidence: str
-
-
 class ArgumentWithCounterarguments(BaseModel):
     """An argument with its counter-arguments."""
 
@@ -162,7 +148,7 @@ class ArgumentFramerImplementation(StrEnum):
 class ArgumentExtractorImplementation(StrEnum):
     """Name of argument extractor implementation."""
 
-    NOT_IMPLEMENTED = auto()
+    XGBOOST = "xgboost"
 
 
 class NLIImplementation(StrEnum):
