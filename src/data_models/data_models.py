@@ -120,12 +120,6 @@ class NLIPrediction(BaseModel):
     confidence: float = Field(..., ge=0.0, le=1.0)
 
 
-class ComputingBackend(StrEnum):
-    """A backend for running computation heavy operations including ML models."""
-
-    CPU = auto()
-
-
 class EncoderImplementation(StrEnum):
     """Encoder implementation name."""
 

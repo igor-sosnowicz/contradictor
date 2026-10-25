@@ -13,7 +13,6 @@ from src.argument_detection.config import (
 from src.data_models.data_models import (
     ArgumentExtractorImplementation,
     ArgumentFramerImplementation,
-    ComputingBackend,
     EncoderImplementation,
     NLIImplementation,
     SearchPipelineImplementation,
@@ -49,8 +48,6 @@ class Configuration(BaseModel):
 
     # In seconds.
     dataset_download_timeout: int = 300
-
-    computing_backend: ComputingBackend = ComputingBackend.CPU
 
     reference_text_max_length: int = Field(
         10_000,

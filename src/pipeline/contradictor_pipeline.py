@@ -10,13 +10,11 @@ from src.configuration import config
 from src.data_models.data_models import (
     Argument,
     ArgumentWithCounterarguments,
-    ComputingBackend,
     FramedArgument,
     InterpretativeFrame,
     NLIResult,
 )
 from src.pipeline.config import PipelineConfiguration
-from src.utils.errors import UnsupportedError
 
 
 class ContradictorPipeline:
@@ -25,18 +23,14 @@ class ContradictorPipeline:
     def __init__(
         self,
         pipes: PipelineConfiguration,
-        backend: ComputingBackend | None = None,
     ) -> None:
         """
         Initialise pipeline elements and set the computing backend.
 
         Args:
             pipes (PipelineConfiguration): Stages (pipes) of the pipeline.
-            backend (ComputingBackend | None): Computing backend for performing heavy
-                calculation. Defaults to the default backend from the configuration.
         """
         self._pipes = pipes
-        self._backend = backend or config.computing_backend
 
     async def prepare(self) -> None:
         """Prepare all components of the Contradictor pipeline."""
@@ -276,16 +270,10 @@ class ContradictorPipeline:
             arguments=arguments, counterarguments=potential_counterarguments
         )
 
-        match self._backend:
-            case ComputingBackend.CPU:
-                framed_arguments = self._pipes.argument_framer.frame(arguments)
-                framed_potential_counterarguments = self._pipes.argument_framer.frame(
-                    potential_counterarguments
-                )
-            case _:
-                raise UnsupportedError(
-                    "Framing does not support computing backends other than CPU."
-                )
+        framed_arguments = self._pipes.argument_framer.frame(arguments)
+        framed_potential_counterarguments = self._pipes.argument_framer.frame(
+            potential_counterarguments
+        )
 
         matched_arguments = await self._process_all_frames(
             frames=tuple(InterpretativeFrame),
