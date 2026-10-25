@@ -132,6 +132,7 @@ def load_configuration(file: Path | None) -> Configuration:
         ConfigurationError: Raised if there is a configuration error.
     """
     if file is None:
+        log.info("No configuration file provided, using default configuration.")
         return Configuration()
 
     try:

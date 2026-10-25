@@ -127,7 +127,28 @@ class PathRouter:
         is_file: bool = False,
         force: bool = False,
     ) -> Path:
-        """Resolve a path under the data root for the calling module."""
+        """
+        Resolve a path under the data root for the calling module.
+
+        Args:
+            subpath (str): "/"-separated path inside the module's data slice;
+                empty names the slice directory itself.
+            target_module (str | None): Module slice to attribute the path to.
+                When None, the slice is detected from the calling frame.
+            is_file (bool): Whether the path names a file. A file path claims
+                and creates its parent directory, never the file itself.
+            force (bool): Allow the claim when another module slice already
+                owns the target directory.
+
+        Returns:
+            Path: The resolved `<data_root>/<module_slice>/<subpath>` path,
+            whose directory exists by the time the call returns.
+
+        Raises:
+            ValueError: If `subpath` or `target_module` is not one portable
+                path segment, or the target directory is claimed by another
+                module slice and `force` is False.
+        """
         return self._resolve(
             PathRoot.DATA, subpath, target_module, is_file=is_file, force=force
         )
@@ -140,7 +161,28 @@ class PathRouter:
         is_file: bool = False,
         force: bool = False,
     ) -> Path:
-        """Resolve a path under the cache root for the calling module."""
+        """
+        Resolve a path under the cache root for the calling module.
+
+        Args:
+            subpath (str): "/"-separated path inside the module's cache slice;
+                empty names the slice directory itself.
+            target_module (str | None): Module slice to attribute the path to.
+                When None, the slice is detected from the calling frame.
+            is_file (bool): Whether the path names a file. A file path claims
+                and creates its parent directory, never the file itself.
+            force (bool): Allow the claim when another module slice already
+                owns the target directory.
+
+        Returns:
+            Path: The resolved `<cache_root>/<module_slice>/<subpath>` path,
+            whose directory exists by the time the call returns.
+
+        Raises:
+            ValueError: If `subpath` or `target_module` is not one portable
+                path segment, or the target directory is claimed by another
+                module slice and `force` is False.
+        """
         return self._resolve(
             PathRoot.CACHE, subpath, target_module, is_file=is_file, force=force
         )
@@ -153,7 +195,28 @@ class PathRouter:
         is_file: bool = False,
         force: bool = False,
     ) -> Path:
-        """Resolve a path under the temporary root for the calling module."""
+        """
+        Resolve a path under the temporary root for the calling module.
+
+        Args:
+            subpath (str): "/"-separated path inside the module's temporary
+                slice; empty names the slice directory itself.
+            target_module (str | None): Module slice to attribute the path to.
+                When None, the slice is detected from the calling frame.
+            is_file (bool): Whether the path names a file. A file path claims
+                and creates its parent directory, never the file itself.
+            force (bool): Allow the claim when another module slice already
+                owns the target directory.
+
+        Returns:
+            Path: The resolved `<tmp_root>/<module_slice>/<subpath>` path,
+            whose directory exists by the time the call returns.
+
+        Raises:
+            ValueError: If `subpath` or `target_module` is not one portable
+                path segment, or the target directory is claimed by another
+                module slice and `force` is False.
+        """
         return self._resolve(
             PathRoot.TMP, subpath, target_module, is_file=is_file, force=force
         )
@@ -161,9 +224,26 @@ class PathRouter:
     # --- Dynamic helpers ---
     def model_path(self, name: str, *, force: bool = False) -> Path:
         """
-        Resolve a sanitised model-file name under the shared models directory.
+        Resolve a model file under the shared `<data>/models` directory.
 
-        Models are persisted as single files, so this always grants a file path.
+        Models are persisted as single files, so the call claims and creates
+        the shared `models` directory and returns the file path without
+        creating the file. The claim belongs to the `shared` slice, not to the
+        calling module.
+
+        Args:
+            name (str): Model file name; spaces and hyphens become underscores
+                before the name is validated.
+            force (bool): Allow the claim when `models` is already claimed by
+                another module slice.
+
+        Returns:
+            Path: `<data_root>/models/<name>`.
+
+        Raises:
+            ValueError: If `name` does not reduce to one portable path segment,
+                or `models` belongs to another module slice and `force` is
+                False.
         """
         return self._dynamic(
             PathRoot.DATA,
@@ -174,7 +254,26 @@ class PathRouter:
         )
 
     def raw_dataset_path(self, name: str, *, force: bool = False) -> Path:
-        """Resolve a sanitised dataset-directory name under the shared raw directory."""
+        """
+        Resolve a dataset directory under `<data>/raw_datasets`.
+
+        The dataset directory itself is claimed and created, not the `raw_datasets`
+        parent; the claim belongs to the `shared` slice.
+
+        Args:
+            name (str): Raw dataset directory name; spaces and hyphens become
+                underscores before the name is validated.
+            force (bool): Allow the claim when the dataset directory is already
+                claimed by another module slice.
+
+        Returns:
+            Path: `<data_root>/raw_datasets/<name>`, created on access.
+
+        Raises:
+            ValueError: If `name` does not reduce to one portable path segment,
+                or the dataset directory belongs to another module slice and
+                `force` is False.
+        """
         return self._dynamic(
             PathRoot.DATA,
             (config.raw_dataset_subdirectory, "raw_dataset_subdirectory"),
@@ -184,7 +283,26 @@ class PathRouter:
         )
 
     def processed_dataset_path(self, name: str, *, force: bool = False) -> Path:
-        """Resolve a dataset-directory name under the shared processed directory."""
+        """
+        Resolve a dataset directory under `<data>/processed_dataset`.
+
+        The dataset directory itself is claimed and created, not the
+        `processed_dataset` parent; the claim belongs to the `shared` slice.
+
+        Args:
+            name (str): Processed dataset directory name; spaces and hyphens
+                become underscores before the name is validated.
+            force (bool): Allow the claim when the dataset directory is already
+                claimed by another module slice.
+
+        Returns:
+            Path: `<data_root>/processed_dataset/<name>`, created on access.
+
+        Raises:
+            ValueError: If `name` does not reduce to one portable path segment,
+                or the dataset directory belongs to another module slice and
+                `force` is False.
+        """
         return self._dynamic(
             PathRoot.DATA,
             (
@@ -197,7 +315,26 @@ class PathRouter:
         )
 
     def cache_path(self, name: str, *, force: bool = False) -> Path:
-        """Resolve a sanitised cache-directory name directly under the cache root."""
+        """
+        Resolve a cache directory directly under the cache root.
+
+        No shared cache subdirectory is involved, so the result is
+        `<cache_root>/<name>` rather than a sliced path.
+
+        Args:
+            name (str): Cache directory name; spaces and hyphens become
+                underscores before the name is validated.
+            force (bool): Allow the claim when the directory is already claimed
+                by another module slice.
+
+        Returns:
+            Path: `<cache_root>/<name>`, created on access.
+
+        Raises:
+            ValueError: If `name` does not reduce to one portable path segment,
+                or the directory belongs to another module slice and `force` is
+                False.
+        """
         return self._dynamic(
             PathRoot.CACHE,
             None,
@@ -345,7 +482,20 @@ def initialise(
     cache_root: Path | None = None,
     tmp_root: Path | None = None,
 ) -> None:
-    """Override the singleton router's roots; the only sanctioned injection point."""
+    """
+    Override the singleton router's roots.
+
+    Thin delegation to `PathRouter.initialise`; see there for the ledger and
+    directory-creation guarantees.
+
+    Args:
+        data_root (Path | None): Replacement data root; None keeps the current
+            one.
+        cache_root (Path | None): Replacement cache root; None keeps the
+            current one.
+        tmp_root (Path | None): Replacement temporary root; None keeps the
+            current one.
+    """
     paths.initialise(data_root=data_root, cache_root=cache_root, tmp_root=tmp_root)
 
 
@@ -356,7 +506,24 @@ def get_data_path(
     is_file: bool = False,
     force: bool = False,
 ) -> Path:
-    """Resolve a data-root path through the singleton router."""
+    """
+    Resolve a data-root path through the singleton router.
+
+    Args:
+        subpath (str): "/"-separated path inside the module's data slice.
+        target_module (str | None): Module slice to attribute the path to;
+            None detects it from the calling frame.
+        is_file (bool): Whether the path names a file.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: The resolved path; see `PathRouter.get_data_path` for details.
+
+    Raises:
+        ValueError: If `subpath` or `target_module` is not one portable path
+            segment, or the target directory belongs to another module slice and
+            `force` is False.
+    """
     return paths.get_data_path(subpath, target_module, is_file=is_file, force=force)
 
 
@@ -367,7 +534,24 @@ def get_cache_path(
     is_file: bool = False,
     force: bool = False,
 ) -> Path:
-    """Resolve a cache-root path through the singleton router."""
+    """
+    Resolve a cache-root path through the singleton router.
+
+    Args:
+        subpath (str): "/"-separated path inside the module's cache slice.
+        target_module (str | None): Module slice to attribute the path to;
+            None detects it from the calling frame.
+        is_file (bool): Whether the path names a file.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: The resolved path; see `PathRouter.get_cache_path` for details.
+
+    Raises:
+        ValueError: If `subpath` or `target_module` is not one portable path
+            segment, or the target directory belongs to another module slice and
+            `force` is False.
+    """
     return paths.get_cache_path(subpath, target_module, is_file=is_file, force=force)
 
 
@@ -378,25 +562,96 @@ def get_tmp_path(
     is_file: bool = False,
     force: bool = False,
 ) -> Path:
-    """Resolve a temporary-root path through the singleton router."""
+    """
+    Resolve a temporary-root path through the singleton router.
+
+    Args:
+        subpath (str): "/"-separated path inside the module's temporary slice.
+        target_module (str | None): Module slice to attribute the path to;
+            None detects it from the calling frame.
+        is_file (bool): Whether the path names a file.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: The resolved path; see `PathRouter.get_tmp_path` for details.
+
+    Raises:
+        ValueError: If `subpath` or `target_module` is not one portable path
+            segment, or the target directory belongs to another module slice and
+            `force` is False.
+    """
     return paths.get_tmp_path(subpath, target_module, is_file=is_file, force=force)
 
 
 def model_path(name: str, *, force: bool = False) -> Path:
-    """Resolve a dynamic model name through the singleton router."""
+    """
+    Resolve a model file under the shared `<data>/models` directory.
+
+    Args:
+        name (str): Model file name.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: `<data_root>/models/<name>`; see `PathRouter.model_path`.
+
+    Raises:
+        ValueError: If `name` is not portable, or `models` belongs to another
+            module slice and `force` is False.
+    """
     return paths.model_path(name, force=force)
 
 
 def raw_dataset_path(name: str, *, force: bool = False) -> Path:
-    """Resolve a dynamic raw dataset name through the singleton router."""
+    """
+    Resolve a dataset directory under `<data>/raw_datasets`.
+
+    Args:
+        name (str): Raw dataset directory name.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: `<data_root>/raw_datasets/<name>`; see
+        `PathRouter.raw_dataset_path`.
+
+    Raises:
+        ValueError: If `name` is not portable, or the directory belongs to
+            another module slice and `force` is False.
+    """
     return paths.raw_dataset_path(name, force=force)
 
 
 def processed_dataset_path(name: str, *, force: bool = False) -> Path:
-    """Resolve a dynamic processed dataset name through the singleton router."""
+    """
+    Resolve a dataset directory under `<data>/processed_dataset`.
+
+    Args:
+        name (str): Processed dataset directory name.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: `<data_root>/processed_dataset/<name>`; see
+        `PathRouter.processed_dataset_path`.
+
+    Raises:
+        ValueError: If `name` is not portable, or the directory belongs to
+            another module slice and `force` is False.
+    """
     return paths.processed_dataset_path(name, force=force)
 
 
 def cache_path(name: str, *, force: bool = False) -> Path:
-    """Resolve a dynamic cache name through the singleton router."""
+    """
+    Resolve a cache directory directly under the cache root.
+
+    Args:
+        name (str): Cache directory name.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: `<cache_root>/<name>`; see `PathRouter.cache_path`.
+
+    Raises:
+        ValueError: If `name` is not portable, or the directory belongs to
+            another module slice and `force` is False.
+    """
     return paths.cache_path(name, force=force)

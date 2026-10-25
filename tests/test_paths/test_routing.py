@@ -126,7 +126,7 @@ initialise(
 print(paths.get_data_path('probe.json', is_file=True))
 """
 
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(  # noqa: S603 Intended subprocess test, not a security issue.
         [sys.executable, "-c", script],
         cwd=tmp_path,
         capture_output=True,
