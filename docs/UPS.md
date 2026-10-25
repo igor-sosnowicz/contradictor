@@ -78,6 +78,10 @@ tfidf = cache_path("tfidf")             # <cache>/tfidf                    (fold
 - The name must be one folder name. Spaces and hyphens become `_`.
 - The folder names (`models`, `raw_datasets`, `processed_dataset`) come from `Configuration`.
 - The caller's slice is never used, so there are no conflicts and no `force=True` needed.
+- Claimed folder: `model_path` claims `<data>/models`, because a model is a file. The
+  folder helpers claim `<data>/<subdir>/<name>`, not the shared parent — so
+  `raw_dataset_path("claims")` and `raw_dataset_path("evidence")` coexist.
+- `cache_path` is the exception: it has no shared subdirectory and resolves `<cache>/<name>`.
 
 3. **Interactive**: the caller has no file. This happens in a REPL or with `python -c`. Everything goes into one folder.
 
@@ -114,7 +118,7 @@ Each `PathGrant` has:
 
 `paths.ledger` returns the grants as a read-only tuple, in order. Use it for tests and debugging.
 
-The ledger is cleared when `initialise()` changes a root, because the old grants point to the old roots.
+`initialise()` clears the ledger when a root changes — grants and claims both, plus the cached root map — because the old grants point to the old roots.
 
 ### Guards
 
@@ -128,6 +132,13 @@ Guards stop a path from leaving its root, and stop it from behaving differently 
   - a last part that ends with a dot or a space
 - `sanitise_segment`: dynamic names only. Spaces and hyphens become `_`.
 - `single_segment`: `target_module` and dynamic names must be one folder name.
+
+Order is fixed, so the first error is deterministic:
+- getters: `target_module` (or caller detection) → `subpath` → root resolution
+- helpers: shared subdirectory → root resolution → `name`
+
+Dynamic names are sanitised **before** validation: `sbert fine-tune` passes as
+`sbert_fine_tune`, while `a/b` still fails.
 
 There is no ACL layer. Guards + ledger are the whole safety boundary.
 
@@ -145,6 +156,30 @@ Shared helpers claim the `shared` slice. Any module can use them, so they never 
 
 `force` is only for a private slice and `shared` claiming the same folder. For example, a module named `models` (`src/models/`) asks for `<data>/models`, which is the folder `model_path` uses. If either one comes second, it raises `ValueError`, unless one side passes `force=True`.
 
+### Side effects per call
+
+Applies to every call in [API](#api).
+
+What each call claims:
+```
+Call asks for a folder ----> folder path
+   (Folder is found)
+
+Call asks for a file   ----> parent folder path
+   (File is returned)
+
+```
+
+What happens on every call:
+
+1. validates its arguments (order above) — nothing touches disk or ledger before it passes,
+2. claims the folder, which is where a collision raises,
+3. creates it with `parents=True`,
+4. appends a `PathGrant` for the returned path (`forced=True` when `force=True` was used).
+
+The file itself is never created. Roots resolve lazily on first access; a root
+nobody injected keeps coming from `Configuration`.
+
 ### `initialise()` — the only root injection point
 
 ```python
@@ -159,8 +194,14 @@ initialise(
 
 Used by `src/main.py` (production) and `tests/conftest.py` (isolation).
 No-arg call = safe no-op. No bulk mkdir — creation happens on access.
+New roots apply on the next access; paths already handed out keep the old root.
 
 ## API
+
+There are two types of calls in the table below:
+
+- **Sliced getters** — `get_data_path`, `get_cache_path`, `get_tmp_path`. Return a path inside the caller's own slice, or inside the slice passed as `target_module`.
+- **Dynamic helpers** — `model_path`, `raw_dataset_path`, `processed_dataset_path`, `cache_path`. Return a path in a shared location; the caller's slice is never used.
 
 | Call | Returns |
 |------|---------|

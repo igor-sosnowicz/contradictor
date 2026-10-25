@@ -8,6 +8,7 @@ from pathlib import Path
 import pydantic
 from platformdirs import PlatformDirs
 from pydantic import BaseModel, ConfigDict, Field
+from loguru import logger as log
 
 from src.argument_detection.config import (
     XGBoostExtractorConfig,
@@ -89,6 +90,7 @@ def load_configuration(file: Path | None) -> Configuration:
         Configuration: Configuration object read to use.
     """
     if file is None:
+        log.info("No configuration file provided, using default configuration.")
         return Configuration()
 
     try:
