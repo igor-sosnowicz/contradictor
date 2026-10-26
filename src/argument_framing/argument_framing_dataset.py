@@ -43,7 +43,7 @@ class ArgumentFramingDataset(UrlDataset):
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:
         """Transform raw csv datasets into standardized split formats."""
         transformed_data = {}
-        dataset_path = to_raw_dataset_path("argument-framing")
+        dataset_path = to_raw_dataset_path("mp_frame_corpus")
 
         if dataset_path.exists():
             transformed_data[dataset_path] = self._load_and_split_mfc()
@@ -72,7 +72,7 @@ class ArgumentFramingDataset(UrlDataset):
 
     def _load_and_split_mfc(self) -> dict[SubsetName, pd.DataFrame]:
         """Load CSV files and split the validation file into val and test sets."""
-        dataset_path = to_raw_dataset_path("argument-framing")
+        dataset_path = to_raw_dataset_path("mp_frame_corpus")
         train_file = dataset_path / "combined_train.csv"
         val_file = dataset_path / "combined_validation.csv"
 
