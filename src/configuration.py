@@ -68,9 +68,7 @@ class Configuration(BaseModel):
     )
 
     # Contradictor pipeline implementations
-    search_pipeline: SearchPipelineImplementation = (
-        SearchPipelineImplementation.SELF_IMPLEMENTED
-    )
+    search_pipeline: SearchPipelineImplementation = SearchPipelineImplementation.REMOTE
     argument_extractor: ArgumentExtractorImplementation = (
         ArgumentExtractorImplementation.XGBOOST
     )
@@ -95,6 +93,14 @@ class Configuration(BaseModel):
     # Argument encoding dataset. Importance of semantics for distance.
     # Style weight is 1.0 - encoding_dataset_semantics_weight.
     encoding_dataset_semantics_weight: float = 0.7
+
+    counterargument_candidates_limit: int = Field(
+        100,
+        description=(
+            "A maximum number of counterargument candidates considered by the pipeline."
+        ),
+        gt=0,
+    )
 
 
 def load_configuration(file: Path) -> Configuration:

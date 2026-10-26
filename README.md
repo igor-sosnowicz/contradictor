@@ -21,23 +21,49 @@ Prerequisites:
 
 1. Clone the repository.
 
-    ```bash
-    git clone git@github.com:igor-sosnowicz/contradictor.git
-    ```
+   ```bash
+   git clone git@github.com:igor-sosnowicz/contradictor.git
+   ```
 
 2. Install the developer dependencies.
 
-    ```bash
-    uv sync --dev
-    ```
+   ```bash
+   uv sync --dev
+   ```
 
 3. Install the pre-commit hooks.
 
-    ```bash
-    uv run pre-commit install
-    ```
+   ```bash
+   uv run pre-commit install
+   ```
 
-## Conventions
+## Command Line Interface (CLI)
+
+### Help
+
+To get help and available commands, run:
+
+```bash
+uv run contradictor --help
+```
+
+### Benchmarking
+
+To perform a benchmark, run:
+
+```bash
+uv run contradictor benchmark
+```
+
+### Web API
+
+To start the Web API, run:
+
+```bash
+uv run contradictor api
+```
+
+## Developer Conventions
 
 The following development and maintenance conventions were decided and should be followed in the project:
 

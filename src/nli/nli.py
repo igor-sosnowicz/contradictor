@@ -1,5 +1,6 @@
 """Module with a natural language inference interface."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from types import TracebackType
 from typing import Self
@@ -32,6 +33,11 @@ class NLI(ABC):
         Raises:
             NLIResultError: When a model returned a non-existent label as a NLI result.
         """
+
+    async def prepare(self) -> None:
+        """Prepare the NLI model for inference."""
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, self.__enter__)
 
     @abstractmethod
     def __enter__(self) -> Self:

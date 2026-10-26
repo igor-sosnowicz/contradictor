@@ -154,6 +154,9 @@ class XGBoostFrameClassifier(ArgumentFramer):
             )
 
         arguments = list(arguments)
+        if not arguments:
+            return []
+
         texts = [str(argument) for argument in arguments]
         probabilities = self._model.predict_proba(self._vectorizer.transform(texts))
 
