@@ -30,16 +30,16 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
         """
         Return a deterministic claim classification dataset.
 
+        The split parameter is intentionally unused because the minimal
+        integration-test dataset returns the same data for every subset.
+
         Args:
-            split: Dataset subset to retrieve. The minimal test dataset
-                returns the same data for every subset.
+            split: Dataset subset (intentionally unused).
             max_samples: Maximum number of samples to return.
 
         Returns:
             DataFrame containing sentences and their claim labels.
         """
-        del split
-
         data = pd.DataFrame(
             {
                 "sentence": [

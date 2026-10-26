@@ -2,7 +2,6 @@
 ClaimEvidenceExtractor
 
 # Used by the pipeline/API even though Vulture cannot detect the calls.
-_.extract_pairs
 _.check_n_grams_bounds
 
 # Pydantic/model configuration accessed dynamically.

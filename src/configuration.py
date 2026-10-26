@@ -6,9 +6,9 @@ from getpass import getuser
 from pathlib import Path
 
 import pydantic
+from loguru import logger as log
 from platformdirs import PlatformDirs
 from pydantic import BaseModel, ConfigDict, Field
-from loguru import logger as log
 
 from src.argument_detection.config import (
     XGBoostExtractorConfig,
@@ -16,7 +16,6 @@ from src.argument_detection.config import (
 from src.data_models.data_models import (
     ArgumentExtractorImplementation,
     ArgumentFramerImplementation,
-    ComputingBackend,
     EncoderImplementation,
     NLIImplementation,
     SearchPipelineImplementation,
@@ -56,8 +55,6 @@ class Configuration(BaseModel):
     # In seconds.
     dataset_download_timeout: int = 300
 
-    computing_backend: ComputingBackend = ComputingBackend.CPU
-
     reference_text_max_length: int = Field(
         default=10_000,
         ge=1,
@@ -69,7 +66,7 @@ class Configuration(BaseModel):
         SearchPipelineImplementation.SELF_IMPLEMENTED
     )
     argument_extractor: ArgumentExtractorImplementation = (
-        ArgumentExtractorImplementation.NOT_IMPLEMENTED
+        ArgumentExtractorImplementation.XGBOOST
     )
     argument_framer: ArgumentFramerImplementation = ArgumentFramerImplementation.XGBOOST
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
