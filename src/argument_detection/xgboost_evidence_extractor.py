@@ -1,8 +1,7 @@
 """XGBoost model for claim-evidence pair extraction."""
 
 import pickle
-from pathlib import Path
-from typing import Final, override
+from typing import override
 
 import numpy as np
 from xgboost import XGBClassifier
@@ -13,8 +12,8 @@ from src.argument_detection.argument_detection_dataset import (
 from src.argument_detection.base_xgboost_extractor import (
     BaseXGBoostExtractor,
 )
-from src.configuration import config
 from src.data_models.data_models import SubsetName
+from src.paths import paths
 from src.utils.errors import ModelNotTrainedError
 
 
@@ -32,12 +31,6 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
     - extracting supporting evidence,
     - tuning the classification threshold.
     """
-
-    PATH_TO_MODEL: Final = Path(
-        config.data_directory
-        / config.model_subdirectory
-        / "xgboost_evidence_extractor.pkl"
-    )
 
     def __init__(
         self,
@@ -59,6 +52,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             model_name="xgboost_evidence_extractor.json",
             proof_of_concept_mode=proof_of_concept_mode,
         )
+        self.path_to_model = paths.model_path("xgboost_evidence_extractor.pkl")
 
     def _get_max_samples(self) -> int:
         """
@@ -131,7 +125,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             y,
         )
         self._model = model
-        with self.PATH_TO_MODEL.open("wb") as file:
+        with self.path_to_model.open("wb") as file:
             pickle.dump(
                 model,
                 file,

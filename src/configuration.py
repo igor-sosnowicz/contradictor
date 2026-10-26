@@ -1,9 +1,12 @@
 """Module with a project-wide configuration object."""
 
+import tempfile
 import tomllib
+from getpass import getuser
 from pathlib import Path
 
 import pydantic
+from loguru import logger as log
 from platformdirs import PlatformDirs
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -39,6 +42,9 @@ class Configuration(BaseModel):
     # Persistent application data.
     data_directory: Path = directories.user_data_path
 
+    # Ephemeral application files that may be discarded by the OS between runs.
+    tmp_directory: Path = Path(tempfile.gettempdir()) / f"Contradictor-{getuser()}"
+
     # A sub-directory of the data directory storing raw versions of downloaded datasets.
     raw_dataset_subdirectory: str = "raw_datasets"
     preprocessed_dataset_subdirectory: str = "processed_dataset"
@@ -50,7 +56,7 @@ class Configuration(BaseModel):
     dataset_download_timeout: int = 300
 
     reference_text_max_length: int = Field(
-        10_000,
+        default=10_000,
         ge=1,
         description="A maximum number of characters a reference text can have.",
     )
@@ -69,16 +75,21 @@ class Configuration(BaseModel):
     vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
 
-def load_configuration(file: Path) -> Configuration:
+def load_configuration(file: Path | None) -> Configuration:
     """
-    Load configuration from a configuration file.
+    Load configuration from a configuration file or
+    return default configuration if no file is provided.
 
     Args:
-        file (Path): Path to a configuration file.
+        file (Path | None): Path to a configuration file.
 
     Returns:
         Configuration: Configuration object read to use.
     """
+    if file is None:
+        log.info("No configuration file provided, using default configuration.")
+        return Configuration()
+
     try:
         with file.open("rb") as f:
             config_data = tomllib.load(f)
@@ -91,4 +102,19 @@ def load_configuration(file: Path) -> Configuration:
         ) from e
 
 
-config: Configuration = load_configuration(Path("./config.toml"))
+def _resolve_configuration_file() -> Path | None:
+    """
+    Return path to config file to load, or None when none exists.
+
+    Search order:
+    1. Dev worktree (`./config.toml`)
+    2. PlatformDirs (`~/.config/Contradictor/config.toml`)
+    """
+    candidates = (
+        Path("./config.toml"),
+        directories.user_config_path / "config.toml",
+    )
+    return next((candidate for candidate in candidates if candidate.is_file()), None)
+
+
+config: Configuration = load_configuration(_resolve_configuration_file())

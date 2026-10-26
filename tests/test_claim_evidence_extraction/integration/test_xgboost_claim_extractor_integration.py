@@ -1,5 +1,6 @@
 """Integration tests for the claim extractior."""
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import numpy as np
@@ -10,8 +11,8 @@ from xgboost import XGBClassifier
 from src.argument_detection.argument_detection_dataset import ArgumentDetectionDataset
 from src.argument_detection.config import ThresholdConfig
 from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
-from src.configuration import config
 from src.data_models.data_models import SubsetName
+from src.paths import initialise, paths
 
 
 class MiniIntegrationDataset(ArgumentDetectionDataset):
@@ -60,52 +61,58 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
 
 
 @pytest.fixture
-def isolated_ml_env(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> Path:
+def isolated_ml_env(tmp_path: Path) -> Iterator[Path]:
     """
     Create an isolated filesystem environment with a test XGBoost model.
 
+    All three path roots are redirected into pytest's temporary tree through
+    `initialise()` — the single sanctioned injection point — and
+    the previous roots are restored afterwards, mirroring `tests/conftest.py`.
     The model is trained using the real embedder and XGBoost classifier. All
     model artifacts are written to pytest's temporary directory.
     """
-    model_dir = tmp_path / "models"
-    model_dir.mkdir(parents=True)
-
-    monkeypatch.setattr(config, "data_directory", tmp_path)
-    monkeypatch.setattr(config, "model_subdirectory", Path("models"))
-
-    dataset = MiniIntegrationDataset()
-    extractor = XGBoostClaimExtractor(dataset, proof_of_concept_mode=True)
-
-    training_sentences = [
-        "Cats are intelligent creatures.",
-        "The Earth revolves around the Sun.",
-        "We should reduce carbon emissions.",
-        "I went to the store yesterday.",
-        "The sky is blue.",
-        "Please close the door.",
-    ]
-    X_train = extractor._embedder.embed(training_sentences)
-    y_train = np.array([1, 1, 1, 0, 0, 0])
-
-    mini_xgb = XGBClassifier(
-        n_estimators=10,
-        max_depth=2,
-        learning_rate=0.3,
-        random_state=42,
-        eval_metric="logloss",
+    saved = (paths.data_root, paths.cache_root, paths.tmp_root)
+    initialise(
+        data_root=tmp_path,
+        cache_root=tmp_path / "cache",
+        tmp_root=tmp_path / "tmp",
     )
-    mini_xgb.fit(X_train, y_train)
+    try:
+        model_dir = tmp_path / "models"
+        model_dir.mkdir(parents=True)
 
-    model_path = model_dir / "xgboost_claim_extractor.json"
-    mini_xgb.save_model(str(model_path))
+        dataset = MiniIntegrationDataset()
+        extractor = XGBoostClaimExtractor(dataset, proof_of_concept_mode=True)
 
-    assert model_path.exists()
-    assert model_path.stat().st_size > 0
+        training_sentences = [
+            "Cats are intelligent creatures.",
+            "The Earth revolves around the Sun.",
+            "We should reduce carbon emissions.",
+            "I went to the store yesterday.",
+            "The sky is blue.",
+            "Please close the door.",
+        ]
+        X_train = extractor._embedder.embed(training_sentences)
+        y_train = np.array([1, 1, 1, 0, 0, 0])
 
-    return tmp_path
+        mini_xgb = XGBClassifier(
+            n_estimators=10,
+            max_depth=2,
+            learning_rate=0.3,
+            random_state=42,
+            eval_metric="logloss",
+        )
+        mini_xgb.fit(X_train, y_train)
+
+        model_path = model_dir / "xgboost_claim_extractor.json"
+        mini_xgb.save_model(str(model_path))
+
+        assert model_path.exists()
+        assert model_path.stat().st_size > 0
+
+        yield tmp_path
+    finally:
+        initialise(data_root=saved[0], cache_root=saved[1], tmp_root=saved[2])
 
 
 @pytest.mark.asyncio

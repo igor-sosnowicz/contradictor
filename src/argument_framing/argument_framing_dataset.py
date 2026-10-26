@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
-from src.utils.dataset import to_raw_dataset_path
+from src.paths import paths
 
 
 class ArgumentFramingDataset(UrlDataset):
@@ -28,7 +28,7 @@ class ArgumentFramingDataset(UrlDataset):
         super().__init__()
         self.random_seed = random_seed
         self._datasets = {
-            to_raw_dataset_path("mp_frame_corpus"): [
+            paths.raw_dataset_path("mp_frame_corpus"): [
                 "https://huggingface.co/datasets/jmLuis/"
                 "MediaFrameCorpus-PhilippineFrameCorpus-Combined/"
                 "resolve/main/combined_train.csv",
@@ -43,7 +43,7 @@ class ArgumentFramingDataset(UrlDataset):
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:
         """Transform raw csv datasets into standardized split formats."""
         transformed_data = {}
-        dataset_path = to_raw_dataset_path("argument-framing")
+        dataset_path = paths.raw_dataset_path("argument-framing")
 
         if dataset_path.exists():
             transformed_data[dataset_path] = self._load_and_split_mfc()
@@ -72,7 +72,7 @@ class ArgumentFramingDataset(UrlDataset):
 
     def _load_and_split_mfc(self) -> dict[SubsetName, pd.DataFrame]:
         """Load CSV files and split the validation file into val and test sets."""
-        dataset_path = to_raw_dataset_path("argument-framing")
+        dataset_path = paths.raw_dataset_path("argument-framing")
         train_file = dataset_path / "combined_train.csv"
         val_file = dataset_path / "combined_validation.csv"
 

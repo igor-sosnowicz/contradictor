@@ -12,6 +12,7 @@ from loguru import logger
 from src.configuration import config
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import SubsetName
+from src.paths import paths
 
 
 class UrlDataset(Dataset):
@@ -46,11 +47,7 @@ class UrlDataset(Dataset):
         await self._download_raw_datasets_if_missing()
         datasets = self._transform()
         if not datasets:
-            self._splits_path = (
-                config.data_directory
-                / config.preprocessed_dataset_subdirectory
-                / self.processed_folder_name
-            )
+            self._splits_path = paths.processed_dataset_path(self.processed_folder_name)
             return self._splits_path
         self._splits_path = self._merge_datasets(datasets)
         return self._splits_path
@@ -133,10 +130,8 @@ class UrlDataset(Dataset):
         """Merge and save processed dataset splits."""
         merged_data = self._combine_subsets(extracted_data)
 
-        processed_dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / self.processed_folder_name
+        processed_dataset_path = paths.processed_dataset_path(
+            self.processed_folder_name
         )
 
         processed_dataset_path.mkdir(
