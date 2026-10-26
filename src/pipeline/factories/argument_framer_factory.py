@@ -8,6 +8,8 @@ from src.data_models.data_models import ArgumentFramerImplementation
 
 def build_argument_framer(
     framer_implementation: ArgumentFramerImplementation | None = None,
+    *,
+    proof_of_concept_mode: bool = False,
 ) -> ArgumentFramer:
     """
     Construct a ready-made argument framer from pre-configured implementations.
@@ -15,6 +17,8 @@ def build_argument_framer(
     Args:
         framer_implementation (ArgumentFramerImplementation): Choice of a
             pre-configured implementation.
+        proof_of_concept_mode (bool): Whether to use a tiny subset of training
+            data for faster test runs. Defaults to False.
 
     Returns:
         ArgumentFramer: An initialised instance of the argument framer.
@@ -32,4 +36,7 @@ def build_argument_framer(
 
     match framer_implementation:
         case ArgumentFramerImplementation.XGBOOST:
-            return XGBoostFrameClassifier(dataset=ArgumentFramingDataset())
+            return XGBoostFrameClassifier(
+                dataset=ArgumentFramingDataset(),
+                proof_of_concept_mode=proof_of_concept_mode,
+            )

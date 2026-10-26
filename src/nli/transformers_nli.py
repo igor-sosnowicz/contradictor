@@ -12,6 +12,7 @@ from src.data_models.data_models import NLIPrediction
 from src.nli.nli import NLI
 from src.nli.utils import to_nli_enum
 from src.utils.errors import NotPreparedError
+from src.utils.timer import Timer
 
 
 class TransformersNLI(NLI):
@@ -45,9 +46,10 @@ class TransformersNLI(NLI):
                 "A maximum number of workers (`max_workers`) has to be a positive "
                 "integer."
             )
-        self._nli_model = pipeline(
-            "text-classification", model=model, batch_size=batch_size
-        )
+        with Timer("NLI pipeline constructor"):
+            self._nli_model = pipeline(
+                "text-classification", model=model, batch_size=batch_size
+            )
         self.max_workers = max_workers
         self._executor: ThreadPoolExecutor | None = None
         self._prepared = False
@@ -87,7 +89,8 @@ class TransformersNLI(NLI):
             for reference_text in reference_texts
             for hypothesis in other_texts
         ]
-        inferences = self._nli_model(pairs)
+        with Timer(f"ModernBERT NLI inference on {len(pairs)} pairs"):
+            inferences = self._nli_model(pairs)
 
         flat_output = [
             NLIPrediction(
@@ -100,14 +103,15 @@ class TransformersNLI(NLI):
     @override
     def __enter__(self) -> Self:
         # The first usage triggers download of the model files.
-        self._nli_model(
-            [
-                {
-                    "text": "Download the model.",  # Premise/reference
-                    "text_pair": "He is from France.",  # Hypothesis
-                }
-            ]
-        )
+        with Timer("TransformersNLI NLI model load"):
+            self._nli_model(
+                [
+                    {
+                        "text": "Download the model.",  # Premise/reference
+                        "text_pair": "He is from France.",  # Hypothesis
+                    }
+                ]
+            )
         self._executor = ThreadPoolExecutor(max_workers=self.max_workers)
         self._prepared = True
         return self
