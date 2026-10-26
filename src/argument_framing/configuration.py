@@ -12,7 +12,7 @@ class XGBoostConfig(BaseModel):
     # parameters instead of keyword. That's why `default` was used.
     xgb_n_estimators: int = Field(default=30, ge=2)
     xgb_n_jobs: int = Field(default=-1, ge=-1)
-    tf_idf_max_features: int = Field(default=10_00, ge=1)
+    tf_idf_max_features: int = Field(default=1000, ge=1)
     tf_idf_shortest_n_gram: int = Field(default=1, ge=1)
     tf_idf_longest_n_gram: int = Field(default=2, ge=1)
     random_seed: int | None = None

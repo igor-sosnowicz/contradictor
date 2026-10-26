@@ -7,7 +7,7 @@ from typing import override
 
 import pytest
 
-from src.search_module.cleaner import ReadabilityCleaner
+from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
 from src.search_module.config import CleaningConfig, KeywordConfig
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
 from src.utils.tokenisers.tokeniser import Tokeniser

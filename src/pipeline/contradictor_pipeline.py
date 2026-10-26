@@ -2,8 +2,8 @@
 
 import asyncio
 from collections.abc import Collection, Iterable
+from pathlib import Path
 
-import numpy as np
 from loguru import logger
 
 from src.configuration import config
@@ -13,6 +13,7 @@ from src.data_models.data_models import (
     FramedArgument,
     InterpretativeFrame,
     NLIResult,
+    StyledFramedArgument,
 )
 from src.pipeline.config import PipelineConfiguration
 
@@ -36,13 +37,63 @@ class ContradictorPipeline:
         """Prepare all components of the Contradictor pipeline."""
         await self._pipes.argument_framer.prepare()
         await self._pipes.style_extractor.prepare()
+        await self._pipes.encoder.prepare()
+        await self._pipes.nli.prepare()
 
-    def _get_arguments(self, reference_text: str) -> list[Argument]:
-        arguments = self._pipes.argument_extractor([reference_text])[0]
+    async def __call__(
+        self,
+        reference_text: str,
+    ) -> list[ArgumentWithCounterarguments]:
+        """
+        Pass a reference text through the pipeline.
+
+        Args:
+            reference_text (str): A text from the user to match counterarguments to
+                arguments found in the text.
+
+        Returns:
+            list[ArgumentWithCounterarguments]: A list of arguments and
+                matching counterarguments.
+
+        Raises:
+            ValueError: Raised if reference text is empty.
+            UnsupportedError: Raised if a currently unsupported
+                computing backend was used.
+        """
+        reference_text = self._sanitise_input(reference_text)
+
+        logger.info("Starting the pipeline...")
+
+        arguments = await self._get_arguments(reference_text)
+        potential_counterarguments = await self._get_potential_counterarguments(
+            reference_text
+        )
+
+        potential_counterarguments = await self._merge_claims(
+            arguments=arguments, counterarguments=potential_counterarguments
+        )
+
+        framed_arguments = self._pipes.argument_framer.frame(arguments)
+        framed_potential_counterarguments = self._pipes.argument_framer.frame(
+            potential_counterarguments
+        )
+
+        matched_arguments = await self._process_all_frames(
+            frames=tuple(InterpretativeFrame),
+            framed_arguments=framed_arguments,
+            framed_counterarguments=framed_potential_counterarguments,
+        )
+        logger.info("Matching counterarguments to arguments completed.")
+        return matched_arguments
+
+    async def _get_arguments(self, reference_text: str) -> list[Argument]:
+        arguments = (await self._pipes.argument_extractor([reference_text]))[0]
         logger.debug(f"Extracted {len(arguments)} arguments from the reference text.")
         return arguments
 
-    def _get_potential_counterarguments(self, reference_text: str) -> list[Argument]:
+    async def _get_potential_counterarguments(
+        self, reference_text: str
+    ) -> list[Argument]:
         other_texts = [
             document.text
             for document in self._pipes.search_pipeline.search(reference_text)
@@ -51,16 +102,32 @@ class ContradictorPipeline:
         # Flatten the list of counterarguments.
         counterarguments = [
             counterargument
-            for document_arguments in self._pipes.argument_extractor(other_texts)
+            for document_arguments in await self._pipes.argument_extractor(other_texts)
             for counterargument in document_arguments
         ]
         logger.debug(f"Extracted {len(counterarguments)} potential counterarguments.")
         return counterarguments
 
+    def get_configuration(self) -> dict[str, str | float | int | Path]:
+        """
+        Get configuration of the components of Contradictor that may impact
+        its performance.
+
+        Returns:
+            dict[str, str | float | int | Path]: Hierarchical report of the
+                configuration of Contradictor instance.
+        """
+        raise NotImplementedError("get_configuration")
+
     async def _merge_claims(
         self, arguments: list[Argument], counterarguments: list[Argument]
     ) -> list[Argument]:
-        if not arguments:
+        if not arguments or not counterarguments:
+            logger.warning(
+                "Skipping claim merging due to either missing arguments, or "
+                "counterarguments, or both."
+                f"arguments={len(arguments)}, counterarguments={len(counterarguments)}."
+            )
             return []
 
         claims_of_counterarguments: list[str] = [
@@ -125,10 +192,22 @@ class ContradictorPipeline:
 
     async def _extract_style(
         self, framed_arguments: list[FramedArgument]
-    ) -> list[np.ndarray]:
-        return await self._pipes.style_extractor.extract(
+    ) -> list[StyledFramedArgument]:
+        style_vectors = await self._pipes.style_extractor.extract(
             [str(argument) for argument in framed_arguments]
         )
+        return [
+            StyledFramedArgument(
+                claim=argument.claim,
+                evidence=argument.evidence,
+                primary_frame=argument.primary_frame,
+                frame_probabilities=argument.frame_probabilities,
+                style_vector=style_vector,
+            )
+            for argument, style_vector in zip(
+                framed_arguments, style_vectors, strict=True
+            )
+        ]
 
     async def _match_counterarguments_to_arguments_by_frame(
         self,
@@ -153,18 +232,18 @@ class ContradictorPipeline:
             return []
 
         logger.debug("Style vectors extraction started.")
-        counterarguments_style = await self._extract_style(
+        framed_and_styled_counterarguments = await self._extract_style(
             shared_frame_counterarguments
         )
-        arguments_style = await self._extract_style(shared_frame_arguments)
+        framed_and_styled_arguments = await self._extract_style(shared_frame_arguments)
         logger.debug("Style vectors extracted.")
 
         logger.debug("Representation encoding has started.")
         arguments_representation = await self._pipes.encoder(
-            shared_frame_arguments, arguments_style
+            framed_and_styled_arguments
         )
         counterarguments_representation = await self._pipes.encoder(
-            shared_frame_counterarguments, counterarguments_style
+            framed_and_styled_counterarguments
         )
         logger.debug("Representation encoding has finished.")
 
@@ -212,7 +291,7 @@ class ContradictorPipeline:
 
         return output
 
-    def sanitise_input(self, text: str) -> str:
+    def _sanitise_input(self, text: str) -> str:
         """
         Sanitise the input text.
 
@@ -236,49 +315,3 @@ class ContradictorPipeline:
             reference_text = reference_text[: config.reference_text_max_length]
 
         return reference_text
-
-    async def __call__(
-        self,
-        reference_text: str,
-    ) -> list[ArgumentWithCounterarguments]:
-        """
-        Pass a reference text through the pipeline.
-
-        Args:
-            reference_text (str): A text from the user to match counterarguments to
-                arguments found in the text.
-
-        Returns:
-            list[ArgumentWithCounterarguments]: A list of arguments and
-                matching counterarguments.
-
-        Raises:
-            ValueError: Raised if reference text is empty.
-            UnsupportedError: Raised if a currently unsupported
-                computing backend was used.
-        """
-        reference_text = self.sanitise_input(reference_text)
-
-        logger.info("Starting the pipeline...")
-
-        arguments = self._get_arguments(reference_text)
-        potential_counterarguments = self._get_potential_counterarguments(
-            reference_text
-        )
-
-        potential_counterarguments = await self._merge_claims(
-            arguments=arguments, counterarguments=potential_counterarguments
-        )
-
-        framed_arguments = self._pipes.argument_framer.frame(arguments)
-        framed_potential_counterarguments = self._pipes.argument_framer.frame(
-            potential_counterarguments
-        )
-
-        matched_arguments = await self._process_all_frames(
-            frames=tuple(InterpretativeFrame),
-            framed_arguments=framed_arguments,
-            framed_counterarguments=framed_potential_counterarguments,
-        )
-        logger.info("Matching counterarguments to arguments completed.")
-        return matched_arguments

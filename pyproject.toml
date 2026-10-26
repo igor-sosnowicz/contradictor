@@ -7,6 +7,7 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "beautifulsoup4>=4.15.0",
     "click>=8.4.2",
+    "datasets>=5.1.0",
     "ddgs>=9.14.4",
     "diskcache>=5.6.3",
     "gitpython>=3.1.50",
@@ -26,11 +27,13 @@ dependencies = [
     "textstat-rs>=1.0.0",
     "tiktoken>=0.13.0",
     "tqdm>=4.68.3",
+    "typer>=0.27.0",
     "xgboost>=3.3.0",
 ]
 
 [dependency-groups]
 dev = [
+    "faker>=40.43.0",
     "mypy>=2.1.0",
     "pandas-stubs>=3.0.3.260530",
     "pre-commit>=4.6.0",
@@ -47,7 +50,7 @@ dev = [
 exclude-newer = "7 days"
 
 [project.scripts]
-app = "src.main:main"
+contradictor = "src.main:cli_app"
 
 [build-system]
 requires = ["hatchling"]
@@ -65,9 +68,7 @@ python_version = "3.13"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = [
-    "vulture_whitelist.txt",
-]
+exclude = ["vulture_whitelist.txt"]
 
 [tool.pylint."messages control"]
 disable = [

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from src.search_module.cleaner import ReadabilityCleaner
+from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
 from src.search_module.config import CleaningConfig, KeywordConfig
 from src.search_module.keyword_extraction.keybert import KeyBERTKeywordExtractor
 

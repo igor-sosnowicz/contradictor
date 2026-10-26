@@ -55,17 +55,24 @@ class Configuration(BaseModel):
         description="A maximum number of characters a reference text can have.",
     )
 
-    # Contradictor pipeline implementations
-    search_pipeline: SearchPipelineImplementation = (
-        SearchPipelineImplementation.SELF_IMPLEMENTED
+    encoder_output_dimensions: int = Field(
+        10,
+        ge=1,
+        description=(
+            "A number of dimensions of a representation vector generated "
+            "by the encoder."
+        ),
     )
+
+    # Contradictor pipeline implementations
+    search_pipeline: SearchPipelineImplementation = SearchPipelineImplementation.REMOTE
     argument_extractor: ArgumentExtractorImplementation = (
         ArgumentExtractorImplementation.XGBOOST
     )
     argument_framer: ArgumentFramerImplementation = ArgumentFramerImplementation.XGBOOST
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
     style_extractor: StyleExtractorImplementation = StyleExtractorImplementation.SPACY
-    encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
+    encoder: EncoderImplementation = EncoderImplementation.MLP
     vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
 

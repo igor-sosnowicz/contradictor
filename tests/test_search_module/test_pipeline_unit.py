@@ -4,14 +4,14 @@ import re
 from pathlib import Path
 
 from src.search_module.cache import DiskCacheBackend
-from src.search_module.cleaner import ReadabilityCleaner
+from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
 from src.search_module.config import (
     CacheConfig,
     CleaningConfig,
     SearchConfig,
     SearchModuleConfig,
 )
-from src.search_module.downloader import RequestsDownloader
+from src.search_module.downloaders.request_downloader import RequestsDownloader
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
 from src.search_module.pipeline import SearchPipeline
 from src.search_module.search_engines.ddg import DDGSearchEngine

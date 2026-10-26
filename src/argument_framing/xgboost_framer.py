@@ -23,6 +23,7 @@ from src.data_models.data_models import (
     SubsetName,
 )
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
+from src.utils.timer import Timer
 
 
 class XGBoostFrameClassifier(ArgumentFramer):
@@ -108,7 +109,9 @@ class XGBoostFrameClassifier(ArgumentFramer):
         df = self._dataset.get_split(SubsetName.TRAINING, max_samples=self.max_samples)
 
         tqdm.pandas(desc="Creating TF-IDF features")
-        x = vectorizer.fit_transform(df["text"])
+        with Timer(f"TF-IDF fit_transform on {len(df)} texts"):
+            x = vectorizer.fit_transform(df["text"])
+
         y = df["interpretative_frame"].astype("int32")
 
         # validation split
@@ -116,12 +119,13 @@ class XGBoostFrameClassifier(ArgumentFramer):
         x_val = vectorizer.transform(validation_df["text"])
         y_val = validation_df["interpretative_frame"].astype("int32")
 
-        model.fit(
-            x,
-            y,
-            eval_set=[(x_val, y_val)],
-            verbose=True,
-        )
+        with Timer(f"XGBoost model.fit on {len(df)} samples"):
+            model.fit(
+                x,
+                y,
+                eval_set=[(x_val, y_val)],
+                verbose=True,
+            )
 
         with self.PATH_TO_MODEL.open("wb") as file:
             pickle.dump(model, file)
@@ -134,7 +138,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @override
     async def prepare(self) -> None:
-        if self._model is None:
+        if self._model is None or self._vectorizer is None:
             self._model = await self._train()
 
     @override
@@ -150,6 +154,9 @@ class XGBoostFrameClassifier(ArgumentFramer):
             )
 
         arguments = list(arguments)
+        if not arguments:
+            return []
+
         texts = [str(argument) for argument in arguments]
         probabilities = self._model.predict_proba(self._vectorizer.transform(texts))
 

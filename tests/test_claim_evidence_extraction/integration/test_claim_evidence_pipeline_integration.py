@@ -165,7 +165,7 @@ async def test_pipeline_extracts_claim_evidence_pairs(
     pipeline: ClaimEvidenceExtractor,
 ) -> None:
     """Verify that the real pipeline extracts claim-evidence pairs."""
-    result_batch = await pipeline.extract_batch(
+    result_batch = await pipeline(
         ["Cats are intelligent animals. Cats learn quickly."],
     )
     result = result_batch[0]
@@ -178,16 +178,3 @@ async def test_pipeline_extracts_claim_evidence_pairs(
         and pair.evidence == "Cats learn quickly."
         for pair in result
     )
-
-
-@pytest.mark.asyncio
-async def test_pipeline_sync_call_raises_runtime_error_in_async_loop(
-    pipeline: ClaimEvidenceExtractor,
-) -> None:
-    """
-    Verify that calling the extractor synchronously inside an async
-    loop raises RuntimeError.
-    """
-    msg = "cannot be called from a running event loop"
-    with pytest.raises(RuntimeError, match=msg):
-        pipeline(["Cats are intelligent animals."])

@@ -284,3 +284,10 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             x,
             y,
         )
+
+    @override
+    def _load_model(self) -> XGBClassifier | None:
+        if self.PATH_TO_MODEL.exists():
+            with self.PATH_TO_MODEL.open("rb") as file:
+                return pickle.load(file)  # noqa: S301, Loaded only from trusted sources.
+        return super()._load_model()

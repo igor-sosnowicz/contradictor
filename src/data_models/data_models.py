@@ -3,7 +3,8 @@
 from enum import Enum, StrEnum, auto
 from typing import Final
 
-from pydantic import BaseModel, Field
+import numpy as np
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SubsetName(StrEnum):
@@ -88,6 +89,14 @@ class FramedArgument(Argument):
     )
 
 
+class StyledFramedArgument(FramedArgument):
+    """A framed argument with a style vector assigned to it."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    style_vector: np.ndarray
+
+
 class ArgumentWithCounterarguments(BaseModel):
     """An argument with its counter-arguments."""
 
@@ -123,14 +132,14 @@ class NLIPrediction(BaseModel):
 class EncoderImplementation(StrEnum):
     """Encoder implementation name."""
 
-    NOT_IMPLEMENTED = auto()
+    MLP = auto()
 
 
 class SearchPipelineImplementation(StrEnum):
     """Name of search pipeline implementation."""
 
-    SELF_IMPLEMENTED = auto()
-    FIREFOX_READER_VIEW = auto()
+    REMOTE = auto()
+    LOCAL_DATASET = auto()
 
 
 class ArgumentFramerImplementation(StrEnum):
