@@ -24,6 +24,3 @@ def build_nli(nli_implementation: NLIImplementation | None = None, **kwargs) -> 
     match nli_implementation:
         case NLIImplementation.TRANSFORMERS_MODERNBERT:
             return TransformersNLI(**kwargs)
-
-        case _:
-            raise ValueError(f"Unsupported NLI implementation: {nli_implementation}")

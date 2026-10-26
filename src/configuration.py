@@ -65,9 +65,7 @@ class Configuration(BaseModel):
     )
 
     # Contradictor pipeline implementations
-    search_pipeline: SearchPipelineImplementation = (
-        SearchPipelineImplementation.SELF_IMPLEMENTED
-    )
+    search_pipeline: SearchPipelineImplementation = SearchPipelineImplementation.REMOTE
     argument_extractor: ArgumentExtractorImplementation = (
         ArgumentExtractorImplementation.XGBOOST
     )

@@ -11,7 +11,6 @@ processing flow:
       -> claim-evidence pairs
 """
 
-import asyncio
 from typing import override
 
 from src.argument_detection.argument_extractor import ArgumentExtractor
@@ -49,31 +48,7 @@ class ClaimEvidenceExtractor(ArgumentExtractor):
         self._evidence_extractor = evidence_extractor
 
     @override
-    def __call__(self, texts: list[str]) -> list[list[Argument]]:
-        """
-        Provide a synchronous entry point for ordinary scripts.
-
-        Args:
-            texts (list[str]): Texts, from which arguments should be extracted.
-
-        Returns:
-            list[list[Argument]]: Lists of extracted arguments.
-                One per input document. Order is preserved.
-
-        Raises:
-            RuntimeError: If called from inside a running event loop.
-        """
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            return asyncio.run(self._process_batch(texts))
-
-        raise RuntimeError(
-            "__call_sync__() cannot be called from a running event loop; "
-            "use 'await extractor(...)' instead"
-        )
-
-    async def extract_batch(self, texts: list[str]) -> list[list[Argument]]:
+    async def __call__(self, texts: list[str]) -> list[list[Argument]]:
         """
         Extract arguments from multiple texts asynchronously.
 

@@ -9,7 +9,7 @@ class ArgumentExtractor(ABC):
     """An interface for an argument extractor."""
 
     @abstractmethod
-    def __call__(self, texts: list[str]) -> list[list[Argument]]:
+    async def __call__(self, texts: list[str]) -> list[list[Argument]]:
         """
         Extract arguments (claim+evidence) from texts.
 

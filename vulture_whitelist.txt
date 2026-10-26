@@ -1,6 +1,3 @@
-# Used by the application as a concrete implementation.
-ClaimEvidenceExtractor
-
 # Used by the pipeline/API even though Vulture cannot detect the calls.
 _.check_n_grams_bounds
 
@@ -39,3 +36,16 @@ MLPEncoder.forward
 
 # Pydantic calls this method during an object initialisation.
 MLPEncoder.validate_layers
+
+# Benchmark metrics saved to a file collectively.
+IoU_for_argument_extraction
+argument_level_precision
+argument_level_recall
+argument_level_f1
+pair_level_precision
+pair_level_recall
+pair_level_f1
+
+# Entry points invoked externally via a CLI.
+start_api
+execute_benchmark

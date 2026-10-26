@@ -27,6 +27,7 @@ dependencies = [
     "textstat-rs>=1.0.0",
     "tiktoken>=0.13.0",
     "tqdm>=4.68.3",
+    "typer>=0.27.0",
     "xgboost>=3.3.0",
 ]
 
@@ -49,7 +50,7 @@ dev = [
 exclude-newer = "7 days"
 
 [project.scripts]
-app = "src.main:main"
+contradictor = "src.main:cli_app"
 
 [build-system]
 requires = ["hatchling"]
@@ -67,9 +68,7 @@ python_version = "3.13"
 [tool.ruff]
 line-length = 88
 target-version = "py313"
-exclude = [
-    "vulture_whitelist.txt",
-]
+exclude = ["vulture_whitelist.txt"]
 
 [tool.pylint."messages control"]
 disable = [

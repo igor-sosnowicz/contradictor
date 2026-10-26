@@ -12,21 +12,18 @@ from src.utils.errors import ContradictorError
 
 
 class DDGSearchEngine(SearchEngine):
-    """
-    Initialize the DuckDuckGo search engine with configuration.
-
-    Args:
-        config (SearchConfig): Configuration for the search engine.
-
-    Returns:
-        None
-    """
+    """DuckDuckGo search engine with configuration."""
 
     def __init__(
         self,
         config: SearchConfig,
     ) -> None:
-        """Initialize DuckDuckGo search engine with configuration."""
+        """
+        Initialise the DuckDuckGo search engine with configuration.
+
+        Args:
+            config (SearchConfig): Configuration for the search engine.
+        """
         self.config = config
 
     @override

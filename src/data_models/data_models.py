@@ -138,8 +138,8 @@ class EncoderImplementation(StrEnum):
 class SearchPipelineImplementation(StrEnum):
     """Name of search pipeline implementation."""
 
-    SELF_IMPLEMENTED = auto()
-    FIREFOX_READER_VIEW = auto()
+    REMOTE = auto()
+    LOCAL_DATASET = auto()
 
 
 class ArgumentFramerImplementation(StrEnum):
