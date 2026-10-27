@@ -37,3 +37,24 @@ confidence
 # Pytest fixtures used implicitly by the framework (autouse/argument injection).
 isolated_path_roots
 fresh_router
+
+# Golden dataset: pydantic fields populated/serialized dynamically by parquet.
+id
+target_argument_id
+stance
+nli_prediction
+is_implicit
+claim_bounds
+document_id
+ensure_correct_type
+
+# Golden dataset: enum members used through serialized data.
+UNKNOWN
+SUPPORTS
+UNDERMINES
+
+# Golden dataset: decorator-registered adapters and public API entry points.
+hitz_counter_argument
+igor_gld_dataset
+registered_sources
+load_canonical_dataset
