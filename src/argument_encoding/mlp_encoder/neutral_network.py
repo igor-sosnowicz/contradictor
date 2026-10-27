@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from src.argument_encoding.mlp_encoder.config import MLPConfig, TrainingConfig
 from src.argument_encoding.mlp_encoder.utils import cosine_distance
+from src.utils.errors import DatasetError
 
 
 class MLP(torch.nn.Module):
@@ -122,9 +123,33 @@ def train_mlp(
     """
     Train an MLP encoder with a contrastive distance loss.
 
-    Each TensorDataset contains (input_tensor_1, input_tensor_2, expected_distance).
-    The loss is MSE between cosine distance of encoded vectors and expected_distance.
+    The loss is MSE between cosine distance of encoded vectors and `expected_distance`.
+
+    Args:
+        mlp (torch.nn.Module): Description.
+        train (TensorDataset): A training split of a TensorDataset containing the
+            following items:(input_tensor_1, input_tensor_2, expected_distance).
+        validation (TensorDataset): A validation split of a TensorDataset containing
+            the following items:(input_tensor_1, input_tensor_2, expected_distance).
+        config (TrainingConfig | None): Configuration regarding the training process
+            of a MLP. It uses pre-defined values if `None` passed. Defaults to None.
+
+    Returns:
+        torch.nn.Module: A trained MLP encoder.
+
+    Raises:
+        DatasetError: Raised if either a training or validation split are empty.
     """
+    if len(train) == 0:
+        raise DatasetError(
+            "The dataset is too small resulting in an empty training split. "
+            "Use a dataset with a larger number of examples."
+        )
+    if len(validation) == 0:
+        raise DatasetError(
+            "The dataset is too small resulting in an empty validation split. "
+            "Use a dataset with a larger number of examples."
+        )
     config = config or TrainingConfig()
     if config.random_seed is not None:
         torch.manual_seed(config.random_seed)

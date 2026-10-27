@@ -311,9 +311,31 @@ class ArgumentEncodingDataset(Dataset):
             / config.preprocessed_dataset_subdirectory
             / self.processed_folder_name
         )
-        training_csv = candidate_path / f"{SubsetName.TRAINING.value}.csv"
-        if not training_csv.exists():
+
+        for required_file in (
+            candidate_path / "style_vectors.npz",
+            candidate_path / "frame_probabilities.npz",
+            candidate_path / f"{SubsetName.TRAINING.value}.csv",
+            candidate_path / f"{SubsetName.VALIDATION.value}.csv",
+            candidate_path / f"{SubsetName.TESTING.value}.csv",
+        ):
+            if required_file.exists():
+                continue
+            logger.debug(
+                f"{required_file} does not exist. "
+                "The dataset cannot be loaded from disk."
+            )
             return False
+
+        # Validate that cached files are openable.
+        try:
+            with np.load(candidate_path / "style_vectors.npz") as data:
+                _ = data["texts"], data["vectors"]
+            with np.load(candidate_path / "frame_probabilities.npz") as data:
+                _ = data["frame_prob_texts"], data["frame_prob_matrix"]
+        except (OSError, KeyError, ValueError):
+            return False
+
         self._splits_path = candidate_path
         logger.debug(f"Loaded a dataset from disk at: {candidate_path}")
         return True

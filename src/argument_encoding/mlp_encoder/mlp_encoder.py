@@ -148,6 +148,7 @@ class MLPEncoder(ArgumentEncoder):
         state_dict = saved["state_dict"]
         mlp = MLP(config=config)
         mlp.load_state_dict(state_dict)
+        mlp.to(torch.device(global_config.device))
         mlp.eval()
         return mlp, config
 
@@ -155,8 +156,11 @@ class MLPEncoder(ArgumentEncoder):
         model_path = self._model_path
         if model_path is None:
             raise RuntimeError("Cannot save model before input dimensions are known.")
+        state_dict = {
+            key: value.detach().cpu() for key, value in mlp.state_dict().items()
+        }
         with model_path.open("wb") as file:
-            pickle.dump({"config": config, "state_dict": mlp.state_dict()}, file)
+            pickle.dump({"config": config, "state_dict": state_dict}, file)
 
     def _build_config(
         self,
@@ -365,6 +369,8 @@ class MLPEncoder(ArgumentEncoder):
 
     @override
     def reset(self) -> None:
+        self._model = None
+        self._input_dimensions = None
         if self._model_path is not None:
             self._model_path.unlink(missing_ok=True)
 

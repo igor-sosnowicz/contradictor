@@ -40,6 +40,11 @@ class MLPConfig(BaseModel):
             ValueError: A non-positive number of neurons in a layer of a neural network
                 was provided.
         """
+        minimal_layer_count = 2
+        if len(value) < minimal_layer_count:
+            raise ValueError(
+                f"An MLP has to have at least two layers: input & output, got: {value})"
+            )
         for integer in value:
             if integer <= 0:
                 raise ValueError(
