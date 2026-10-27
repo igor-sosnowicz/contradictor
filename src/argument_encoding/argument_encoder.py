@@ -31,5 +31,5 @@ class ArgumentEncoder(ABC):
         """Prepare the dataset to be used."""
 
     @abstractmethod
-    def clear(self) -> None:
-        """Clear a cached version of the encoder."""
+    def reset(self) -> None:
+        """Remove trained weights of the encoder from disk and memory."""

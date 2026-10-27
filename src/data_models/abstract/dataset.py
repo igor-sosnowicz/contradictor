@@ -6,22 +6,28 @@ from pathlib import Path
 import pandas as pd
 
 from src.data_models.data_models import SubsetName
+from src.utils.errors import NotPreparedError
 
 
 class Dataset(ABC):
     """An interface for extracting, transforming, and loading a custom dataset."""
 
-    def __init__(self, random_seed: int | None = None) -> None:
+    def __init__(
+        self, random_seed: int | None = None, file_extension: str = "csv"
+    ) -> None:
         """
         Initialise an empty dataset.
 
         Args:
             random_seed (int | None): A seed for a random number generator.
                 Useful for reproducibility of results.
+            file_extension (str): A file extension used by source files of the dataset.
+                Defaults to "csv".
         """
         self._datasets: dict[Path, list[str]] = {}
         self._splits_path: Path | None = None
         self.random_seed = random_seed
+        self.file_extension = file_extension
 
     def get_split(self, split: SubsetName, max_samples: int = 0) -> pd.DataFrame:
         """
@@ -36,15 +42,15 @@ class Dataset(ABC):
             pd.DataFrame: DataFrame containing the requested dataset split.
 
         Raises:
-            DatasetError: If the dataset has not been prepared yet.
+            NotPreparedError: If the dataset has not been prepared yet.
         """
         if isinstance(split, str):
             split = SubsetName(split)
         if self._splits_path is None:
-            raise ValueError(
+            raise NotPreparedError(
                 "You have to prepare a dataset before getting one of its splits."
             )
-        subset_file = self._splits_path / f"{split.value}.csv"
+        subset_file = self._splits_path / f"{split.value}.{self.file_extension}"
         df = pd.read_csv(subset_file)
         if max_samples != 0:
             df = df.sample(

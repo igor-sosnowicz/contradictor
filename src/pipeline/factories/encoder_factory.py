@@ -35,7 +35,7 @@ def build_encoder(
     match encoder_implementation:
         case EncoderImplementation.MLP:
             # pylint: disable=import-outside-toplevel
-            from src.argument_encoding.mlp_encoder import MLPEncoder
+            from src.argument_encoding.mlp_encoder.mlp_encoder import MLPEncoder
             # pylint: enable=import-outside-toplevel
 
             return MLPEncoder(

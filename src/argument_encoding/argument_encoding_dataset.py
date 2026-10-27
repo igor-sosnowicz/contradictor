@@ -85,7 +85,7 @@ class ArgumentEncodingDataset(Dataset):
         same topic but opposing view (counter-argument → far), low similarity
         means different topics → distance tracks style.
         """
-        epsilon = 10e-7
+        epsilon = 1e-6
 
         # Calculate a style-based cosine distance.
         denominator = (
@@ -110,8 +110,8 @@ class ArgumentEncodingDataset(Dataset):
             logger.debug(f"[PERF] _sbert().encode (2 texts): {time.time() - t0:.1f}s")
             semantics_based_distance = float(np.dot(embeddings[0], embeddings[1]))
 
-        semantics_weight = 0.7
-        style_weight = 0.3
+        semantics_weight = config.encoding_dataset_semantics_weight
+        style_weight = 1 - semantics_weight
         return round(
             style_weight * style_based_distance
             + semantics_weight * semantics_based_distance,
@@ -418,7 +418,10 @@ class ArgumentEncodingDataset(Dataset):
         )
         return train_args, val_args, test_args
 
-    @override
+    @staticmethod
+    def _argument_text(claim: str, evidence: str) -> str:
+        return f"{claim} {evidence}"
+
     def get_split(self, split: SubsetName, max_samples: int = 0) -> pd.DataFrame:
         """
         Get data for a given split.
@@ -457,14 +460,14 @@ class ArgumentEncodingDataset(Dataset):
             style_store = dict(zip(stored_texts, stored_vectors, strict=True))
             df["style_vector_1"] = pd.Series(
                 [
-                    style_store[f"{row['claim_1']} {row['evidence_1']}"]
+                    style_store[self._argument_text(row["claim_1"], row["evidence_1"])]
                     for _, row in df.iterrows()
                 ],
                 index=df.index,
             )
             df["style_vector_2"] = pd.Series(
                 [
-                    style_store[f"{row['claim_2']} {row['evidence_2']}"]
+                    style_store[self._argument_text(row["claim_2"], row["evidence_2"])]
                     for _, row in df.iterrows()
                 ],
                 index=df.index,
@@ -491,14 +494,14 @@ class ArgumentEncodingDataset(Dataset):
             }
             df["frame_probabilities_1"] = pd.Series(
                 [
-                    frame_store[f"{row['claim_1']} {row['evidence_1']}"]
+                    frame_store[self._argument_text(row["claim_1"], row["evidence_1"])]
                     for _, row in df.iterrows()
                 ],
                 index=df.index,
             )
             df["frame_probabilities_2"] = pd.Series(
                 [
-                    frame_store[f"{row['claim_2']} {row['evidence_2']}"]
+                    frame_store[self._argument_text(row["claim_2"], row["evidence_2"])]
                     for _, row in df.iterrows()
                 ],
                 index=df.index,

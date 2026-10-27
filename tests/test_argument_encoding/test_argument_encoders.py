@@ -34,7 +34,7 @@ async def test_encoder_output_matches_expected_dimensions(
     arguments = styled_and_framed_arguments
 
     for encoder in encoders:
-        encoder.clear()
+        encoder.reset()
         await encoder.prepare()
         output = await encoder(arguments=arguments)
 
