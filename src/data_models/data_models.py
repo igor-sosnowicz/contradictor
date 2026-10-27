@@ -151,7 +151,11 @@ class StyledFramedArgument(FramedArgument):
         frame_one_hot[frame_index] = 1.0
 
         frame_probs = torch.tensor(
-            [self.frame_probabilities.get(frame, 0.0) for frame in InterpretativeFrame],
+            [
+                # Pylint infers FieldInfo here, but the field is a dict at runtime.
+                self.frame_probabilities.get(frame, 0.0)  # pylint: disable=no-member
+                for frame in InterpretativeFrame
+            ],
             dtype=torch.float32,
         )
         return torch.cat([style, frame_one_hot, frame_probs])
