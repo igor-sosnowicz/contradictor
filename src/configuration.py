@@ -4,6 +4,7 @@ import tomllib
 from pathlib import Path
 
 import pydantic
+import torch
 from platformdirs import PlatformDirs
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -55,6 +56,15 @@ class Configuration(BaseModel):
         description="A maximum number of characters a reference text can have.",
     )
 
+    encoder_output_dimensions: int = Field(
+        10,
+        ge=1,
+        description=(
+            "A number of dimensions of a representation vector generated "
+            "by the encoder."
+        ),
+    )
+
     # Contradictor pipeline implementations
     search_pipeline: SearchPipelineImplementation = (
         SearchPipelineImplementation.SELF_IMPLEMENTED
@@ -65,8 +75,14 @@ class Configuration(BaseModel):
     argument_framer: ArgumentFramerImplementation = ArgumentFramerImplementation.XGBOOST
     nli: NLIImplementation = NLIImplementation.TRANSFORMERS_MODERNBERT
     style_extractor: StyleExtractorImplementation = StyleExtractorImplementation.SPACY
-    encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
+    encoder: EncoderImplementation = EncoderImplementation.MLP
     vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
+
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # Argument encoding dataset. Importance of semantics for distance.
+    # Style weight is 1.0 - encoding_dataset_semantics_weight.
+    encoding_dataset_semantics_weight: float = 0.7
 
 
 def load_configuration(file: Path) -> Configuration:
