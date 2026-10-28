@@ -1,5 +1,6 @@
 """Web page downloader implementation."""
 
+from threading import local
 from typing import override
 
 import requests
@@ -13,30 +14,31 @@ class RequestsDownloader(Downloader):
     """
     Downloads web pages using requests.
 
-    Responsible only for HTTP communication.
+    Each thread gets its own HTTP session.
     """
 
     def __init__(
         self,
         config: DownloadConfig,
     ) -> None:
-        """
-        Initialize downloader with HTTP configuration.
-
-        Args:
-            config (DownloadConfig): Configuration containing HTTP settings,
-                such as timeout and user agent.
-
-        Returns:
-            None: Initializes downloader state.
-        """
+        """Initialize downloader with HTTP configuration."""
         self.config = config
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": self.config.user_agent,
-            }
-        )
+        self._thread_local = local()
+
+    def _get_session(self) -> requests.Session:
+        """Return the HTTP session belonging to the current thread."""
+        session = getattr(self._thread_local, "session", None)
+
+        if session is None:
+            session = requests.Session()
+            session.headers.update(
+                {
+                    "User-Agent": self.config.user_agent,
+                }
+            )
+            self._thread_local.session = session
+
+        return session
 
     @override
     def download(
@@ -44,7 +46,7 @@ class RequestsDownloader(Downloader):
         url: str,
     ) -> str:
         try:
-            response = self.session.get(
+            response = self._get_session().get(
                 url,
                 timeout=self.config.timeout,
                 allow_redirects=True,

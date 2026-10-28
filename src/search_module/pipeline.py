@@ -1,5 +1,7 @@
 """Search pipeline orchestration."""
 
+from concurrent.futures import ThreadPoolExecutor
+
 from loguru import logger
 
 from src.search_module.interfaces import (
@@ -9,7 +11,7 @@ from src.search_module.interfaces import (
     KeywordExtractor,
     SearchEngine,
 )
-from src.search_module.models import Document
+from src.search_module.models import Document, SearchResult
 from src.search_module.utils.cache_keys import create_cache_key
 from src.utils.errors import ContradictorError
 
@@ -23,13 +25,14 @@ class SearchPipeline:
     individual processing steps; it only controls their execution.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913, max_workers is optional
         self,
         keyword_extractor: KeywordExtractor,
         search_engine: SearchEngine,
         downloader: Downloader,
         cleaner: Cleaner,
         cache: CacheBackend,
+        max_workers: int = 5,
     ) -> None:
         """
         Initialize search pipeline dependencies.
@@ -44,15 +47,21 @@ class SearchPipeline:
             cleaner (Cleaner): Component responsible for extracting readable
                 content from downloaded pages.
             cache (CacheBackend): Storage backend for cached search results.
+            max_workers (int): Maximum number of concurrent download
+                workers. Defaults to 5.
 
         Returns:
             None: Initializes pipeline components.
         """
+        if max_workers < 1:
+            raise ValueError("max_workers must be at least 1")
+
         self.keyword_extractor = keyword_extractor
         self.search_engine = search_engine
         self.downloader = downloader
         self.cleaner = cleaner
         self.cache = cache
+        self.max_workers = max_workers
 
     def search(
         self,
@@ -74,25 +83,52 @@ class SearchPipeline:
         results = self.search_engine.search(query)
         logger.info("Search returned {} results", len(results))
 
-        documents: list[Document] = []
-        for result in results:
-            logger.debug("Processing URL: {}", result.url)
-            try:
-                html = self.downloader.download(result.url)
-                logger.debug("Downloaded {} characters from {}", len(html), result.url)
+        with ThreadPoolExecutor(
+            max_workers=self.max_workers,
+        ) as executor:
+            downloaded_results = list(executor.map(self._download_result, results))
 
-                document = self.cleaner.clean(html, result.url)
+        documents: list[Document] = []
+
+        for url, html in downloaded_results:
+            if not html:
+                continue
+
+            try:
+                document = self.cleaner.clean(html, url)
+
                 if not document.text:
-                    logger.warning("Empty document after cleaning: {}", result.url)
+                    logger.warning(
+                        "Empty document after cleaning: {}",
+                        url,
+                    )
                     continue
+
                 documents.append(document)
-                logger.info("Accepted document: {}", result.url)
+                logger.info("Accepted document: {}", url)
 
             except ContradictorError:
-                logger.exception("Failed processing {}", result.url)
+                logger.exception("Failed processing {}", url)
 
         logger.info("Cleaning finished. Documents: {}", len(documents))
         self.cache.set(cache_key, documents)
         logger.info("Saved results to cache")
 
         return documents
+
+    def _download_result(self, result: SearchResult) -> tuple[str, str]:
+        """Download HTML for a single search result."""
+        logger.debug("Processing URL: {}", result.url)
+
+        try:
+            html = self.downloader.download(result.url)
+            logger.debug(
+                "Downloaded {} characters from {}",
+                len(html),
+                result.url,
+            )
+        except ContradictorError:
+            logger.exception("Failed processing {}", result.url)
+            return result.url, ""
+        else:
+            return result.url, html
