@@ -25,7 +25,7 @@ class SearchPipeline:
     individual processing steps; it only controls their execution.
     """
 
-    def __init__(  # noqa: PLR0913, max_workers is optional
+    def __init__(  # noqa: PLR0913  # pylint: disable=too-many-arguments,too-many-positional-arguments max_workers is optional
         self,
         keyword_extractor: KeywordExtractor,
         search_engine: SearchEngine,
@@ -129,6 +129,6 @@ class SearchPipeline:
             )
         except ContradictorError:
             logger.exception("Failed processing {}", result.url)
-            return result.url, ""
-        else:
-            return result.url, html
+            html = ""
+
+        return result.url, html

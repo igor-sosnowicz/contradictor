@@ -6,6 +6,9 @@ from time import sleep
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import requests
+
+from src.search_module.downloader import RequestsDownloader
 from src.search_module.models import Document, SearchResult
 from src.search_module.pipeline import SearchPipeline
 from src.utils.errors import ContradictorError
@@ -216,3 +219,37 @@ def test_cache_hit_skips_download() -> None:
     pipeline.downloader.download.assert_not_called()
     pipeline.cleaner.clean.assert_not_called()
     pipeline.cache.set.assert_not_called()
+
+
+def test_thread_local_sessions() -> None:
+    """Verify that HTTP sessions are isolated and reused per thread."""
+    config = Mock()
+    config.configure_mock(user_agent="TestAgent/1.0")
+
+    downloader = RequestsDownloader(config=config)
+    barrier = Barrier(2)
+
+    def get_sessions() -> tuple[requests.Session, requests.Session]:
+        first_session = downloader._get_session()
+        second_session = downloader._get_session()
+
+        assert first_session is second_session
+
+        barrier.wait(timeout=5)
+
+        return first_session, second_session
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(get_sessions) for _ in range(2)]
+        sessions = [future.result() for future in futures]
+
+    try:
+        assert sessions[0][0] is sessions[0][1]
+        assert sessions[1][0] is sessions[1][1]
+        assert sessions[0][0] is not sessions[1][0]
+
+        for first_session, _ in sessions:
+            assert first_session.headers["User-Agent"] == "TestAgent/1.0"
+    finally:
+        for first_session, _ in sessions:
+            first_session.close()
