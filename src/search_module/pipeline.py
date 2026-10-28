@@ -1,6 +1,7 @@
 """Search pipeline orchestration."""
 
 from concurrent.futures import ThreadPoolExecutor
+from threading import BoundedSemaphore
 
 from loguru import logger
 
@@ -35,6 +36,7 @@ class SearchPipeline:
         cleaner: Cleaner,
         cache: CacheBackend,
         max_workers: int = 5,
+        max_concurrent_searches: int = 2,
     ) -> None:
         """
         Initialize search pipeline dependencies.
@@ -51,6 +53,8 @@ class SearchPipeline:
             cache (CacheBackend): Storage backend for cached search results.
             max_workers (int): Maximum number of concurrent download
                 workers. Defaults to 5.
+            max_concurrent_searches (int): Maximum number of concurrent
+                search engine calls per pipeline instance. Defaults to 2.
 
         Returns:
             None: Initializes pipeline components.
@@ -58,6 +62,10 @@ class SearchPipeline:
         if max_workers < 1:
             raise ValueError("max_workers must be at least 1")
 
+        if max_concurrent_searches < 1:
+            raise ValueError("max_concurrent_searches must be at least 1")
+
+        self._search_semaphore = BoundedSemaphore(max_concurrent_searches)
         self.keyword_extractor = keyword_extractor
         self.search_engine = search_engine
         self.downloader = downloader
@@ -82,7 +90,8 @@ class SearchPipeline:
             return cached
 
         logger.info("Searching: {}", query.normalized)
-        results = self.search_engine.search(query)
+        with self._search_semaphore:
+            results = self.search_engine.search(query)
         logger.info("Search returned {} results", len(results))
 
         with ThreadPoolExecutor(
