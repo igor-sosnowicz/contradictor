@@ -25,7 +25,9 @@ class SearchPipeline:
     individual processing steps; it only controls their execution.
     """
 
-    def __init__(  # noqa: PLR0913  # pylint: disable=too-many-arguments,too-many-positional-arguments max_workers is optional
+    # The optional max_workers parameter preserves backward compatibility.
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def __init__(  # noqa: PLR0913
         self,
         keyword_extractor: KeywordExtractor,
         search_engine: SearchEngine,
