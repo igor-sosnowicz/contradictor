@@ -11,13 +11,13 @@ class KeywordExtractor(ABC):
     @abstractmethod
     def extract(self, text: str) -> SearchQuery:
         """
-        Extract keywords and return a normalized search query.
+        Extract keywords and return a normalised search query.
 
         Args:
             text (str): The raw input text from which keywords should be extracted.
 
         Returns:
-            A SearchQuery object containing the extracted and normalized keywords.
+            SearchQuery: A search query containing extracted and normalised keywords.
         """
 
 
@@ -34,7 +34,7 @@ class SearchEngine(ABC):
         Execute a search query and fetch search results.
 
         Args:
-            query (SearchQuery): The normalized search query object.
+            query (SearchQuery): The normalised search query object.
             limit (int): The maximum number of results to return. Defaults to 10.
 
         Returns:
@@ -70,7 +70,7 @@ class Cleaner(ABC):
         """
         Extract clean text from HTML content and return a document.
 
-        Processes raw HTML to strip boilerplates, normalize spacing,
+        Processes raw HTML to strip boilerplates, normalise spacing,
         and filter noise to isolate the primary textual content.
 
         Args:
@@ -97,7 +97,8 @@ class CacheBackend(ABC):
             key (str): The unique string identifier for the cached resource.
 
         Returns:
-            list[Document]: A list of cached Document objects if found, otherwise None.
+            list[Document] | None: A list of cached Document objects if found,
+                otherwise None.
         """
 
     @abstractmethod
@@ -112,17 +113,9 @@ class CacheBackend(ABC):
         Args:
             key (str): The unique string identifier for the resource.
             value (list[Document]): A list of Document objects to be
-                serialized and stored.
-
-        Returns:
-            None
+                serialised and stored.
         """
 
     @abstractmethod
     def clear(self) -> None:
-        """
-        Remove all cached entries from the storage backend.
-
-        Returns:
-            None
-        """
+        """Remove all cached entries from the storage backend."""

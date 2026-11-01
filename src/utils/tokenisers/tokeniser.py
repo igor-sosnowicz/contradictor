@@ -12,10 +12,10 @@ class Tokeniser(ABC):
         Encode a batch of texts into token IDs.
 
         Args:
-            text: List of texts to encode.
+            text (list[str]): List of texts to encode.
 
         Returns:
-            A list of token ID sequences, one per input text.
+            list[list[int]]: A list of token ID sequences, one per input text.
         """
 
     @abstractmethod
@@ -24,10 +24,10 @@ class Tokeniser(ABC):
         Decode batches of token IDs back into text.
 
         Args:
-            tokens: List of token ID sequences.
+            tokens (list[list[int]]): List of token ID sequences.
 
         Returns:
-            The decoded texts, one per input token sequence.
+            list[str]: The decoded texts, one per input token sequence.
         """
 
     @abstractmethod

@@ -154,7 +154,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
             list[str]: Sentences classified as supporting evidence.
 
         Raises:
-            RuntimeError: If the model cannot be initialized.
+            ModelNotTrainedError: If the model cannot be initialized.
         """
         await self._initialise_model()
         if self._model is None:
@@ -215,7 +215,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
                 for each input claim.
 
         Raises:
-            RuntimeError: If the model cannot be initialised.
+            ModelNotTrainedError: If the model was not initialised.
         """
         await self._initialise_model()
         if self._model is None:

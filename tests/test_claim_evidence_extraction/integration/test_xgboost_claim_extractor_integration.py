@@ -18,7 +18,7 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
     """Provide a small deterministic dataset for integration tests."""
 
     def __init__(self) -> None:
-        """Initialize the deterministic integration-test dataset."""
+        """Initialise the deterministic integration-test dataset."""
         super().__init__()
 
     def get_claim_split(

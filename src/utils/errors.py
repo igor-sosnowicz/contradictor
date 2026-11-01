@@ -10,7 +10,7 @@ class DatasetError(ContradictorError):
 
 
 class ModelNotTrainedError(ContradictorError):
-    """Raised when a trained model or vectorizer is missing."""
+    """Raised when a trained model or vectoriser is missing."""
 
 
 class NotPreparedError(ContradictorError):

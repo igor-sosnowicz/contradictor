@@ -12,14 +12,12 @@ def build_style_extractor(
     Construct a ready-made style extractor from pre-configured implementations.
 
     Args:
-        style_extractor_implementation (StyleExtractorImplementation): Choice of a
-            pre-configured implementation.
+        style_extractor_implementation (StyleExtractorImplementation | None): Choice of
+            a pre-configured implementation. If None, defaults to the value from the
+            project-wide configuration.
 
     Returns:
         StyleExtractor: An initialised instance of the style extractor.
-
-    Raises:
-        NotImplementedError: Raised if not implemented variant was requested.
     """
     # Local imports for lazy loading prevent importing heavy implementation
     # modules when they are not requested.

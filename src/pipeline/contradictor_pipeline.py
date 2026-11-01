@@ -256,7 +256,7 @@ class ContradictorPipeline:
             ValueError: Raised if reference text is empty.
             UnsupportedError: Raised if a currently unsupported
                 computing backend was used.
-        """
+        """  # noqa: DOC502, # Exception is propagated by a private method called by this method.
         reference_text = self.sanitise_input(reference_text)
 
         logger.info("Starting the pipeline...")

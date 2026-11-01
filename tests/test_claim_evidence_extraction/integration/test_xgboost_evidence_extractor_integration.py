@@ -19,7 +19,7 @@ class MiniIntegrationDataset(ArgumentDetectionDataset):
     """
 
     def __init__(self) -> None:
-        """Initialize the deterministic integration-test dataset."""
+        """Initialise the deterministic integration-test dataset."""
         super().__init__()
 
     def get_evidence_split(

@@ -12,6 +12,7 @@ from loguru import logger
 from src.configuration import config
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import SubsetName
+from src.utils.errors import NotPreparedError
 
 
 class UrlDataset(Dataset):
@@ -22,15 +23,20 @@ class UrlDataset(Dataset):
     def processed_folder_name(self) -> str:
         """Name of the directory where preprocessed splits are stored."""
 
-    def __init__(self) -> None:
+    def __init__(self, random_seed: int | None = None) -> None:
         """
         Initialise an empty URL-based dataset.
+
+        Args:
+            random_seed (int | None): A random seed. If set to a value different than
+                None, results should be deterministic and reproducible.
 
         Creates storage for dataset URLs and resets the path to processed
         dataset splits.
         """
         self._datasets: dict[Path, list[str]] = {}
         self._splits_path: Path | None = None
+        self.random_seed = random_seed
 
     async def prepare(self) -> Path:
         """
@@ -40,9 +46,13 @@ class UrlDataset(Dataset):
         and creates the processed dataset splits. If the dataset is already
         prepared, it sets the path to the existing processed dataset.
 
+        Returns:
+            Path: Path to a root directory of the prepared datasets with subsets
+                in sub-directories.
+
         Raises:
             DatasetError: If dataset preparation fails.
-        """
+        """  # noqa: DOC502, Exception is propagated by a private method called by this method.
         await self._download_raw_datasets_if_missing()
         datasets = self._transform()
         if not datasets:
@@ -74,10 +84,10 @@ class UrlDataset(Dataset):
             pd.DataFrame: DataFrame containing the requested dataset split.
 
         Raises:
-            DatasetError: If the dataset has not been prepared yet.
+            NotPreparedError: If the dataset has not been prepared yet.
         """
         if self._splits_path is None:
-            raise ValueError(
+            raise NotPreparedError(
                 "You have to prepare a dataset before getting one of its splits."
             )
 
@@ -86,7 +96,7 @@ class UrlDataset(Dataset):
         if max_samples != 0:
             df = df.sample(
                 n=min(max_samples, len(df)),
-                random_state=42,
+                random_state=self.random_seed,
             )
         return df
 
@@ -172,9 +182,9 @@ class UrlDataset(Dataset):
             if dfs:
                 merged_df = pd.concat(dfs, ignore_index=True)
 
-                merged_df = merged_df.sample(frac=1, random_state=42).reset_index(
-                    drop=True
-                )
+                merged_df = merged_df.sample(
+                    frac=1, random_state=self.random_seed
+                ).reset_index(drop=True)
                 merged_data[subset_name] = merged_df
             else:
                 merged_data[subset_name] = pd.DataFrame()

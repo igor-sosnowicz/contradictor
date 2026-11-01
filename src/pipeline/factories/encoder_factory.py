@@ -12,7 +12,7 @@ def build_encoder(
     Construct a ready-made encoder from pre-configured implementations.
 
     Args:
-        encoder_implementation (EncoderImplementation): Choice of a
+        encoder_implementation (EncoderImplementation | None): Choice of a
             pre-configured implementation.
 
     Returns:

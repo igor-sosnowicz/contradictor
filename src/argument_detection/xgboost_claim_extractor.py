@@ -64,8 +64,8 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
             XGBClassifier: Trained claim classification model.
 
         Raises:
-            DatasetError: If dataset preparation or loading fails.
-        """
+            NotPreparedError: If dataset preparation or loading fails.
+        """  # noqa: DOC502, Exception is propagated by a private method called by this method.
         await self._dataset.prepare()
 
         df = self._dataset.get_claim_split(
@@ -106,7 +106,7 @@ class XGBoostClaimExtractor(BaseXGBoostExtractor):
             list[str]: Sentences classified as claims.
 
         Raises:
-            RuntimeError: If the model cannot be initialized.
+            ModelNotTrainedError: If the model cannot be initialized.
         """
         await self._initialise_model()
         if self._model is None:

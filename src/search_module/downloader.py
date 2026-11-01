@@ -21,14 +21,11 @@ class RequestsDownloader(Downloader):
         config: DownloadConfig,
     ) -> None:
         """
-        Initialize downloader with HTTP configuration.
+        Initialise downloader with HTTP configuration.
 
         Args:
             config (DownloadConfig): Configuration containing HTTP settings,
                 such as timeout and user agent.
-
-        Returns:
-            None: Initializes downloader state.
         """
         self.config = config
         self.session = requests.Session()

@@ -4,7 +4,7 @@ import pytest
 
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
-from src.utils.errors import ModelNotTrainedError
+from src.utils.errors import ModelNotTrainedError, NotPreparedError
 
 
 def test_argument_framing_dataset_initialisation() -> None:
@@ -17,7 +17,7 @@ def test_argument_framing_dataset_prepare_error() -> None:
     """Test if methods guard against unprepared dataset correctly."""
     dataset = ArgumentFramingDataset()
     with pytest.raises(
-        ValueError,
+        NotPreparedError,
         match=r"You have to prepare a dataset before getting one of its splits\.",
     ):
         _ = dataset.get_split("train")

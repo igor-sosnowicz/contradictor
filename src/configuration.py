@@ -78,6 +78,9 @@ def load_configuration(file: Path) -> Configuration:
 
     Returns:
         Configuration: Configuration object read to use.
+
+    Raises:
+        ConfigurationError: Raised if there is a configuration error.
     """
     try:
         with file.open("rb") as f:

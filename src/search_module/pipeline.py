@@ -32,7 +32,7 @@ class SearchPipeline:
         cache: CacheBackend,
     ) -> None:
         """
-        Initialize search pipeline dependencies.
+        Initialise search pipeline dependencies.
 
         Args:
             keyword_extractor (KeywordExtractor): Component responsible for
@@ -44,9 +44,6 @@ class SearchPipeline:
             cleaner (Cleaner): Component responsible for extracting readable
                 content from downloaded pages.
             cache (CacheBackend): Storage backend for cached search results.
-
-        Returns:
-            None: Initializes pipeline components.
         """
         self.keyword_extractor = keyword_extractor
         self.search_engine = search_engine
@@ -58,7 +55,15 @@ class SearchPipeline:
         self,
         text: str,
     ) -> list[Document]:
-        """Run search pipeline and return cleaned documents."""
+        """
+        Run search pipeline and return cleaned documents.
+
+        Args:
+            text (str): Text for which similar texts will be retrieved.
+
+        Returns:
+            list[Document]: List of similar texts.
+        """
         logger.info("Starting search pipeline")
         query = self.keyword_extractor.extract(text)
         logger.info("Extracted keywords: {}", query.keywords)

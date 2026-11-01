@@ -17,14 +17,11 @@ class NGramKeywordExtractor(KeywordExtractor):
         tokeniser: Tokeniser,
     ) -> None:
         """
-        Initialize the extractor with configuration and a tokeniser.
+        Initialise the extractor with configuration and a tokeniser.
 
         Args:
             config (KeywordConfig): Configuration for keyword extraction.
             tokeniser (Tokeniser): Tokeniser used to split text into tokens.
-
-        Returns:
-            None
         """
         self.config = config
         self.tokeniser = tokeniser
@@ -40,7 +37,7 @@ class NGramKeywordExtractor(KeywordExtractor):
             text (str): The input text from which keywords should be extracted.
 
         Returns:
-            SearchQuery: A normalized search query containing the extracted
+            SearchQuery: A normalised search query containing the extracted
                 keywords.
         """
         tokens = self.tokeniser.tokenise(text)
