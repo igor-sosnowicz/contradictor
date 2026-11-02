@@ -42,11 +42,13 @@ class ContradictorPipeline:
         logger.debug(f"Extracted {len(arguments)} arguments from the reference text.")
         return arguments
 
-    def _get_potential_counterarguments(self, reference_text: str) -> list[Argument]:
-        other_texts = [
-            document.text
-            for document in self._pipes.search_pipeline.search(reference_text)
-        ]
+    async def _get_potential_counterarguments(
+        self,
+        reference_text: str,
+    ) -> list[Argument]:
+        documents = await self._pipes.search_pipeline.search(reference_text)
+
+        other_texts = [document.text for document in documents]
 
         # Flatten the list of counterarguments.
         counterarguments = [
@@ -54,7 +56,12 @@ class ContradictorPipeline:
             for document_arguments in self._pipes.argument_extractor(other_texts)
             for counterargument in document_arguments
         ]
-        logger.debug(f"Extracted {len(counterarguments)} potential counterarguments.")
+
+        logger.debug(
+            "Extracted {} potential counterarguments.",
+            len(counterarguments),
+        )
+
         return counterarguments
 
     async def _merge_claims(
@@ -262,7 +269,7 @@ class ContradictorPipeline:
         logger.info("Starting the pipeline...")
 
         arguments = self._get_arguments(reference_text)
-        potential_counterarguments = self._get_potential_counterarguments(
+        potential_counterarguments = await self._get_potential_counterarguments(
             reference_text
         )
 

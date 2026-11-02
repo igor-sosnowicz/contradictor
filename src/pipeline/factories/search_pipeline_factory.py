@@ -6,11 +6,15 @@ from src.search_module.cleaner import ReadabilityCleaner
 from src.search_module.config import (
     CacheConfig,
     CleaningConfig,
+    ConcurrencyConfig,
     DownloadConfig,
     KeywordConfig,
     SearchConfig,
 )
-from src.search_module.pipeline import SearchPipeline
+from src.search_module.pipeline import (
+    SearchPipeline,
+    SearchPipelineDependencies,
+)
 
 
 def build_search_pipeline(
@@ -33,7 +37,7 @@ def build_search_pipeline(
     # modules when they are not requested.
     # pylint: disable=import-outside-toplevel
     from src.search_module.cache import DiskCacheBackend
-    from src.search_module.downloader import RequestsDownloader
+    from src.search_module.downloader import HttpxDownloader
     from src.search_module.keyword_extraction.keybert import KeyBERTKeywordExtractor
     from src.search_module.search_engines.ddg import DDGSearchEngine
     # pylint: enable=import-outside-toplevel
@@ -43,11 +47,14 @@ def build_search_pipeline(
     match search_implementation:
         case SearchPipelineImplementation.SELF_IMPLEMENTED:
             return SearchPipeline(
-                keyword_extractor=KeyBERTKeywordExtractor(config=KeywordConfig()),
-                search_engine=DDGSearchEngine(config=SearchConfig()),
-                cleaner=ReadabilityCleaner(config=CleaningConfig()),
-                downloader=RequestsDownloader(config=DownloadConfig()),
-                cache=DiskCacheBackend(config=CacheConfig()),
+                SearchPipelineDependencies(
+                    keyword_extractor=KeyBERTKeywordExtractor(config=KeywordConfig()),
+                    search_engine=DDGSearchEngine(config=SearchConfig()),
+                    cleaner=ReadabilityCleaner(config=CleaningConfig()),
+                    downloader=HttpxDownloader(config=DownloadConfig()),
+                    cache=DiskCacheBackend(config=CacheConfig()),
+                    concurrency=ConcurrencyConfig(),
+                )
             )
 
         case SearchPipelineImplementation.FIREFOX_READER_VIEW:

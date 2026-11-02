@@ -120,3 +120,6 @@ ignore = [
 [tool.typos.default.extend-words]
 TPESampler = "TPESampler"
 tpe = "tpe"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

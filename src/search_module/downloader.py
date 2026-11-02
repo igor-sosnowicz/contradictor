@@ -2,55 +2,50 @@
 
 from typing import override
 
-import requests
+import httpx
 from loguru import logger
 
 from src.search_module.config import DownloadConfig
 from src.search_module.interfaces import Downloader
 
 
-class RequestsDownloader(Downloader):
+class HttpxDownloader(Downloader):
     """
-    Downloads web pages using requests.
+    Downloads web pages using httpx.
 
-    Responsible only for HTTP communication.
+    Uses a shared asynchronous HTTP client.
     """
 
     def __init__(
         self,
         config: DownloadConfig,
     ) -> None:
-        """
-        Initialize downloader with HTTP configuration.
-
-        Args:
-            config (DownloadConfig): Configuration containing HTTP settings,
-                such as timeout and user agent.
-
-        Returns:
-            None: Initializes downloader state.
-        """
+        """Initialise downloader with HTTP configuration."""
         self.config = config
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
+
+        self._client = httpx.AsyncClient(
+            headers={
                 "User-Agent": self.config.user_agent,
-            }
+            },
+            timeout=self.config.timeout,
+            follow_redirects=True,
+            limits=httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+                keepalive_expiry=30.0,
+            ),
         )
 
     @override
-    def download(
+    async def download(
         self,
         url: str,
     ) -> str:
         try:
-            response = self.session.get(
-                url,
-                timeout=self.config.timeout,
-                allow_redirects=True,
-            )
+            response = await self._client.get(url)
             response.raise_for_status()
-        except requests.RequestException:
+
+        except httpx.HTTPError:
             logger.exception(
                 "Failed downloading URL: {}",
                 url,
@@ -58,3 +53,7 @@ class RequestsDownloader(Downloader):
             return ""
 
         return response.text
+
+    async def close(self) -> None:
+        """Close the asynchronous HTTP client."""
+        await self._client.aclose()
