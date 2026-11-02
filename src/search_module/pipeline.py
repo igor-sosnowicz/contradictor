@@ -45,13 +45,13 @@ class SearchPipeline:
         dependencies: SearchPipelineDependencies,
     ) -> None:
         """Initialise search pipeline dependencies."""
-        self.concurrency = dependencies.concurrency
         self._search_semaphore = BoundedSemaphore(
             dependencies.concurrency.max_concurrent_searches
         )
         self._download_semaphore = asyncio.Semaphore(
             dependencies.concurrency.max_workers
         )
+
         self.keyword_extractor = dependencies.keyword_extractor
         self.search_engine = dependencies.search_engine
         self.downloader = dependencies.downloader
@@ -140,5 +140,5 @@ class SearchPipeline:
                     result.url,
                 )
                 return result.url, ""
-            else:
-                return result.url, html
+
+            return result.url, html

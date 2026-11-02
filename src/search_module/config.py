@@ -98,11 +98,11 @@ class SearchModuleConfig(BaseModel):
     cache: CacheConfig = Field(default_factory=CacheConfig)
 
 
-class ConcurrencyConfig:
+class ConcurrencyConfig(BaseModel):
     """Configuration of concurrent operations."""
 
-    max_workers: int = 5
-    max_concurrent_searches: int = 2
+    max_workers: int = Field(default=5, ge=1)
+    max_concurrent_searches: int = Field(default=2, ge=1)
 
     def __post_init__(self) -> None:
         """Validate concurrency configuration."""
