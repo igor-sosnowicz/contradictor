@@ -50,14 +50,16 @@ def make_pipeline(
     cache.get.configure_mock(return_value=None)
 
     return SearchPipeline(
-        keyword_extractor=keyword_extractor,
-        search_engine=search_engine,
-        downloader=downloader,
-        cleaner=cleaner,
-        cache=cache,
-        concurrency=ConcurrencyConfig(
-            max_workers=max_workers,
-        ),
+        SearchPipelineDependencies(
+            keyword_extractor=keyword_extractor,
+            search_engine=search_engine,
+            downloader=downloader,
+            cleaner=cleaner,
+            cache=cache,
+            concurrency=ConcurrencyConfig(
+                max_workers=max_workers,
+            ),
+        )
     )
 
 
