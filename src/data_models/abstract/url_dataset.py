@@ -22,15 +22,14 @@ class UrlDataset(Dataset):
     def processed_folder_name(self) -> str:
         """Name of the directory where preprocessed splits are stored."""
 
-    def __init__(self) -> None:
+    def __init__(self, random_seed: int | None = None) -> None:
         """
         Initialise an empty URL-based dataset.
 
         Creates storage for dataset URLs and resets the path to processed
         dataset splits.
         """
-        self._datasets: dict[Path, list[str]] = {}
-        self._splits_path: Path | None = None
+        super().__init__(random_seed=random_seed)
 
     async def prepare(self) -> Path:
         """
@@ -60,35 +59,6 @@ class UrlDataset(Dataset):
         for dataset in self._datasets:
             if dataset.exists():
                 shutil.rmtree(dataset)
-
-    def get_split(self, split: SubsetName, max_samples: int = 0) -> pd.DataFrame:
-        """
-        Get a prepared dataset split.
-
-        Args:
-            split (SubsetName): Name of the dataset split to retrieve.
-            max_samples (int, optional): Maximum number of samples to return.
-                If set to 0, all samples are returned. Defaults to 0.
-
-        Returns:
-            pd.DataFrame: DataFrame containing the requested dataset split.
-
-        Raises:
-            DatasetError: If the dataset has not been prepared yet.
-        """
-        if self._splits_path is None:
-            raise ValueError(
-                "You have to prepare a dataset before getting one of its splits."
-            )
-
-        subset_file = self._splits_path / f"{split.value}.csv"
-        df = pd.read_csv(subset_file)
-        if max_samples != 0:
-            df = df.sample(
-                n=min(max_samples, len(df)),
-                random_state=42,
-            )
-        return df
 
     async def _download_raw_datasets_if_missing(self) -> None:
         """Download raw datasets if missing."""
