@@ -96,3 +96,18 @@ class SearchModuleConfig(BaseModel):
     download: DownloadConfig = Field(default_factory=DownloadConfig)
     cleaning: CleaningConfig = Field(default_factory=CleaningConfig)
     cache: CacheConfig = Field(default_factory=CacheConfig)
+
+
+class ConcurrencyConfig:
+    """Configuration of concurrent operations."""
+
+    max_workers: int = 5
+    max_concurrent_searches: int = 2
+
+    def __post_init__(self) -> None:
+        """Validate concurrency configuration."""
+        if self.max_workers < 1:
+            raise ValueError("max_workers must be at least 1")
+
+        if self.max_concurrent_searches < 1:
+            raise ValueError("max_concurrent_searches must be at least 1")

@@ -46,7 +46,7 @@ class Downloader(ABC):
     """Interface for downloading raw web page content."""
 
     @abstractmethod
-    def download(self, url: str) -> str:
+    async def download(self, url: str) -> str:
         """
         Download raw HTML content from the specified URL.
 

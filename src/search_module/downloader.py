@@ -1,58 +1,51 @@
 """Web page downloader implementation."""
 
-from threading import local
 from typing import override
 
-import requests
+import httpx
 from loguru import logger
 
 from src.search_module.config import DownloadConfig
 from src.search_module.interfaces import Downloader
 
 
-class RequestsDownloader(Downloader):
+class HttpxDownloader(Downloader):
     """
-    Downloads web pages using requests.
+    Downloads web pages using httpx.
 
-    Each thread gets its own HTTP session.
+    Uses a shared asynchronous HTTP client.
     """
 
     def __init__(
         self,
         config: DownloadConfig,
     ) -> None:
-        """Initialize downloader with HTTP configuration."""
+        """Initialise downloader with HTTP configuration."""
         self.config = config
-        self._thread_local = local()
 
-    def _get_session(self) -> requests.Session:
-        """Return the HTTP session belonging to the current thread."""
-        session = getattr(self._thread_local, "session", None)
-
-        if session is None:
-            session = requests.Session()
-            session.headers.update(
-                {
-                    "User-Agent": self.config.user_agent,
-                }
-            )
-            self._thread_local.session = session
-
-        return session
+        self._client = httpx.AsyncClient(
+            headers={
+                "User-Agent": self.config.user_agent,
+            },
+            timeout=self.config.timeout,
+            follow_redirects=True,
+            limits=httpx.Limits(
+                max_connections=100,
+                max_keepalive_connections=20,
+                keepalive_expiry=30.0,
+            ),
+        )
 
     @override
-    def download(
+    async def download(
         self,
         url: str,
     ) -> str:
         try:
-            response = self._get_session().get(
-                url,
-                timeout=self.config.timeout,
-                allow_redirects=True,
-            )
+            response = await self._client.get(url)
             response.raise_for_status()
-        except requests.RequestException:
+
+        except httpx.HTTPError:
             logger.exception(
                 "Failed downloading URL: {}",
                 url,
@@ -60,3 +53,7 @@ class RequestsDownloader(Downloader):
             return ""
 
         return response.text
+
+    async def close(self) -> None:
+        """Close the asynchronous HTTP client."""
+        await self._client.aclose()
