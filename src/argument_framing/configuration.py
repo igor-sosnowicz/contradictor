@@ -4,6 +4,8 @@ from typing import Self
 
 from pydantic import BaseModel, Field, model_validator
 
+from src.configuration import config
+
 
 class XGBoostConfig(BaseModel):
     """XGBoost-based framer configuration."""
@@ -15,7 +17,7 @@ class XGBoostConfig(BaseModel):
     tf_idf_max_features: int = Field(default=10_00, ge=1)
     tf_idf_shortest_n_gram: int = Field(default=1, ge=1)
     tf_idf_longest_n_gram: int = Field(default=2, ge=1)
-    random_seed: int | None = None
+    random_seed: int | None = config.random_seed
     optuna_trials: int = Field(default=50, ge=2)
     cross_validation_folds: int = Field(default=5, ge=2)
     cross_validation_metric: str = "f1_macro"

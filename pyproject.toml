@@ -126,3 +126,5 @@ tpe = "tpe"
 
 [tool.pydoclint]
 exclude = "tests/"
+style = "google"
+allow-init-docstring = true

@@ -7,6 +7,7 @@ import pandas as pd
 from loguru import logger
 from sklearn.model_selection import train_test_split
 
+from src.configuration import config
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import to_raw_dataset_path
@@ -23,7 +24,7 @@ class ArgumentFramingDataset(UrlDataset):
         """Get the name of directory for processed dataset."""
         return "argument_framing"
 
-    def __init__(self, random_seed: int | None = None) -> None:
+    def __init__(self, random_seed: int | None = config.random_seed) -> None:
         """Define raw databases to be downloaded via direct URLs."""
         super().__init__()
         self.random_seed = random_seed

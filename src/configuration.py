@@ -68,6 +68,14 @@ class Configuration(BaseModel):
     encoder: EncoderImplementation = EncoderImplementation.NOT_IMPLEMENTED
     vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
+    random_seed: int | None = Field(
+        None,
+        description=(
+            "A seed for a random number generators. An integer ensures "
+            "reproducibility while None initialises the seed randomly."
+        ),
+    )
+
 
 def load_configuration(file: Path) -> Configuration:
     """

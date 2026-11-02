@@ -23,7 +23,7 @@ class UrlDataset(Dataset):
     def processed_folder_name(self) -> str:
         """Name of the directory where preprocessed splits are stored."""
 
-    def __init__(self, random_seed: int | None = None) -> None:
+    def __init__(self, random_seed: int | None = config.random_seed) -> None:
         """
         Initialise an empty URL-based dataset.
 
