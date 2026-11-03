@@ -9,6 +9,6 @@ def create_cache_key(
     query: str,
 ) -> str:
     """Create stable cache key for search query."""
-    normalized = query.lower().strip()
-    payload = f"{CACHE_VERSION}:{normalized}"
+    normalised = query.lower().strip()
+    payload = f"{CACHE_VERSION}:{normalised}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()

@@ -55,7 +55,7 @@ class XGBoostFrameClassifier(ArgumentFramer):
             dataset (ArgumentFramingDataset): Preprocessed dataset containing arguments
                 paired with their interpretative frame labels.
             proof_of_concept_mode (bool, optional): Whether the classifier should be
-            used in a proof of concept mode where a tiny number of examples is used.
+                used in a proof of concept mode where a tiny number of examples is used.
                 Defaults to False (all samples are used).
             configuration (XGBoostConfig | None): Internal configuration of the XGBoost
                 and TF-IDF vectoriser models. None means default values will be used.

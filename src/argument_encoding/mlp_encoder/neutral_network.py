@@ -155,7 +155,8 @@ def _run_training_loop(
         config (TrainingConfig): The training configuration.
 
     Returns:
-        A tuple of (best validation loss, best epoch, epochs run, best state dict).
+        tuple[float, int, int, dict[str, torch.Tensor] | None]: A tuple of:
+            best validation loss, best epoch, epochs run, best state dict.
     """
     device = torch.device(config.device)
     mlp.to(device)

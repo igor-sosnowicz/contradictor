@@ -21,7 +21,7 @@ class FakeModel:
     """Provide a deterministic fake XGBoost classifier."""
 
     def __init__(self, claim_probability: float) -> None:
-        """Initialize the fake classifier."""
+        """Initialise the fake classifier."""
         self.claim_probability = claim_probability
         self.predict_proba_calls = 0
         self.last_input: np.ndarray | None = None
@@ -43,7 +43,7 @@ class FakeEmbedder:
     """Provide a deterministic fake text embedder."""
 
     def __init__(self) -> None:
-        """Initialize fake embedder."""
+        """Initialise fake embedder."""
         self.embed_calls = 0
         self.last_texts: list[str] | None = None
 

@@ -13,8 +13,9 @@ def build_vector_search(
     Construct a ready-made vector search from pre-configured implementations.
 
     Args:
-        vector_search_implementation (VectorSearchImplementation): Choice of a
-            pre-configured implementation.
+        vector_search_implementation (VectorSearchImplementation | None): Choice of a
+            pre-configured implementation. If None, defaults to the value from
+            the project configuration.
         **kwargs: Keyword arguments to be passed on directly to the constructor of
             of implementation.
 

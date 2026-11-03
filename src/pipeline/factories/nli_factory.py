@@ -11,9 +11,9 @@ def build_nli(nli_implementation: NLIImplementation | None = None, **kwargs) -> 
     Construct a ready-made NLI model from pre-configured implementations.
 
     Args:
-        nli_implementation (NLIImplementation): Choice of a pre-configured
+        nli_implementation (NLIImplementation | None): Choice of a pre-configured
             implementation. Defaults to the model from the configuration.
-        kwargs: Additional arguments passed on directly to constructor of
+        **kwargs: Additional arguments passed on directly to constructor of
             an NLI implementation.
 
     Returns:
@@ -24,6 +24,3 @@ def build_nli(nli_implementation: NLIImplementation | None = None, **kwargs) -> 
     match nli_implementation:
         case NLIImplementation.TRANSFORMERS_MODERNBERT:
             return TransformersNLI(**kwargs)
-
-        case _:
-            raise ValueError(f"Unsupported NLI implementation: {nli_implementation}")

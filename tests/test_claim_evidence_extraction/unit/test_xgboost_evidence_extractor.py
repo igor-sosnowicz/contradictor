@@ -77,7 +77,7 @@ class FakeModel:
         self,
         probabilities: list[float],
     ) -> None:
-        """Initialize the fake classifier."""
+        """Initialise the fake classifier."""
         self._probabilities = probabilities
         self.predict_proba_calls = 0
         self.last_input: np.ndarray | None = None

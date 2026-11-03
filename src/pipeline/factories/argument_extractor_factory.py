@@ -11,7 +11,7 @@ from src.data_models.data_models import ArgumentExtractorImplementation
 
 def build_argument_extractor(
     extractor_implementation: ArgumentExtractorImplementation | None = None,
-    **kwargs: object,
+    **kwargs,
 ) -> ArgumentExtractor:
     """
     Construct a ready-made argument extractor from pre-configured implementations.
@@ -20,14 +20,11 @@ def build_argument_extractor(
         extractor_implementation (ArgumentExtractorImplementation | None): Choice
             of a pre-configured implementation. Defaults to the configured
             argument extractor implementation.
-        **kwargs (Any): Additional keyword arguments passed to the constructor
+        **kwargs: Additional keyword arguments passed to the constructor
             of the selected argument extractor.
 
     Returns:
         ArgumentExtractor: An initialised instance of the argument extractor.
-
-    Raises:
-        NotImplementedError: Raised if an unsupported variant was requested.
     """
     extractor_implementation = extractor_implementation or config.argument_extractor
 

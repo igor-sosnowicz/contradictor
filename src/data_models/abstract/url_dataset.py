@@ -22,9 +22,13 @@ class UrlDataset(Dataset):
     def processed_folder_name(self) -> str:
         """Name of the directory where preprocessed splits are stored."""
 
-    def __init__(self, random_seed: int | None = None) -> None:
+    def __init__(self, random_seed: int | None = config.random_seed) -> None:
         """
         Initialise an empty URL-based dataset.
+
+        Args:
+            random_seed (int | None): A random seed. If set to a value different than
+                None, results should be deterministic and reproducible.
 
         Creates storage for dataset URLs and resets the path to processed
         dataset splits.
@@ -39,9 +43,13 @@ class UrlDataset(Dataset):
         and creates the processed dataset splits. If the dataset is already
         prepared, it sets the path to the existing processed dataset.
 
+        Returns:
+            Path: Path to a root directory of the prepared datasets with subsets
+                in sub-directories.
+
         Raises:
             DatasetError: If dataset preparation fails.
-        """
+        """  # noqa: DOC502, Exception is propagated by a private method called by this method.
         await self._download_raw_datasets_if_missing()
         datasets = self._transform()
         if not datasets:
@@ -142,9 +150,9 @@ class UrlDataset(Dataset):
             if dfs:
                 merged_df = pd.concat(dfs, ignore_index=True)
 
-                merged_df = merged_df.sample(frac=1, random_state=42).reset_index(
-                    drop=True
-                )
+                merged_df = merged_df.sample(
+                    frac=1, random_state=self.random_seed
+                ).reset_index(drop=True)
                 merged_data[subset_name] = merged_df
             else:
                 merged_data[subset_name] = pd.DataFrame()

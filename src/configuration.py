@@ -80,6 +80,14 @@ class Configuration(BaseModel):
     encoder: EncoderImplementation = EncoderImplementation.MLP
     vector_search: VectorSearchImplementation = VectorSearchImplementation.NUMPY_BASED
 
+    random_seed: int | None = Field(
+        None,
+        description=(
+            "A seed for a random number generators. An integer ensures "
+            "reproducibility while None initialises the seed randomly."
+        ),
+    )
+
     device: Annotated[str, AfterValidator(validate_device_presence)] = (
         "cuda" if torch.cuda.is_available() else "cpu"
     )
@@ -98,6 +106,9 @@ def load_configuration(file: Path) -> Configuration:
 
     Returns:
         Configuration: Configuration object read to use.
+
+    Raises:
+        ConfigurationError: Raised if there is a configuration error.
     """
     try:
         with file.open("rb") as f:

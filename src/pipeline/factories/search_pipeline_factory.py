@@ -20,7 +20,7 @@ def build_search_pipeline(
     Construct a ready-made search pipeline from pre-configured implementations.
 
     Args:
-        search_implementation (SearchPipelineImplementation): Choice of a
+        search_implementation (SearchPipelineImplementation | None): Choice of a
             pre-configured implementation.
 
     Returns:

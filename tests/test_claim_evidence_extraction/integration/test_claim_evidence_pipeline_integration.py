@@ -24,7 +24,7 @@ class MiniPipelineDataset(ArgumentDetectionDataset):
     """Small deterministic dataset for pipeline integration tests."""
 
     def __init__(self) -> None:
-        """Initialize the deterministic test dataset."""
+        """Initialise the deterministic test dataset."""
         super().__init__()
 
     def get_claim_split(

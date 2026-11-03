@@ -32,6 +32,9 @@ jobs:
       - name: Run code formatting
         run: uv run ruff format --check .
 
+      - name: Enforce docstring format
+        run: uv run pydoclint --config=pyproject.toml src
+
   type_checking:
     runs-on: ubuntu-latest
 

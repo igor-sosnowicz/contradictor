@@ -15,16 +15,13 @@ def build_argument_framer(
     Construct a ready-made argument framer from pre-configured implementations.
 
     Args:
-        framer_implementation (ArgumentFramerImplementation): Choice of a
+        framer_implementation (ArgumentFramerImplementation | None): Choice of a
             pre-configured implementation.
         proof_of_concept_mode (bool): Whether to use a tiny subset of training
             data for faster test runs. Defaults to False.
 
     Returns:
         ArgumentFramer: An initialised instance of the argument framer.
-
-    Raises:
-        NotImplementedError: Raised if not implemented variant was requested.
     """
     # Local imports for lazy loading prevent importing heavy implementation
     # modules when they are not requested.

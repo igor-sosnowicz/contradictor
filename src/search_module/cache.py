@@ -26,9 +26,6 @@ class DiskCacheBackend(CacheBackend):
 
         Args:
             config (CacheConfig): Configuration for the cache backend.
-
-        Returns:
-            None
         """
         self.config = config
         self.cache = Cache(
@@ -63,12 +60,7 @@ class DiskCacheBackend(CacheBackend):
         )
 
     def clear(self) -> None:
-        """
-        Remove all cached entries.
-
-        Returns:
-            None
-        """
+        """Remove all cached entries."""
         self.cache.clear()
 
     def __enter__(self) -> Self:
