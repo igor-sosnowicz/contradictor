@@ -1,2 +1,3 @@
 transformer_nli_model = "tasksource/ModernBERT-base-nli"
 argument_extractor = "xgboost"
+counterargument_candidates_limit = 100

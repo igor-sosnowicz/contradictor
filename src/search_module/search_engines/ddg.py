@@ -19,7 +19,7 @@ class DDGSearchEngine(SearchEngine):
         config: SearchConfig,
     ) -> None:
         """
-        Initialise DuckDuckGo search engine with configuration.
+        Initialise the DuckDuckGo search engine with configuration.
 
         Args:
             config (SearchConfig): Configuration for the search engine.

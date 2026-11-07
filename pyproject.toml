@@ -5,6 +5,7 @@ description = "Contradictors is an NLP counterargument finding system."
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "anyio>=4.14.2",
     "beautifulsoup4>=4.15.0",
     "click>=8.4.2",
     "datasets>=5.1.0",
@@ -27,6 +28,7 @@ dependencies = [
     "textstat-rs>=1.0.0",
     "tiktoken>=0.13.0",
     "tqdm>=4.68.3",
+    "typer>=0.27.0",
     "xgboost>=3.3.0",
 ]
 
@@ -50,7 +52,7 @@ dev = [
 exclude-newer = "7 days"
 
 [project.scripts]
-app = "src.main:main"
+contradictor = "src.main:cli_app"
 
 [build-system]
 requires = ["hatchling"]
@@ -64,6 +66,13 @@ ignore_missing_imports = true
 explicit_package_bases = true
 mypy_path = ["."]
 python_version = "3.13"
+
+[tool.pytest.ini_options]
+markers = [
+    "cli: end-to-end smoke tests running the CLI commands; excluded from CI by default.",
+]
+addopts = ["-m", "not cli"]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 88

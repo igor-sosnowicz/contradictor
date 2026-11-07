@@ -175,6 +175,9 @@ class SpacyStyleExtractor(StyleExtractor):
 
     @override
     async def extract(self, texts: list[str]) -> list[np.ndarray]:
+        if not texts:
+            return []
+
         if self._nlp is None or self._sentiment_pipeline is None:
             raise NotPreparedError(
                 "SpacyStyleExtractor not prepared. "
