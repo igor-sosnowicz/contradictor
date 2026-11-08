@@ -270,5 +270,22 @@ class BaseXGBoostExtractor[ModelType](ConfigurationProvider):  # pylint: disable
             "model_name": self._model_name,
             "model_path": str(self._get_model_path()),
             "proof_of_concept_max_samples": self._max_samples,
-            "config": self._config.model_dump(mode="json"),
+            "config": self._config.model_dump(
+                mode="json",
+                exclude={
+                    "optuna": {
+                        "n_estimators_min",
+                        "n_estimators_max",
+                        "n_estimators_step",
+                        "max_depth_min",
+                        "max_depth_max",
+                        "learning_rate_min",
+                        "learning_rate_max",
+                        "subsample_min",
+                        "subsample_max",
+                        "colsample_bytree_min",
+                        "colsample_bytree_max",
+                    }
+                },
+            ),
         }
