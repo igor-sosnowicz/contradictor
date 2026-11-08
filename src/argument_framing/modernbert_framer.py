@@ -114,6 +114,12 @@ class ModernBertTrainer:
         if training_config.random_seed is not None:
             additional_kwargs["seed"] = training_config.random_seed
 
+        if training_config.bfloat16 and config.device == "cpu":
+            logger.warning(
+                "bfloat16 is not supported on CPU; disabling it "
+                "even though it was requested in the training config."
+            )
+
         self._training_configuration = TrainingArguments(
             output_dir=str(self._training_directory),
             num_train_epochs=training_config.max_training_epochs,
@@ -121,12 +127,13 @@ class ModernBertTrainer:
             gradient_accumulation_steps=training_config.gradient_accumulation_steps,
             gradient_checkpointing=True,
             gradient_checkpointing_kwargs={"every_n_layers": 4},
-            bf16=training_config.bfloat16,
+            bf16=training_config.bfloat16 and config.device != "cpu",
             learning_rate=training_config.learning_rate,
             logging_steps=10,
             eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
+            use_cache=config.device == "cpu",
             **additional_kwargs,
         )
 
@@ -271,6 +278,7 @@ class ModernBertFramer(ArgumentFramer):
         training_config: ModernBERTConfig | None = None,
         *,
         proof_of_concept_mode: bool = False,
+        dataset: ArgumentFramingDataset,
     ) -> None:
         """
         Initialise the transformer framer.
@@ -281,6 +289,8 @@ class ModernBertFramer(ArgumentFramer):
                 `proof_of_concept_mode` is enabled or not.
             proof_of_concept_mode (bool): Whether the model should use the smallest
                 possible amount of computation and samples to solely prove it works.
+            dataset (ArgumentFramingDataset): Dataset used for training, validation,
+                and testing the model.
         """
         self._max_samples = 100 if proof_of_concept_mode else 0
         if proof_of_concept_mode:
@@ -299,7 +309,7 @@ class ModernBertFramer(ArgumentFramer):
             )
         self._model: ModernBertForSequenceClassification | None = None
         self._tokeniser: AutoTokenizer | None = None
-        self._dataset = ArgumentFramingDataset()
+        self._dataset = dataset
 
     @property
     def _training_directory(self) -> Path:

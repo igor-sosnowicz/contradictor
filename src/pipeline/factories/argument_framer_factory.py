@@ -24,6 +24,7 @@ def build_argument_framer(
         ArgumentFramer: An initialised instance of the argument framer.
     """
     framer_implementation = framer_implementation or config.argument_framer
+    dataset = ArgumentFramingDataset()
 
     match framer_implementation:
         case ArgumentFramerImplementation.XGBOOST:
@@ -33,7 +34,7 @@ def build_argument_framer(
             from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
 
             return XGBoostFrameClassifier(
-                dataset=ArgumentFramingDataset(),
+                dataset=dataset,
                 proof_of_concept_mode=proof_of_concept_mode,
             )
 
@@ -42,4 +43,7 @@ def build_argument_framer(
             # pylint: disable-next=import-outside-toplevel
             from src.argument_framing.modernbert_framer import ModernBertFramer
 
-            return ModernBertFramer(proof_of_concept_mode=proof_of_concept_mode)
+            return ModernBertFramer(
+                dataset=dataset,
+                proof_of_concept_mode=proof_of_concept_mode,
+            )

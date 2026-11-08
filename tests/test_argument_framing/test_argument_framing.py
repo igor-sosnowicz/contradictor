@@ -2,10 +2,30 @@
 
 import pytest
 
+from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
-from src.data_models.data_models import SubsetName
+from src.data_models.data_models import (
+    Argument,
+    ArgumentFramerImplementation,
+    SubsetName,
+)
+from src.pipeline.factories.argument_framer_factory import build_argument_framer
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
+
+
+def get_argument_framers() -> list[ArgumentFramer]:
+    """
+    Provide instances of all argument framers, unprepared and in the PoC mode.
+
+    Returns:
+        list[ArgumentFramer]: List of all available argument framer instances,
+            Each of them is initialised but unprepared and in the PoC mode.
+    """
+    return [
+        build_argument_framer(implementation)
+        for implementation in ArgumentFramerImplementation
+    ]
 
 
 def test_argument_framing_dataset_initialisation() -> None:
@@ -24,7 +44,6 @@ def test_argument_framing_dataset_prepare_error() -> None:
         _ = dataset.get_split(SubsetName.TRAINING)
 
 
-@pytest.mark.asyncio
 async def test_xgboost_framer_initialization() -> None:
     """Test if XGBoost framer sets up defaults correctly."""
     mock_dataset = ArgumentFramingDataset()
@@ -38,3 +57,28 @@ async def test_xgboost_framer_initialization() -> None:
 
     with pytest.raises(ModelNotTrainedError):
         await framer.perform_tuning()
+
+
+@pytest.mark.parametrize("framer", get_argument_framers())
+async def test_framing_logic(framer: ArgumentFramer) -> None:
+    """Test if an argument framer detects interpretative frame."""
+    await framer.prepare()
+    framer.frame(
+        arguments=[
+            Argument(
+                claim="NLP is such a cool field.",
+                evidence=(
+                    "51% of NLP scientists are very happy according to their "
+                    "self-reports."
+                ),
+            ),
+            Argument(
+                claim="Ergonomic keyboard improve wrist-associated conditions.",
+                evidence="My cats says so.",
+            ),
+            Argument(
+                claim="Rainbows are optical illusions.",
+                evidence="Spectrometry proves this using chromatic graphs.",
+            ),
+        ]
+    )
