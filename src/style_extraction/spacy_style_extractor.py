@@ -14,6 +14,7 @@ from loguru import logger
 from transformers import logging as transformers_logging
 from transformers import pipeline
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.style_extraction.style_extractor import StyleExtractor
 from src.utils.errors import NotPreparedError
 from src.utils.timer import Timer
@@ -260,3 +261,10 @@ class SpacyStyleExtractor(StyleExtractor):
             np.append(vector, positivity_score)
             for vector, positivity_score in zip(vectors, positivity_scores, strict=True)
         ]
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "spacy_model": self._spacy_model,
+            "sufficient_text_length": self.SUFFICIENT_TEXT_LENGTH,
+        }

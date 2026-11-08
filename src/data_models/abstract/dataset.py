@@ -1,15 +1,16 @@
 """Module with an interface for a dataset."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
 
 import pandas as pd
 
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import SubsetName
 from src.utils.errors import NotPreparedError
 
 
-class Dataset(ABC):
+class Dataset(ConfigurationProvider):
     """An interface for extracting, transforming, and loading a custom dataset."""
 
     def __init__(

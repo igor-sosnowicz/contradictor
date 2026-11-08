@@ -5,11 +5,27 @@ from typing import override
 
 import numpy as np
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.vector_search.vector_search import VectorSearch
 
 
 class CustomVectorSearch(VectorSearch):
     """The custom NumPy-based in-memory vector search engine."""
+
+    def __init__(self, max_candidates: int = 100) -> None:
+        """
+        Initialise the vector search engine.
+
+        Args:
+            max_candidates (int): Maximum number of candidates to retrieve.
+
+        Raises:
+            ValueError: If max_candidates is less than or equal to zero.
+        """
+        if max_candidates <= 0:
+            raise ValueError("max_candidates must be greater than zero.")
+
+        self.max_candidates = max_candidates
 
     @override
     async def max_distance(
@@ -84,3 +100,10 @@ class CustomVectorSearch(VectorSearch):
             indices = np.take_along_axis(indices, order, axis=1)
 
         return indices.astype(np.int64).tolist()
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "max_candidates": self.max_candidates,
+            "hard_limit_max_candidates": self.HARD_LIMIT_MAX_CANDIDATES,
+        }

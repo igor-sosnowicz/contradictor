@@ -1,12 +1,13 @@
 """Module with an interface of an abstract argument framer."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Collection, Iterable
 
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import Argument, FramedArgument
 
 
-class ArgumentFramer(ABC):
+class ArgumentFramer(ConfigurationProvider):
     """An interface of an abstract argument framer."""
 
     @abstractmethod

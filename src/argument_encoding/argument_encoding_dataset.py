@@ -13,6 +13,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.model_selection import train_test_split
 
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import (
     Argument,
@@ -536,6 +537,15 @@ class ArgumentEncodingDataset(Dataset):
         if self._splits_path is not None and self._splits_path.exists():
             shutil.rmtree(self._splits_path)
             self._splits_path = None
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "max_samples": self.max_samples,
+            "random_seed": self.random_seed,
+            "proof_of_concept_mode": self.proof_of_concept_mode,
+            "semantics_weight": config.encoding_dataset_semantics_weight,
+        }
 
 
 __all__ = ["ArgumentEncodingDataset"]

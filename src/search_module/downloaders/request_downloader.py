@@ -5,6 +5,7 @@ from typing import override
 import requests
 from loguru import logger
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import DownloadConfig
 from src.search_module.interfaces import Downloader
 
@@ -55,3 +56,11 @@ class RequestsDownloader(Downloader):
             return ""
 
         return response.text
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "implementation": self.__class__.__name__,
+            "timeout": self.config.timeout,
+            "user_agent": self.config.user_agent,
+        }

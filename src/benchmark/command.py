@@ -107,6 +107,11 @@ def _save_results(
     }
 
     with path.open("wt") as file:
-        json.dump(results, fp=file, indent=2)
+        json.dump(
+            results,
+            fp=file,
+            indent=2,
+            default=str,
+        )
 
     logger.info(f"Saved the results of the benchmark run to {path}")

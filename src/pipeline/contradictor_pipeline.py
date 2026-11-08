@@ -3,11 +3,12 @@
 import asyncio
 import random
 from collections.abc import Collection, Iterable
-from pathlib import Path
+from dataclasses import fields
 
 from loguru import logger
 
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
     Argument,
     ArgumentWithCounterarguments,
@@ -116,19 +117,22 @@ class ContradictorPipeline:
         )
         return counterarguments
 
-    def get_configuration(self) -> dict[str, str | float | int | Path]:
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
         """
-        Get configuration of the components of Contradictor that may impact
-        its performance.
+        Get configuration of all components of Contradictor.
 
         Returns:
-            dict[str, str | float | int | Path]: Hierarchical report of the
-                configuration of Contradictor instance.
-
-        Raises:
-           NotImplementedError: Temporarily raised due to being unimplemented.
+            dict[str, ConfigurationValue]: Hierarchical configuration report.
         """
-        raise NotImplementedError("get_configuration")
+        configuration = {}
+
+        for pipe_field in fields(self._pipes):
+            pipe_name = pipe_field.name
+            pipe = getattr(self._pipes, pipe_name)
+
+            configuration[pipe_name] = pipe.get_configuration()
+
+        return configuration
 
     async def _merge_claims(
         self, arguments: list[Argument], counterarguments: list[Argument]

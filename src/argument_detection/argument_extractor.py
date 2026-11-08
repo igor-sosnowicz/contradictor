@@ -1,11 +1,12 @@
 """Module with an interface for an argument extractor."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import Argument
 
 
-class ArgumentExtractor(ABC):
+class ArgumentExtractor(ConfigurationProvider):
     """An interface for an argument extractor."""
 
     @abstractmethod

@@ -5,6 +5,7 @@ from typing import override
 from ddgs import DDGS
 from loguru import logger
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import SearchConfig
 from src.search_module.interfaces import SearchEngine
 from src.search_module.models import SearchQuery, SearchResult
@@ -64,3 +65,11 @@ class DDGSearchEngine(SearchEngine):
             )
             return []
         return results
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "implementation": self.__class__.__name__,
+            "region": self.config.region,
+            "max_results": self.config.max_results,
+        }

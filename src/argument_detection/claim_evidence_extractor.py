@@ -18,6 +18,7 @@ from src.argument_detection.xgboost_claim_extractor import XGBoostClaimExtractor
 from src.argument_detection.xgboost_evidence_extractor import (
     XGBoostEvidenceExtractor,
 )
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import Argument
 
 
@@ -103,3 +104,10 @@ class ClaimEvidenceExtractor(ArgumentExtractor):
                 )
 
         return results
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "claim_extractor": self._claim_extractor.get_configuration(),
+            "evidence_extractor": self._evidence_extractor.get_configuration(),
+        }

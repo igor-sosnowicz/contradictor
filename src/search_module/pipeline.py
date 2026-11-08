@@ -1,7 +1,11 @@
 """Search pipeline orchestration."""
 
+from typing import override
+
 from loguru import logger
 
+from src.data_models.abstract.configurable import ConfigurationProvider
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.interfaces import (
     CacheBackend,
     Cleaner,
@@ -14,7 +18,7 @@ from src.search_module.utils.cache_keys import create_cache_key
 from src.utils.errors import ContradictorError
 
 
-class SearchPipeline:
+class SearchPipeline(ConfigurationProvider):
     """
     Orchestrates the complete document search workflow.
 
@@ -101,3 +105,13 @@ class SearchPipeline:
         logger.info("Saved results to cache")
 
         return documents
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "keyword_extractor": self.keyword_extractor.get_configuration(),
+            "search_engine": self.search_engine.get_configuration(),
+            "downloader": self.downloader.get_configuration(),
+            "cleaner": self.cleaner.get_configuration(),
+            "cache": self.cache.get_configuration(),
+        }

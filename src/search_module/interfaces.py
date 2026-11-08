@@ -1,11 +1,12 @@
 """Module with search module interfaces."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.search_module.models import Document, SearchQuery, SearchResult
 
 
-class KeywordExtractor(ABC):
+class KeywordExtractor(ConfigurationProvider):
     """Interface for extracting search keywords from unstructured text."""
 
     @abstractmethod
@@ -21,7 +22,7 @@ class KeywordExtractor(ABC):
         """
 
 
-class SearchEngine(ABC):
+class SearchEngine(ConfigurationProvider):
     """Interface for executing queries against external search engines."""
 
     @abstractmethod
@@ -42,7 +43,7 @@ class SearchEngine(ABC):
         """
 
 
-class Downloader(ABC):
+class Downloader(ConfigurationProvider):
     """Interface for downloading raw web page content."""
 
     @abstractmethod
@@ -58,7 +59,7 @@ class Downloader(ABC):
         """
 
 
-class Cleaner(ABC):
+class Cleaner(ConfigurationProvider):
     """Interface for converting raw HTML into structured, readable documents."""
 
     @abstractmethod
@@ -82,7 +83,7 @@ class Cleaner(ABC):
         """
 
 
-class CacheBackend(ABC):
+class CacheBackend(ConfigurationProvider):
     """Interface for persistent cache backends storing search data."""
 
     @abstractmethod

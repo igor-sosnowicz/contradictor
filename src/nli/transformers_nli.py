@@ -8,6 +8,7 @@ from typing import Self, override
 from transformers import pipeline
 
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import NLIPrediction
 from src.nli.nli import NLI
 from src.nli.utils import to_nli_enum
@@ -53,6 +54,9 @@ class TransformersNLI(NLI):
         self.max_workers = max_workers
         self._executor: ThreadPoolExecutor | None = None
         self._prepared = False
+        self._model_name = model
+        self._batch_size = batch_size
+        self.max_workers = max_workers
 
     def _reshape_to_nested(
         self, flat: list[NLIPrediction], other_texts: list[str]
@@ -125,3 +129,11 @@ class TransformersNLI(NLI):
     ) -> None:
         if self._executor is not None:
             self._executor.shutdown(wait=False, cancel_futures=exc_type is not None)
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "model": self._model_name,
+            "batch_size": self._batch_size,
+            "max_workers": self.max_workers,
+        }

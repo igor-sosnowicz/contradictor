@@ -1,5 +1,6 @@
 """Module with an argument framing dataset using direct URLs."""
 
+import hashlib
 from pathlib import Path
 from typing import Final, override
 
@@ -8,6 +9,7 @@ from loguru import logger
 from sklearn.model_selection import train_test_split
 
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import to_raw_dataset_path
@@ -39,6 +41,33 @@ class ArgumentFramingDataset(UrlDataset):
             ],
         }
         self._splits_path = None
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        dataset_path = to_raw_dataset_path("mp_frame_corpus")
+
+        hasher = hashlib.sha256()
+
+        for file_name in ("combined_train.csv", "combined_validation.csv"):
+            file_path = dataset_path / file_name
+
+            if not file_path.is_file():
+                raise FileNotFoundError(
+                    f"Dataset file not found: {file_path}. "
+                    "Prepare the dataset before retrieving its configuration."
+                )
+
+            hasher.update(file_name.encode())
+
+            with file_path.open("rb") as file:
+                while chunk := file.read(8192):
+                    hasher.update(chunk)
+
+        return {
+            "dataset_name": "mp_frame_corpus",
+            "dataset_hash": hasher.hexdigest(),
+            "dataset_random_seed": self.random_seed,
+        }
 
     @override
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:

@@ -1,13 +1,14 @@
 """Module with an interface for a unified argument and style encoder."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import numpy as np
 
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import StyledFramedArgument
 
 
-class ArgumentEncoder(ABC):
+class ArgumentEncoder(ConfigurationProvider):
     """An interface for a unified argument and style encoder."""
 
     @abstractmethod
