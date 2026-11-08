@@ -22,6 +22,7 @@ from transformers import (
 from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
     LABEL_TO_FRAME,
     Argument,
@@ -313,7 +314,8 @@ class ModernBertFramer(ArgumentFramer):
             dataset (ArgumentFramingDataset): Dataset used for training, validation,
                 and testing the model.
         """
-        self._max_samples = 100 if proof_of_concept_mode else 0
+        self._proof_of_concept_mode = proof_of_concept_mode
+        self._max_samples_per_split = 100 if proof_of_concept_mode else 0
         if proof_of_concept_mode:
             self._config = training_config or ModernBERTConfig(
                 batch_size=1,
@@ -342,6 +344,10 @@ class ModernBertFramer(ArgumentFramer):
             / subdirectory_name
         )
 
+    @property
+    def _max_sequence_length(self) -> int:
+        return getattr(self._tokeniser, "model_max_length", 8192)
+
     @override
     def frame(self, arguments: Iterable[Argument]) -> Collection[FramedArgument]:
         if self._model is None or self._tokeniser is None:
@@ -368,13 +374,11 @@ class ModernBertFramer(ArgumentFramer):
 
         # Cast to a tokenizer base that is callable and exposes `model_max_length`.
         tokeniser = cast("PreTrainedTokenizerBase", self._tokeniser)
-        max_length = getattr(tokeniser, "model_max_length", 8192)
 
         return self._infer(
             model=self._model,
             tokeniser=tokeniser,
             arguments=arguments,
-            max_length=max_length,
             index_to_frame=index_to_frame,
         )
 
@@ -383,7 +387,6 @@ class ModernBertFramer(ArgumentFramer):
         model: ModernBertForSequenceClassification,
         tokeniser: PreTrainedTokenizerBase,
         arguments: Iterable[Argument],
-        max_length: int,
         index_to_frame: list[InterpretativeFrame],
     ) -> list[FramedArgument]:
         device = next(model.parameters()).device
@@ -399,7 +402,7 @@ class ModernBertFramer(ArgumentFramer):
                         return_tensors="pt",
                         padding=True,
                         truncation=True,
-                        max_length=max_length,
+                        max_length=self._max_sequence_length,
                     ).to(device)
                 ).logits
                 predicted_indices = logits.argmax(dim=-1).tolist()
@@ -445,7 +448,7 @@ class ModernBertFramer(ArgumentFramer):
             classes_count=labels_count,
             dataset=self._dataset,
             training_directory=self._training_directory,
-            max_samples_per_split=self._max_samples,
+            max_samples_per_split=self._max_samples_per_split,
         )
         return await trainer()
 
@@ -472,6 +475,15 @@ class ModernBertFramer(ArgumentFramer):
     @override
     async def perform_tuning(self) -> dict[str, float]:
         raise NotImplementedError("perform_tuning")
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "proof_of_concept_mode": self._proof_of_concept_mode,
+            "max_sequence_length": self._max_sequence_length,
+            "max_samples_per_split": self._max_samples_per_split,
+            **self._config.model_dump(),
+        }
 
 
 __all__ = ["ModernBertFramer"]
