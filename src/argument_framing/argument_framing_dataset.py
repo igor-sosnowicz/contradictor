@@ -61,7 +61,7 @@ class ArgumentFramingDataset(UrlDataset):
             hasher.update(file_name.encode())
 
             with file_path.open("rb") as file:
-                for chunk in iter(lambda: file.read(8192), b""):
+                while chunk := file.read(8192):
                     hasher.update(chunk)
 
         return {
