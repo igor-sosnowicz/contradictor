@@ -17,6 +17,7 @@ dependencies = [
     "loguru>=0.7.3",
     "optuna>=4.9.0",
     "pandas>=3.0.3",
+    "peft>=0.21.2",
     "platformdirs>=4.10.1",
     "pycountry>=26.2.16",
     "pydantic>=2.13.4",

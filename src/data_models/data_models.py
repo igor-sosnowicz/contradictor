@@ -39,23 +39,22 @@ class InterpretativeFrame(StrEnum):
 
 
 # Mapping between MediaFrameCorpus code_frames values and domain enum.
-# Dataset uses codes 1-15, while application logic uses InterpretativeFrame.
 LABEL_TO_FRAME: Final[dict[int, InterpretativeFrame]] = {
-    0: InterpretativeFrame.ECONOMIC,
-    1: InterpretativeFrame.CAPACITY_AND_RESOURCES,
-    2: InterpretativeFrame.MORALITY,
-    3: InterpretativeFrame.FAIRNESS_AND_EQUALITY,
-    4: InterpretativeFrame.CONSTITUTIONALITY_AND_LEGALITY,
-    5: InterpretativeFrame.POLICY_PRESCRIPTION,
-    6: InterpretativeFrame.CRIME_AND_JUSTICE,
-    7: InterpretativeFrame.SECURITY_AND_DEFENSE,
-    8: InterpretativeFrame.HEALTH_AND_SAFETY,
-    9: InterpretativeFrame.QUALITY_OF_LIFE,
-    10: InterpretativeFrame.CULTURAL_IDENTITY,
-    11: InterpretativeFrame.PUBLIC_OPINION,
-    12: InterpretativeFrame.POLITICAL,
-    13: InterpretativeFrame.EXTERNAL_REGULATION,
-    14: InterpretativeFrame.OTHER,
+    1: InterpretativeFrame.ECONOMIC,
+    2: InterpretativeFrame.CAPACITY_AND_RESOURCES,
+    3: InterpretativeFrame.MORALITY,
+    4: InterpretativeFrame.FAIRNESS_AND_EQUALITY,
+    5: InterpretativeFrame.CONSTITUTIONALITY_AND_LEGALITY,
+    6: InterpretativeFrame.POLICY_PRESCRIPTION,
+    7: InterpretativeFrame.CRIME_AND_JUSTICE,
+    8: InterpretativeFrame.SECURITY_AND_DEFENSE,
+    9: InterpretativeFrame.HEALTH_AND_SAFETY,
+    10: InterpretativeFrame.QUALITY_OF_LIFE,
+    11: InterpretativeFrame.CULTURAL_IDENTITY,
+    12: InterpretativeFrame.PUBLIC_OPINION,
+    13: InterpretativeFrame.POLITICAL,
+    14: InterpretativeFrame.EXTERNAL_REGULATION,
+    15: InterpretativeFrame.OTHER,
 }
 
 
