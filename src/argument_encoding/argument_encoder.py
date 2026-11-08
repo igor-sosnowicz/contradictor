@@ -4,11 +4,11 @@ from abc import abstractmethod
 
 import numpy as np
 
-from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import StyledFramedArgument
 
 
-class ArgumentEncoder(Configurable):
+class ArgumentEncoder(ConfigurationProvider):
     """An interface for a unified argument and style encoder."""
 
     @abstractmethod

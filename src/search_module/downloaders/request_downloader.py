@@ -59,7 +59,6 @@ class RequestsDownloader(Downloader):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the requests downloader."""
         return {
             "implementation": self.__class__.__name__,
             "timeout": self.config.timeout,

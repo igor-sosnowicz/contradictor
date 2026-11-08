@@ -44,7 +44,6 @@ class ArgumentFramingDataset(UrlDataset):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the argument framing dataset."""
         dataset_path = to_raw_dataset_path("mp_frame_corpus")
 
         hasher = hashlib.sha256()
@@ -52,7 +51,7 @@ class ArgumentFramingDataset(UrlDataset):
         for file_name in ("combined_train.csv", "combined_validation.csv"):
             file_path = dataset_path / file_name
 
-            if not file_path.exists():
+            if not file_path.is_file():
                 raise FileNotFoundError(
                     f"Dataset file not found: {file_path}. "
                     "Prepare the dataset before retrieving its configuration."

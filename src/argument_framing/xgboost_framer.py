@@ -304,7 +304,6 @@ class XGBoostFrameClassifier(ArgumentFramer):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the XGBoost frame classifier."""
         return {
             **self.config.model_dump(),
             **self._dataset.get_configuration(),

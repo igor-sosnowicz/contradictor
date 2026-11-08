@@ -540,7 +540,6 @@ class ArgumentEncodingDataset(Dataset):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Return the argument encoding dataset configuration."""
         return {
             "max_samples": self.max_samples,
             "random_seed": self.random_seed,

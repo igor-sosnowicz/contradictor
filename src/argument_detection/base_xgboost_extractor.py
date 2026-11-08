@@ -15,7 +15,7 @@ from src.argument_detection.argument_detection_dataset import (
 )
 from src.argument_detection.spacy_embedder import SpacyEmbedder
 from src.configuration import config
-from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.utils.sentence_splitter import SentenceSplitter
 
@@ -27,7 +27,7 @@ ModelType = TypeVar(
 )
 
 
-class BaseXGBoostExtractor[ModelType](Configurable):  # pylint: disable=too-many-instance-attributes
+class BaseXGBoostExtractor[ModelType](ConfigurationProvider):  # pylint: disable=too-many-instance-attributes
     """
     XGBoost-based extractor with shared training and persistence state.
 

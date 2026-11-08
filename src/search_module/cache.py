@@ -79,7 +79,6 @@ class DiskCacheBackend(CacheBackend):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the disk cache backend."""
         return {
             "implementation": self.__class__.__name__,
             "enabled": self.config.enabled,

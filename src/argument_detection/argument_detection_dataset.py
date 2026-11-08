@@ -574,7 +574,6 @@ class ArgumentDetectionDataset(UrlDataset):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Return the dataset configuration."""
         dataset_config = config.xgboost_extractor.dataset
 
         return {

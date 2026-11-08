@@ -113,7 +113,6 @@ class ReadabilityCleaner(Cleaner):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the readability cleaner."""
         return {
             "implementation": self.__class__.__name__,
             "min_text_length": self.config.min_text_length,

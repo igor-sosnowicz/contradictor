@@ -30,7 +30,6 @@ class LocalDownloader(Downloader):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the local downloader."""
         return {
             "implementation": self.__class__.__name__,
         }

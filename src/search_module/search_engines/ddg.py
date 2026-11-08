@@ -68,7 +68,6 @@ class DDGSearchEngine(SearchEngine):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of DuckDuckGo search engine."""
         return {
             "implementation": self.__class__.__name__,
             "region": self.config.region,

@@ -14,7 +14,7 @@ class CustomVectorSearch(VectorSearch):
 
     def __init__(self, max_candidates: int = 100) -> None:
         """
-        Initialize the vector search engine.
+        Initialise the vector search engine.
 
         Args:
             max_candidates (int): Maximum number of candidates to retrieve.

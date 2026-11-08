@@ -20,7 +20,6 @@ class NullCleaner(Cleaner):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the null cleaner."""
         return {
             "implementation": self.__class__.__name__,
         }

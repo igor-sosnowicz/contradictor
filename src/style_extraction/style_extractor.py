@@ -4,11 +4,10 @@ from abc import abstractmethod
 
 import numpy as np
 
-from src.data_models.abstract.configurable import Configurable
-from src.data_models.abstract.configuration import ConfigurationValue
+from src.data_models.abstract.configurable import ConfigurationProvider
 
 
-class StyleExtractor(Configurable):
+class StyleExtractor(ConfigurationProvider):
     """Text style extractor into a deterministic vector representation."""
 
     @abstractmethod
@@ -26,9 +25,6 @@ class StyleExtractor(Configurable):
             texts (list[str]): List of texts for which style should be vectorised.
 
         Returns:
-            list[np.ndarray]: List of vectors in order matching the input texts.
+            list[np.ndarray]: List of vectors in order
+                matching the input texts.
         """
-
-    @abstractmethod
-    def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the style extractor."""

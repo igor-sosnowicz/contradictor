@@ -5,10 +5,10 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configurable import ConfigurationProvider
 
 
-class VectorSearch(Configurable):
+class VectorSearch(ConfigurationProvider):
     """An interface for a vector search engine."""
 
     HARD_LIMIT_MAX_CANDIDATES = 100

@@ -3,11 +3,11 @@
 from abc import abstractmethod
 from collections.abc import Collection, Iterable
 
-from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.data_models import Argument, FramedArgument
 
 
-class ArgumentFramer(Configurable):
+class ArgumentFramer(ConfigurationProvider):
     """An interface of an abstract argument framer."""
 
     @abstractmethod

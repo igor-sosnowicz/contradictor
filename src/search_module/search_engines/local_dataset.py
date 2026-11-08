@@ -37,7 +37,6 @@ class LocalDatasetSearchEngine(SearchEngine):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        """Get configuration of the local dataset search engine."""
         return {
             "implementation": self.__class__.__name__,
         }
