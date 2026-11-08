@@ -9,6 +9,7 @@ from loguru import logger
 from sklearn.model_selection import GroupShuffleSplit
 
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import filter_empty_rows, to_raw_dataset_path
@@ -570,3 +571,16 @@ class ArgumentDetectionDataset(UrlDataset):
         if max_samples is not None:
             df = df.iloc[:max_samples]
         return df.reset_index(drop=True)
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Return the dataset configuration."""
+        dataset_config = config.xgboost_extractor.dataset
+
+        return {
+            "random_seed": self.random_seed,
+            "test_size": dataset_config.test_size,
+            "val_size": dataset_config.val_size,
+            "random_state": dataset_config.random_state,
+            "negative_sample_frac": dataset_config.negative_sample_frac,
+        }

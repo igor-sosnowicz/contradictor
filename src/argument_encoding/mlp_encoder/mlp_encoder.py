@@ -27,6 +27,7 @@ from src.argument_encoding.mlp_encoder.utils import (
     row_to_input_tensor,
 )
 from src.configuration import config as global_config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
     InterpretativeFrame,
     StyledFramedArgument,
@@ -130,29 +131,6 @@ class MLPEncoder(ArgumentEncoder):
         else:
             mlp, _ = loaded_model
         self._model = mlp
-
-    def get_configuration(self) -> dict[str, str | float | int]:
-        """
-        Return the encoder's training configuration metrics.
-
-        Returns:
-            dict[str, str | float | int]: A mapping with the best validation loss,
-                the epoch at which it was achieved, the number of epochs actually
-                run, and the configured maximum number of epochs.
-                Only entries with known values are included.
-        """
-        configuration: dict[str, str | float | int] = {}
-        if self._train_metrics is not None:
-            if self._train_metrics["best_validation_loss"] is not None:
-                configuration["best_validation_loss"] = self._train_metrics[
-                    "best_validation_loss"
-                ]
-            if self._train_metrics["best_epoch"] is not None:
-                configuration["best_epoch"] = self._train_metrics["best_epoch"]
-            if self._train_metrics["epochs_run"] is not None:
-                configuration["epochs_run"] = self._train_metrics["epochs_run"]
-        configuration["max_epochs"] = self._configs.fine_tuning_config.epochs
-        return configuration
 
     def _load_model(self) -> tuple[torch.nn.Module, MLPConfig] | None:
         model_path = self._model_path
@@ -444,6 +422,29 @@ class MLPEncoder(ArgumentEncoder):
         self._train_metrics = None
         if self._model_path is not None:
             self._model_path.unlink(missing_ok=True)
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        configuration: dict[str, ConfigurationValue] = {
+            "output_dimensions": self._output_dimensions,
+            "n_optuna_trials": self._configs.n_optuna_trials,
+            "training_config": self._configs.training_config.model_dump(),
+            "fine_tuning_config": self._configs.fine_tuning_config.model_dump(),
+        }
+
+        if self._input_dimensions is not None:
+            configuration["input_dimensions"] = self._input_dimensions
+
+        if self._train_metrics is not None:
+            configuration.update(
+                {
+                    key: value
+                    for key, value in self._train_metrics.items()
+                    if value is not None
+                }
+            )
+
+        return configuration
 
 
 __all__ = ["MLPConfig", "MLPEncoder", "TrainingConfig"]

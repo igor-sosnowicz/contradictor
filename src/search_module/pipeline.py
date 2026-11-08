@@ -2,6 +2,7 @@
 
 from loguru import logger
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.interfaces import (
     CacheBackend,
     Cleaner,
@@ -101,3 +102,13 @@ class SearchPipeline:
         logger.info("Saved results to cache")
 
         return documents
+
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the search pipeline."""
+        return {
+            "keyword_extractor": self.keyword_extractor.get_configuration(),
+            "search_engine": self.search_engine.get_configuration(),
+            "downloader": self.downloader.get_configuration(),
+            "cleaner": self.cleaner.get_configuration(),
+            "cache": self.cache.get_configuration(),
+        }

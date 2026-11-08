@@ -2,6 +2,7 @@
 
 from typing import override
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
 
@@ -16,3 +17,10 @@ class NullCleaner(Cleaner):
         url: str,
     ) -> Document:
         return Document(url=url, text=(html or "").strip(), title="")
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the null cleaner."""
+        return {
+            "implementation": self.__class__.__name__,
+        }

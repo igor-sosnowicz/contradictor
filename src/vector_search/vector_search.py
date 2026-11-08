@@ -1,12 +1,14 @@
 """Module with an interface of a vector search."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from collections.abc import Sequence
 
 import numpy as np
 
+from src.data_models.abstract.configurable import Configurable
 
-class VectorSearch(ABC):
+
+class VectorSearch(Configurable):
     """An interface for a vector search engine."""
 
     HARD_LIMIT_MAX_CANDIDATES = 100

@@ -3,6 +3,7 @@
 from typing import override
 
 from src.benchmark.golden_dataset import GoldenDataset
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.interfaces import SearchEngine
 from src.search_module.models import SearchQuery, SearchResult
 
@@ -33,3 +34,10 @@ class LocalDatasetSearchEngine(SearchEngine):
             )
             for path, text in self._dataset.raw_texts.items()
         ]
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the local dataset search engine."""
+        return {
+            "implementation": self.__class__.__name__,
+        }

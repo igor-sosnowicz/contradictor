@@ -1,8 +1,8 @@
 """Base functionality for XGBoost extractors."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from pathlib import Path
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, TypeVar, override
 
 import numpy as np
 import optuna
@@ -15,6 +15,8 @@ from src.argument_detection.argument_detection_dataset import (
 )
 from src.argument_detection.spacy_embedder import SpacyEmbedder
 from src.configuration import config
+from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.utils.sentence_splitter import SentenceSplitter
 
 if TYPE_CHECKING:
@@ -25,7 +27,7 @@ ModelType = TypeVar(
 )
 
 
-class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance-attributes
+class BaseXGBoostExtractor[ModelType](Configurable):  # pylint: disable=too-many-instance-attributes
     """
     XGBoost-based extractor with shared training and persistence state.
 
@@ -261,3 +263,12 @@ class BaseXGBoostExtractor[ModelType](ABC):  # pylint: disable=too-many-instance
         )
 
         return study.best_params
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "model_name": self._model_name,
+            "model_path": str(self._get_model_path()),
+            "proof_of_concept_max_samples": self._max_samples,
+            "config": self._config.model_dump(mode="json"),
+        }

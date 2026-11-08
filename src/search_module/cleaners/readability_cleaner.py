@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from readability import parse
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import CleaningConfig
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
@@ -109,3 +110,15 @@ class ReadabilityCleaner(Cleaner):
                 continue
             cleaned_lines.append(line_stripped)
         return " ".join(cleaned_lines)
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the readability cleaner."""
+        return {
+            "implementation": self.__class__.__name__,
+            "min_text_length": self.config.min_text_length,
+            "max_text_length": self.config.max_text_length,
+            "min_word_count": self.config.min_word_count,
+            "unwanted_keywords": self.config.unwanted_keywords,
+            "noise_line_keywords": self.config.noise_line_keywords,
+        }

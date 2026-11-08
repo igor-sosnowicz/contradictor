@@ -16,6 +16,7 @@ from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.configuration import XGBoostConfig
 from src.configuration import config
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
     LABEL_TO_FRAME,
     Argument,
@@ -299,4 +300,16 @@ class XGBoostFrameClassifier(ArgumentFramer):
         return {
             "best_score": float(study.best_value),
             **best_params,
+        }
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the XGBoost frame classifier."""
+        return {
+            **self.config.model_dump(),
+            **self._dataset.get_configuration(),
+            "max_samples": self.max_samples,
+            "num_classes": self.NUM_CLASSES,
+            "model_path": self.PATH_TO_MODEL,
+            "vectorizer_path": self.PATH_TO_VECTORIZER,
         }

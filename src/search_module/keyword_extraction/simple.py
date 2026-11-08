@@ -3,6 +3,7 @@
 from collections import Counter
 from typing import override
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
@@ -42,3 +43,9 @@ class SimpleKeywordExtractor(KeywordExtractor):
             keywords=tuple(keywords),
             normalized=" ".join(keywords),
         )
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "max_keywords": self.config.max_keywords,
+        }

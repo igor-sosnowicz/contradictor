@@ -5,6 +5,7 @@ from typing import Self, override
 
 from diskcache import Cache
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import CacheConfig
 from src.search_module.interfaces import CacheBackend
 from src.search_module.models import Document
@@ -75,3 +76,13 @@ class DiskCacheBackend(CacheBackend):
     ) -> None:
         """Close the underlying disk cache."""
         self.cache.close()
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the disk cache backend."""
+        return {
+            "implementation": self.__class__.__name__,
+            "enabled": self.config.enabled,
+            "ttl_seconds": self.config.ttl_seconds,
+            "directory": self.config.directory,
+        }

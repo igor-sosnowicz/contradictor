@@ -1,11 +1,14 @@
 """Module for enapsulating a style in a vectorised representation."""
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 import numpy as np
 
+from src.data_models.abstract.configurable import Configurable
+from src.data_models.abstract.configuration import ConfigurationValue
 
-class StyleExtractor(ABC):
+
+class StyleExtractor(Configurable):
     """Text style extractor into a deterministic vector representation."""
 
     @abstractmethod
@@ -25,3 +28,7 @@ class StyleExtractor(ABC):
         Returns:
             list[np.ndarray]: List of vectors in order matching the input texts.
         """
+
+    @abstractmethod
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        """Get configuration of the style extractor."""

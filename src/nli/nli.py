@@ -1,14 +1,15 @@
 """Module with a natural language inference interface."""
 
 import asyncio
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from types import TracebackType
 from typing import Self
 
+from src.data_models.abstract.configurable import Configurable
 from src.data_models.data_models import NLIPrediction
 
 
-class NLI(ABC):
+class NLI(Configurable):
     """An interface for a natural language inference (NLI)."""
 
     @abstractmethod

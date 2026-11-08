@@ -1,7 +1,9 @@
 """N-gram keyword extractor implementation."""
 
 from collections import Counter
+from typing import override
 
+from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import KeywordConfig
 from src.search_module.interfaces import KeywordExtractor
 from src.search_module.models import SearchQuery
@@ -76,3 +78,12 @@ class NGramKeywordExtractor(KeywordExtractor):
             )
 
         return result
+
+    @override
+    def get_configuration(self) -> dict[str, ConfigurationValue]:
+        return {
+            "max_keywords": self.config.max_keywords,
+            "min_ngram_size": self.config.min_ngram_size,
+            "max_ngram_size": self.config.max_ngram_size,
+            "stop_words": ", ".join(sorted(self.config.stop_words)),
+        }
