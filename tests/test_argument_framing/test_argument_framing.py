@@ -23,7 +23,7 @@ def get_argument_framers() -> list[ArgumentFramer]:
             Each of them is initialised but unprepared and in the PoC mode.
     """
     return [
-        build_argument_framer(implementation)
+        build_argument_framer(implementation, proof_of_concept_mode=True)
         for implementation in ArgumentFramerImplementation
     ]
 

@@ -12,7 +12,7 @@ from peft import LoraConfig, TaskType, get_peft_model
 from pydantic import BaseModel, Field
 from transformers import (
     AutoTokenizer,
-    DataCollatorForLanguageModeling,
+    DataCollatorWithPadding,
     ModernBertForSequenceClassification,
     PreTrainedTokenizerBase,
     Trainer,
@@ -125,7 +125,7 @@ class ModernBertTrainer:
             num_train_epochs=training_config.max_training_epochs,
             per_device_train_batch_size=training_config.batch_size,
             gradient_accumulation_steps=training_config.gradient_accumulation_steps,
-            gradient_checkpointing=True,
+            gradient_checkpointing=config.device != "cpu",
             gradient_checkpointing_kwargs={"every_n_layers": 4},
             bf16=training_config.bfloat16 and config.device != "cpu",
             learning_rate=training_config.learning_rate,
@@ -199,6 +199,16 @@ class ModernBertTrainer:
             )
             cast("Any", self._pretrained_model).print_trainable_parameters()
 
+    @staticmethod
+    def _tokenize_batch(
+        examples: dict[str, list], tokeniser: PreTrainedTokenizerBase
+    ) -> dict[str, list]:
+        return tokeniser(
+            examples["text"],
+            truncation=True,
+            max_length=getattr(tokeniser, "model_max_length", 8192),
+        )
+
     async def _prepare_dataset(
         self, dataset: ArgumentFramingDataset, max_samples: int
     ) -> DatasetDict:
@@ -241,15 +251,26 @@ class ModernBertTrainer:
             ),
         )
 
+        # Tokenise raw text so the splits keep columns matching the model's forward
+        # signature: input_ids, attention_mask, and labels.
+        dataset = dataset.map(
+            ModernBertTrainer._tokenize_batch,
+            batched=True,
+            remove_columns=["text"],
+            fn_kwargs={"tokeniser": self._tokeniser},
+        )
+        dataset = dataset.rename_column("interpretative_frame", "labels")
+
         trainer = Trainer(
             model=self._pretrained_model,
             args=self._training_configuration,
             train_dataset=dataset["train"],
             eval_dataset=dataset["test"],
             processing_class=self._tokeniser,
-            # It pads to longest in batch instead of in the dataset, saving processing
-            # by skipping unnecessary padding.
-            data_collator=DataCollatorForLanguageModeling(self._tokeniser, mlm=False),
+            # Pads to longest in batch instead of in the dataset, saving processing
+            # by skipping unnecessary padding. Passes the `labels` column through
+            # unchanged so the classification loss uses the provided frame indices.
+            data_collator=DataCollatorWithPadding(tokenizer=self._tokeniser),
         )
 
         training_output = trainer.train()
