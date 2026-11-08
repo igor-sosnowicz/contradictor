@@ -209,6 +209,7 @@ class ArgumentFramerImplementation(StrEnum):
     """Name of argument framer implementation."""
 
     XGBOOST = auto()
+    MODERBERT = auto()
 
 
 class ArgumentExtractorImplementation(StrEnum):

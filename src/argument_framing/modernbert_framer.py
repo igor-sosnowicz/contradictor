@@ -51,7 +51,7 @@ class ModernBERTConfig(BaseModel):
     max_training_epochs: int = Field(3, ge=1)
     random_seed: int | None = config.random_seed
     strategy: TrainingStrategy = "extended-lora-and-head"
-    learning_rate: float = Field(2e-5, gt=0.0, lt=10.0)
+    learning_rate: float = Field(default=2e-5, gt=0.0, lt=10.0)
     gradient_accumulation_steps: int = Field(
         8,
         ge=1,
@@ -72,12 +72,15 @@ class ModernBERTConfig(BaseModel):
 class ModernBertTrainer:
     """Trainer for underlying ModernBERT encoder-only transformer."""
 
+    MODEL_NAME = "answerdotai/ModernBERT-base"
+
     def __init__(
         self,
         classes_count: int,
         dataset: ArgumentFramingDataset,
         training_directory: Path,
-        config: ModernBERTConfig,
+        training_config: ModernBERTConfig,
+        max_samples_per_split: int,
     ) -> None:
         if classes_count <= 1:
             raise ValueError(
@@ -85,13 +88,12 @@ class ModernBertTrainer:
                 f"got: {classes_count}"
             )
 
-        self._model_name = "answerdotai/ModernBERT-base"
-        self._tokeniser = AutoTokenizer.from_pretrained(self._model_name)
+        self._tokeniser = AutoTokenizer.from_pretrained(self.MODEL_NAME)
         self._pretrained_model = ModernBertForSequenceClassification.from_pretrained(
-            self._model_name,
+            self.MODEL_NAME,
             num_labels=classes_count,
         )
-        self._adjust_model_to_training_strategy(config.strategy)
+        self._adjust_model_to_training_strategy(training_config.strategy)
 
         # Store the index-to-frame contract with the model so inference can map
         # logit indices back to interpretative frames authoritatively.
@@ -109,18 +111,18 @@ class ModernBertTrainer:
         self._training_directory = training_directory
 
         additional_kwargs: dict[str, Any] = {}
-        if config.random_seed is not None:
-            additional_kwargs["seed"] = config.random_seed
+        if training_config.random_seed is not None:
+            additional_kwargs["seed"] = training_config.random_seed
 
         self._training_configuration = TrainingArguments(
             output_dir=str(self._training_directory),
-            num_train_epochs=config.max_training_epochs,
-            per_device_train_batch_size=config.batch_size,
-            gradient_accumulation_steps=config.gradient_accumulation_steps,
+            num_train_epochs=training_config.max_training_epochs,
+            per_device_train_batch_size=training_config.batch_size,
+            gradient_accumulation_steps=training_config.gradient_accumulation_steps,
             gradient_checkpointing=True,
             gradient_checkpointing_kwargs={"every_n_layers": 4},
-            bf16=config.bfloat16,
-            learning_rate=config.learning_rate,
+            bf16=training_config.bfloat16,
+            learning_rate=training_config.learning_rate,
             logging_steps=10,
             eval_strategy="epoch",
             save_strategy="epoch",
@@ -129,8 +131,8 @@ class ModernBertTrainer:
         )
 
         self._dataset_wrapper = dataset
-        self._dataset = None
-        self._config = config
+        self._config = training_config
+        self._max_samples = max_samples_per_split
 
     def _adjust_model_to_training_strategy(self, strategy: TrainingStrategy) -> None:
         n_layers = self._pretrained_model.config.num_hidden_layers
@@ -190,7 +192,9 @@ class ModernBertTrainer:
             )
             cast("Any", self._pretrained_model).print_trainable_parameters()
 
-    async def _prepare_dataset(self, dataset: ArgumentFramingDataset) -> DatasetDict:
+    async def _prepare_dataset(
+        self, dataset: ArgumentFramingDataset, max_samples: int
+    ) -> DatasetDict:
         await dataset.prepare()
         features = Features(
             {
@@ -202,17 +206,17 @@ class ModernBertTrainer:
         return DatasetDict(
             {
                 "train": Dataset.from_pandas(
-                    dataset.get_split(SubsetName.TRAINING),
+                    dataset.get_split(SubsetName.TRAINING, max_samples=max_samples),
                     preserve_index=False,
                     features=features,
                 ),
                 "validation": Dataset.from_pandas(
-                    dataset.get_split(SubsetName.VALIDATION),
+                    dataset.get_split(SubsetName.VALIDATION, max_samples=max_samples),
                     preserve_index=False,
                     features=features,
                 ),
                 "test": Dataset.from_pandas(
-                    dataset.get_split(SubsetName.TESTING),
+                    dataset.get_split(SubsetName.TESTING, max_samples=max_samples),
                     preserve_index=False,
                     features=features,
                 ),
@@ -223,9 +227,12 @@ class ModernBertTrainer:
         self,
     ) -> tuple[AutoTokenizer, ModernBertForSequenceClassification]:
         """Fine-tune ModernBERT on the framer classification task."""
-        if self._dataset is None:
-            self._dataset = await self._prepare_dataset(dataset=self._dataset_wrapper)
-        dataset = cast("DatasetDict", self._dataset)
+        dataset = cast(
+            "DatasetDict",
+            await self._prepare_dataset(
+                dataset=self._dataset_wrapper, max_samples=self._max_samples
+            ),
+        )
 
         trainer = Trainer(
             model=self._pretrained_model,
@@ -241,7 +248,7 @@ class ModernBertTrainer:
         training_output = trainer.train()
 
         logger.info(
-            f"Fine-tuning {self._model_name} has succeeded. Training output:\n\n"
+            f"Fine-tuning {self.MODEL_NAME} has succeeded. Training output:\n\n"
             f"{training_output}"
         )
         trainer.save_model(str(self._training_directory))
@@ -256,37 +263,51 @@ class ModernBertTrainer:
         return cast("AutoTokenizer", tokeniser), model
 
 
-class TransformerFramer(ArgumentFramer):
-    """Encoder-only transformer based implementation of argument framing."""
+class ModernBertFramer(ArgumentFramer):
+    """Encoder-only ModernBERT based implementation of argument framing."""
 
     def __init__(
         self,
-        config: ModernBERTConfig | None = None,
+        training_config: ModernBERTConfig | None = None,
+        *,
+        proof_of_concept_mode: bool = False,
     ) -> None:
         """
         Initialise the transformer framer.
 
         Args:
-            config (ModernBERTConfig | None): Configuration of the training of a model.
-                If None sane defaults are ensured.
+            training_config (ModernBERTConfig | None): Configuration of the training
+                of a model. If None sane defaults are ensured depending on whether
+                `proof_of_concept_mode` is enabled or not.
+            proof_of_concept_mode (bool): Whether the model should use the smallest
+                possible amount of computation and samples to solely prove it works.
         """
-        self._config = config or ModernBERTConfig(
-            batch_size=2,
-            max_training_epochs=3,
-            gradient_accumulation_steps=8,
-            learning_rate=2e-5,
-        )
+        self._max_samples = 100 if proof_of_concept_mode else 0
+        if proof_of_concept_mode:
+            self._config = training_config or ModernBERTConfig(
+                batch_size=1,
+                max_training_epochs=1,
+                gradient_accumulation_steps=1,
+                random_seed=0,
+                strategy="head-only",
+            )
+        else:
+            self._config = training_config or ModernBERTConfig(
+                batch_size=2,
+                max_training_epochs=3,
+                gradient_accumulation_steps=8,
+            )
         self._model: ModernBertForSequenceClassification | None = None
         self._tokeniser: AutoTokenizer | None = None
         self._dataset = ArgumentFramingDataset()
-        self._training_directory = self._to_training_directory()
 
-    def _to_training_directory(self) -> Path:
+    @property
+    def _training_directory(self) -> Path:
         subdirectory_name = f"modernbert-{self._config.strategy}"
         return (
             config.data_directory
             / config.model_subdirectory
-            / TransformerFramer.__name__
+            / ModernBertFramer.__name__
             / subdirectory_name
         )
 
@@ -295,14 +316,14 @@ class TransformerFramer(ArgumentFramer):
         if self._model is None or self._tokeniser is None:
             raise NotPreparedError(
                 "Cannot frame arguments with the unprepared framer. "
-                f"Call `await {TransformerFramer.__name__}.prepare(...)` first."
+                f"Call `await {ModernBertFramer.__name__}.prepare(...)` first."
             )
 
         id2label = self._model.config.id2label
         if id2label is None:
             raise ValueError(
                 "The model config has no `id2label` mapping. Train the model with "
-                f"`{TransformerFramer.__name__}.prepare()` first, or set "
+                f"`{ModernBertFramer.__name__}.prepare()` first, or set "
                 "`model.config.id2label` manually."
             )
 
@@ -341,22 +362,17 @@ class TransformerFramer(ArgumentFramer):
             for argument_batch in batched(
                 arguments, self._config.batch_size, strict=False
             ):
-                texts = [str(argument) for argument in argument_batch]
-
-                inputs = tokeniser(
-                    texts,
-                    return_tensors="pt",
-                    padding=True,
-                    truncation=True,
-                    max_length=max_length,
-                ).to(device)
-
-                outputs = model(**inputs)
-                logits = outputs.logits
-                probabilities = torch.nn.functional.softmax(logits, dim=-1)
-
+                logits = model(
+                    **tokeniser(
+                        [str(argument) for argument in argument_batch],
+                        return_tensors="pt",
+                        padding=True,
+                        truncation=True,
+                        max_length=max_length,
+                    ).to(device)
+                ).logits
                 predicted_indices = logits.argmax(dim=-1).tolist()
-                probability_rows = probabilities.tolist()
+                probability_rows = torch.nn.functional.softmax(logits, dim=-1).tolist()
 
                 for argument, predicted_index, probability_row in zip(
                     argument_batch,
@@ -364,19 +380,17 @@ class TransformerFramer(ArgumentFramer):
                     probability_rows,
                     strict=True,
                 ):
-                    primary_frame = index_to_frame[predicted_index]
-                    frame_probabilities = {
-                        frame: float(probability)
-                        for frame, probability in zip(
-                            index_to_frame, probability_row, strict=True
-                        )
-                    }
                     framed_arguments.append(
                         FramedArgument(
                             claim=argument.claim,
                             evidence=argument.evidence,
-                            primary_frame=primary_frame,
-                            frame_probabilities=frame_probabilities,
+                            primary_frame=index_to_frame[predicted_index],
+                            frame_probabilities={
+                                frame: float(probability)
+                                for frame, probability in zip(
+                                    index_to_frame, probability_row, strict=True
+                                )
+                            },
                         )
                     )
         return framed_arguments
@@ -396,10 +410,11 @@ class TransformerFramer(ArgumentFramer):
     async def _train(self) -> tuple[AutoTokenizer, ModernBertForSequenceClassification]:
         labels_count = len(LABEL_TO_FRAME)
         trainer = ModernBertTrainer(
-            config=self._config,
+            training_config=self._config,
             classes_count=labels_count,
             dataset=self._dataset,
             training_directory=self._training_directory,
+            max_samples_per_split=self._max_samples,
         )
         return await trainer()
 
@@ -408,7 +423,7 @@ class TransformerFramer(ArgumentFramer):
         self,
     ) -> tuple[AutoTokenizer | None, ModernBertForSequenceClassification | None]:
         try:
-            directory = str(self._to_training_directory())
+            directory = str(self._training_directory)
             tokeniser = AutoTokenizer.from_pretrained(directory, local_files_only=True)
             model = ModernBertForSequenceClassification.from_pretrained(
                 directory, local_files_only=True
@@ -428,4 +443,4 @@ class TransformerFramer(ArgumentFramer):
         raise NotImplementedError("perform_tuning")
 
 
-__all__ = ["TransformerFramer"]
+__all__ = ["ModernBertFramer"]
