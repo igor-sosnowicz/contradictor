@@ -72,7 +72,6 @@ __call__
 # PyTorch parameter attribute set (not read) when freezing/unfreezing layers.
 requires_grad
 
-# Type-only imports used exclusively in string-based `cast()` calls that Vulture
+# Type-only import used exclusively in string-based `cast()` calls that Vulture
 # cannot detect statically.
 Any
-PreTrainedTokenizerBase

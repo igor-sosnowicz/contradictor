@@ -3,12 +3,13 @@
 from collections.abc import Collection, Iterable
 from itertools import batched
 from pathlib import Path
-from typing import Any, Literal, cast, override
+from typing import TYPE_CHECKING, Literal, cast, override
 
 import torch
 from datasets import ClassLabel, Dataset, DatasetDict, Features, Value
 from loguru import logger
 from peft import LoraConfig, TaskType, get_peft_model
+from pydantic import BaseModel, Field
 from transformers import (
     AutoTokenizer,
     DataCollatorForLanguageModeling,
@@ -30,6 +31,10 @@ from src.data_models.data_models import (
 )
 from src.utils.errors import NotPreparedError
 
+if TYPE_CHECKING:
+    from typing import Any
+
+
 TrainingStrategy = Literal[
     # LoRA always uses fused Q, K, V matrices for efficiency.
     "full-lora-and-head",  # All layers and a classification head.
@@ -39,22 +44,46 @@ TrainingStrategy = Literal[
 ]
 
 
+class ModernBERTConfig(BaseModel):
+    """Training configuration for ModernBERT."""
+
+    batch_size: int = Field(2, ge=1)
+    max_training_epochs: int = Field(3, ge=1)
+    random_seed: int | None = config.random_seed
+    strategy: TrainingStrategy = "extended-lora-and-head"
+    learning_rate: float = Field(2e-5, gt=0.0, lt=10.0)
+    gradient_accumulation_steps: int = Field(
+        8,
+        ge=1,
+        description=(
+            "Increases effective batch size without holding the whole batch in memory, "
+            "but can add overhead compared with fitting that batch directly."
+        ),
+    )
+    bfloat16: bool = Field(
+        default=True,
+        description=(
+            "A 16-bit number format. It uses less memory than standard 32-bit floats "
+            "and runs faster but can run only on supported hardware."
+        ),
+    )
+
+
 class ModernBertTrainer:
+    """Trainer for underlying ModernBERT encoder-only transformer."""
+
     def __init__(
         self,
         classes_count: int,
         dataset: ArgumentFramingDataset,
         training_directory: Path,
-        strategy: TrainingStrategy,
-        batch_size: int,
+        config: ModernBERTConfig,
     ) -> None:
         if classes_count <= 1:
             raise ValueError(
                 "A number of classes for classification should be larger than one, "
                 f"got: {classes_count}"
             )
-        if batch_size < 1:
-            raise ValueError("Batch size has to larger than 0.")
 
         self._model_name = "answerdotai/ModernBERT-base"
         self._tokeniser = AutoTokenizer.from_pretrained(self._model_name)
@@ -62,7 +91,7 @@ class ModernBertTrainer:
             self._model_name,
             num_labels=classes_count,
         )
-        self._adjust_model_to_training_strategy(strategy)
+        self._adjust_model_to_training_strategy(config.strategy)
 
         # Store the index-to-frame contract with the model so inference can map
         # logit indices back to interpretative frames authoritatively.
@@ -79,22 +108,29 @@ class ModernBertTrainer:
         training_directory.mkdir(parents=True, exist_ok=True)
         self._training_directory = training_directory
 
+        additional_kwargs: dict[str, Any] = {}
+        if config.random_seed is not None:
+            additional_kwargs["seed"] = config.random_seed
+
         self._training_configuration = TrainingArguments(
             output_dir=str(self._training_directory),
-            num_train_epochs=3,
-            per_device_train_batch_size=batch_size,
-            gradient_accumulation_steps=8,
+            num_train_epochs=config.max_training_epochs,
+            per_device_train_batch_size=config.batch_size,
+            gradient_accumulation_steps=config.gradient_accumulation_steps,
             gradient_checkpointing=True,
             gradient_checkpointing_kwargs={"every_n_layers": 4},
-            bf16=True,
-            learning_rate=2e-5,
+            bf16=config.bfloat16,
+            learning_rate=config.learning_rate,
             logging_steps=10,
             eval_strategy="epoch",
             save_strategy="epoch",
             load_best_model_at_end=True,
+            **additional_kwargs,
         )
+
         self._dataset_wrapper = dataset
         self._dataset = None
+        self._config = config
 
     def _adjust_model_to_training_strategy(self, strategy: TrainingStrategy) -> None:
         n_layers = self._pretrained_model.config.num_hidden_layers
@@ -225,31 +261,28 @@ class TransformerFramer(ArgumentFramer):
 
     def __init__(
         self,
-        training_strategy_if_model_missing: TrainingStrategy = "extended-lora-and-head",
-        batch_size: int = 2,
+        config: ModernBERTConfig | None = None,
     ) -> None:
         """
         Initialise the transformer framer.
 
         Args:
-            training_strategy_if_model_missing (TrainingStrategy): LoRA strategy used
-                when no fine-tuned model is available and training is triggered.
-            batch_size (int): Number of arguments processed per inference batch.
-
-        Raises:
-            ValueError: If `batch_size` is smaller than 1.
+            config (ModernBERTConfig | None): Configuration of the training of a model.
+                If None sane defaults are ensured.
         """
-        if batch_size < 1:
-            raise ValueError("Batch size has to larger than 0.")
-        self._batch_size = batch_size
+        self._config = config or ModernBERTConfig(
+            batch_size=2,
+            max_training_epochs=3,
+            gradient_accumulation_steps=8,
+            learning_rate=2e-5,
+        )
         self._model: ModernBertForSequenceClassification | None = None
         self._tokeniser: AutoTokenizer | None = None
         self._dataset = ArgumentFramingDataset()
-        self._training_strategy = training_strategy_if_model_missing
         self._training_directory = self._to_training_directory()
 
     def _to_training_directory(self) -> Path:
-        subdirectory_name = f"modernbert-{self._training_strategy}"
+        subdirectory_name = f"modernbert-{self._config.strategy}"
         return (
             config.data_directory
             / config.model_subdirectory
@@ -280,17 +313,34 @@ class TransformerFramer(ArgumentFramer):
         ]
 
         self._model.eval()
-        device = next(self._model.parameters()).device
 
-        # AutoTokenizer is not typed as callable by mypy; cast to a tokenizer
-        # base that is callable and exposes `model_max_length`.
+        # Cast to a tokenizer base that is callable and exposes `model_max_length`.
         tokeniser = cast("PreTrainedTokenizerBase", self._tokeniser)
         max_length = getattr(tokeniser, "model_max_length", 8192)
 
+        return self._infer(
+            model=self._model,
+            tokeniser=tokeniser,
+            arguments=arguments,
+            max_length=max_length,
+            index_to_frame=index_to_frame,
+        )
+
+    def _infer(
+        self,
+        model: ModernBertForSequenceClassification,
+        tokeniser: PreTrainedTokenizerBase,
+        arguments: Iterable[Argument],
+        max_length: int,
+        index_to_frame: list[InterpretativeFrame],
+    ) -> list[FramedArgument]:
+        device = next(model.parameters()).device
         framed_arguments: list[FramedArgument] = []
         with torch.no_grad():
             # The last batch can be smaller than previous batches.
-            for argument_batch in batched(arguments, self._batch_size, strict=False):
+            for argument_batch in batched(
+                arguments, self._config.batch_size, strict=False
+            ):
                 texts = [str(argument) for argument in argument_batch]
 
                 inputs = tokeniser(
@@ -301,7 +351,7 @@ class TransformerFramer(ArgumentFramer):
                     max_length=max_length,
                 ).to(device)
 
-                outputs = self._model(**inputs)
+                outputs = model(**inputs)
                 logits = outputs.logits
                 probabilities = torch.nn.functional.softmax(logits, dim=-1)
 
@@ -329,7 +379,6 @@ class TransformerFramer(ArgumentFramer):
                             frame_probabilities=frame_probabilities,
                         )
                     )
-
         return framed_arguments
 
     @override
@@ -347,11 +396,10 @@ class TransformerFramer(ArgumentFramer):
     async def _train(self) -> tuple[AutoTokenizer, ModernBertForSequenceClassification]:
         labels_count = len(LABEL_TO_FRAME)
         trainer = ModernBertTrainer(
+            config=self._config,
             classes_count=labels_count,
             dataset=self._dataset,
-            strategy=cast("TrainingStrategy", self._training_strategy),
             training_directory=self._training_directory,
-            batch_size=self._batch_size,
         )
         return await trainer()
 
@@ -370,10 +418,10 @@ class TransformerFramer(ArgumentFramer):
                 f"A fine-tuned version ModernBERT is not available for loading: {e}"
             )
             return None, None
-        else:
-            return cast("AutoTokenizer", tokeniser), cast(
-                "ModernBertForSequenceClassification", model
-            )
+
+        return cast("AutoTokenizer", tokeniser), cast(
+            "ModernBertForSequenceClassification", model
+        )
 
     @override
     async def perform_tuning(self) -> dict[str, float]:
