@@ -1,5 +1,7 @@
 """Module with a encoder-only transformer implementation of argument framing."""
 
+import hashlib
+import json
 from collections.abc import Collection, Iterable
 from itertools import batched
 from pathlib import Path
@@ -243,7 +245,7 @@ class ModernBertTrainer:
 
     async def __call__(
         self,
-    ) -> tuple[AutoTokenizer, ModernBertForSequenceClassification]:
+    ) -> tuple[AutoTokenizer, ModernBertForSequenceClassification, dict[str, float]]:
         """Fine-tune ModernBERT on the framer classification task."""
         dataset = cast(
             "DatasetDict",
@@ -266,7 +268,7 @@ class ModernBertTrainer:
             model=self._pretrained_model,
             args=self._training_configuration,
             train_dataset=dataset["train"],
-            eval_dataset=dataset["test"],
+            eval_dataset=dataset["validation"],
             processing_class=self._tokeniser,
             # Pads to longest in batch instead of in the dataset, saving processing
             # by skipping unnecessary padding. Passes the `labels` column through
@@ -275,6 +277,10 @@ class ModernBertTrainer:
         )
 
         training_output = trainer.train()
+        evaluation = trainer.evaluate(eval_dataset=dataset["test"])
+
+        metrics_path = self._training_directory / "evaluation_metrics.json"
+        metrics_path.write_text(json.dumps(evaluation, indent=2))
 
         logger.info(
             f"Fine-tuning {self.MODEL_NAME} has succeeded. Training output:\n\n"
@@ -299,7 +305,7 @@ class ModernBertTrainer:
         tokeniser = AutoTokenizer.from_pretrained(
             str(self._training_directory), local_files_only=True
         )
-        return cast("AutoTokenizer", tokeniser), model
+        return cast("AutoTokenizer", tokeniser), model, evaluation
 
 
 class ModernBertFramer(ArgumentFramer):
@@ -343,10 +349,15 @@ class ModernBertFramer(ArgumentFramer):
         self._model: ModernBertForSequenceClassification | None = None
         self._tokeniser: AutoTokenizer | None = None
         self._dataset = dataset
+        self._evaluation: dict[str, float] | None = None
 
     @property
     def _training_directory(self) -> Path:
-        subdirectory_name = f"modernbert-{self._config.strategy}"
+        training_config_hash = hashlib.sha1(  # noqa: S324, No sensitive information is hashed.
+            self._config.model_dump_json(indent=2).encode()
+        ).hexdigest()
+
+        subdirectory_name = f"modernbert-{training_config_hash}-{self._dataset.version}"
         return (
             config.data_directory
             / config.model_subdirectory
@@ -443,15 +454,18 @@ class ModernBertFramer(ArgumentFramer):
     async def prepare(self) -> None:
         await self._dataset.prepare()
 
-        tokeniser, model = self._load()
+        tokeniser, model, evaluation_metrics = self._load()
         if model is None:
-            tokeniser, model = await self._train()
+            tokeniser, model, evaluation_metrics = await self._train()
 
         self._model = model
         self._tokeniser = tokeniser
+        self._evaluation = evaluation_metrics
 
     @override
-    async def _train(self) -> tuple[AutoTokenizer, ModernBertForSequenceClassification]:
+    async def _train(
+        self,
+    ) -> tuple[AutoTokenizer, ModernBertForSequenceClassification, dict[str, float]]:
         labels_count = len(LABEL_TO_FRAME)
         trainer = ModernBertTrainer(
             training_config=self._config,
@@ -465,7 +479,11 @@ class ModernBertFramer(ArgumentFramer):
     @override
     def _load(
         self,
-    ) -> tuple[AutoTokenizer | None, ModernBertForSequenceClassification | None]:
+    ) -> tuple[
+        AutoTokenizer | None,
+        ModernBertForSequenceClassification | None,
+        dict[str, float] | None,
+    ]:
         try:
             directory = str(self._training_directory)
             tokeniser = AutoTokenizer.from_pretrained(directory, local_files_only=True)
@@ -474,12 +492,24 @@ class ModernBertFramer(ArgumentFramer):
             )
         except (OSError, ValueError) as e:
             logger.debug(
-                f"A fine-tuned version ModernBERT is not available for loading: {e}"
+                f"A fine-tuned version of ModernBERT is not available for loading: {e}"
             )
-            return None, None
+            return None, None, None
 
-        return cast("AutoTokenizer", tokeniser), cast(
-            "ModernBertForSequenceClassification", model
+        metrics_path = self._training_directory / "evaluation_metrics.json"
+        try:
+            evaluation_metrics = json.loads(metrics_path.read_text())
+        except FileNotFoundError:
+            logger.warning(
+                f"Evaluation metrics file not found at {metrics_path}; "
+                "returning None for evaluation metrics."
+            )
+            evaluation_metrics = None
+
+        return (
+            cast("AutoTokenizer", tokeniser),
+            cast("ModernBertForSequenceClassification", model),
+            evaluation_metrics,
         )
 
     @override
@@ -492,6 +522,7 @@ class ModernBertFramer(ArgumentFramer):
             "proof_of_concept_mode": self._proof_of_concept_mode,
             "max_sequence_length": self._max_sequence_length,
             "max_samples_per_split": self._max_samples_per_split,
+            "metrics_on_test_set": cast("ConfigurationValue", self._evaluation),
             **self._config.model_dump(),
         }
 
