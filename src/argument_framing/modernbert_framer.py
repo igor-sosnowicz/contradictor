@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Literal, cast, override
 import torch
 from datasets import ClassLabel, Dataset, DatasetDict, Features, Value
 from loguru import logger
-from peft import LoraConfig, TaskType, get_peft_model
+from peft import LoraConfig, PeftModel, TaskType, get_peft_model
 from pydantic import BaseModel, Field
 from transformers import (
     AutoTokenizer,
@@ -280,7 +280,17 @@ class ModernBertTrainer:
             f"Fine-tuning {self.MODEL_NAME} has succeeded. Training output:\n\n"
             f"{training_output}"
         )
-        trainer.save_model(str(self._training_directory))
+
+        model = cast("ModernBertForSequenceClassification | PeftModel", trainer.model)
+        if isinstance(trainer.model, PeftModel):
+            logger.info(
+                "Merging LoRA adapters with the pretrained base ModernBERT model."
+            )
+            model = cast(
+                "ModernBertForSequenceClassification", trainer.model.merge_and_unload()
+            )
+
+        model.save_pretrained(str(self._training_directory))
         self._tokeniser.save_pretrained(self._training_directory)
 
         model = ModernBertForSequenceClassification.from_pretrained(
