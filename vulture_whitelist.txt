@@ -27,6 +27,7 @@ retrieved_at
 status_code
 content_type
 cleaning
+schema_version
 
 # Populated from the NLI model's output score in _perform_inference.
 confidence
@@ -68,3 +69,10 @@ mixed_case
 # in test_command.py.
 return_value
 __call__
+
+# PyTorch parameter attribute set (not read) when freezing/unfreezing layers.
+requires_grad
+
+# Type-only import used exclusively in string-based `cast()` calls that Vulture
+# cannot detect statically.
+Any

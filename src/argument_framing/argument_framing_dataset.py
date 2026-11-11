@@ -18,7 +18,16 @@ from src.utils.dataset import to_raw_dataset_path
 class ArgumentFramingDataset(UrlDataset):
     """Dataset for argument framing using direct Hugging Face data downloads."""
 
-    MIN_CLASS_SAMPLES: Final = 2
+    MIN_CLASS_SAMPLES: Final[int] = 2
+    SOURCE_REVISION: Final[str] = "c25ba4a28d8b7c69dfd95341b1d3bf8f8f99cc50"
+    _REVISION_TO_VERSION_MAPPING: Final[dict[str, str]] = {
+        "c25ba4a28d8b7c69dfd95341b1d3bf8f8f99cc50": "1.0.0",
+    }
+
+    @property
+    def version(self) -> str:
+        """Get version of the dataset."""
+        return self._REVISION_TO_VERSION_MAPPING[self.SOURCE_REVISION]
 
     @property
     @override
@@ -34,10 +43,10 @@ class ArgumentFramingDataset(UrlDataset):
             to_raw_dataset_path("mp_frame_corpus"): [
                 "https://huggingface.co/datasets/jmLuis/"
                 "MediaFrameCorpus-PhilippineFrameCorpus-Combined/"
-                "resolve/main/combined_train.csv",
+                f"resolve/{self.SOURCE_REVISION}/combined_train.csv",
                 "https://huggingface.co/datasets/jmLuis/"
                 "MediaFrameCorpus-PhilippineFrameCorpus-Combined/"
-                "resolve/main/combined_validation.csv",
+                f"resolve/{self.SOURCE_REVISION}/combined_validation.csv",
             ],
         }
         self._splits_path = None
