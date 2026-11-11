@@ -41,7 +41,9 @@ def build_argument_framer(
         case ArgumentFramerImplementation.MODERBERT:
             # Allow for lazy loading so it is imported only when necessary.
             # pylint: disable-next=import-outside-toplevel
-            from src.argument_framing.modernbert_framer import ModernBertFramer
+            from src.argument_framing.modernbert_framer.modernbert_framer import (
+                ModernBertFramer,
+            )
 
             return ModernBertFramer(
                 dataset=dataset,
