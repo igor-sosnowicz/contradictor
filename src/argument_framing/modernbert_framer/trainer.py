@@ -184,7 +184,7 @@ class ModernBertTrainer:
             cast("Any", self._pretrained_model).print_trainable_parameters()
 
     @staticmethod
-    def _tokenize_batch(
+    def _tokenise_batch(
         examples: dict[str, list[str]], tokeniser: PreTrainedTokenizerBase
     ) -> BatchEncoding:
         return tokeniser(
@@ -237,7 +237,7 @@ class ModernBertTrainer:
         # Tokenise raw text so the splits keep columns matching the model's forward
         # signature: input_ids, attention_mask, and labels.
         dataset = dataset.map(
-            ModernBertTrainer._tokenize_batch,
+            ModernBertTrainer._tokenise_batch,
             batched=True,
             remove_columns=["text"],
             fn_kwargs={"tokeniser": self._tokeniser},

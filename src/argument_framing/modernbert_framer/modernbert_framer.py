@@ -41,8 +41,6 @@ class ModernBertFramer(ArgumentFramer):
     """Encoder-only ModernBERT based implementation of argument framing."""
 
     HUGGING_FACE_MODEL_ID: Final[str] = "contradictor-team/modernbert-framer"
-    # Pinned so the training metadata and weights come from the same commit.
-    HUGGING_FACE_MODEL_REVISION: Final[str] = "777fd8004fbd834e7797ffe0064a99b34d37ce7e"
 
     def __init__(
         self,
@@ -271,7 +269,6 @@ class ModernBertFramer(ArgumentFramer):
                 hf_hub_download(
                     repo_id=self.HUGGING_FACE_MODEL_ID,
                     filename="training_config.json",
-                    revision=self.HUGGING_FACE_MODEL_REVISION,
                 )
             )
             return RemoteTrainingMetadata.model_validate_json(
@@ -329,17 +326,14 @@ class ModernBertFramer(ArgumentFramer):
 
         tokeniser = AutoTokenizer.from_pretrained(
             self.HUGGING_FACE_MODEL_ID,
-            revision=self.HUGGING_FACE_MODEL_REVISION,
         )
         model = ModernBertForSequenceClassification.from_pretrained(
             self.HUGGING_FACE_MODEL_ID,
-            revision=self.HUGGING_FACE_MODEL_REVISION,
         )
         metrics_path = Path(
             hf_hub_download(
                 repo_id=self.HUGGING_FACE_MODEL_ID,
                 filename="evaluation_metrics.json",
-                revision=self.HUGGING_FACE_MODEL_REVISION,
             )
         )
         try:
