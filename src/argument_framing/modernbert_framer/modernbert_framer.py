@@ -1,6 +1,5 @@
 """Module with a encoder-only transformer implementation of argument framing."""
 
-import hashlib
 import json
 from collections.abc import Collection, Iterable
 from itertools import batched
@@ -9,6 +8,7 @@ from typing import Final, cast, override
 
 import torch
 from huggingface_hub import hf_hub_download
+from huggingface_hub.errors import EntryNotFoundError
 from loguru import logger
 from transformers import (
     AutoTokenizer,
@@ -20,7 +20,9 @@ from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.modernbert_framer.config import (
     InferenceConfig,
+    RemoteTrainingMetadata,
     TrainingConfig,
+    retrain_if_changed_differences,
 )
 from src.argument_framing.modernbert_framer.trainer import ModernBertTrainer
 from src.argument_framing.modernbert_framer.utils import EvaluationMetrics
@@ -39,6 +41,8 @@ class ModernBertFramer(ArgumentFramer):
     """Encoder-only ModernBERT based implementation of argument framing."""
 
     HUGGING_FACE_MODEL_ID: Final[str] = "contradictor-team/modernbert-framer"
+    # Pinned so the training metadata and weights come from the same commit.
+    HUGGING_FACE_MODEL_REVISION: Final[str] = "777fd8004fbd834e7797ffe0064a99b34d37ce7e"
 
     def __init__(
         self,
@@ -64,12 +68,15 @@ class ModernBertFramer(ArgumentFramer):
         """
         self._proof_of_concept_mode = proof_of_concept_mode
         if proof_of_concept_mode:
-            self._training_config = training_config or TrainingConfig(
+            base_config = training_config or TrainingConfig(
                 batch_size=1,
                 max_training_epochs=1,
                 gradient_accumulation_steps=1,
                 random_seed=0,
                 strategy="head-only",
+            )
+            self._training_config = base_config.model_copy(
+                update={"max_samples_per_split": 100},
             )
         else:
             self._training_config = training_config or TrainingConfig(
@@ -88,18 +95,10 @@ class ModernBertFramer(ArgumentFramer):
 
     @property
     def _training_directory(self) -> Path:
-        training_config_hash = hashlib.sha1(  # noqa: S324, No sensitive information is hashed.
-            self._training_config.model_dump_json(
-                indent=2,
-                exclude={  # First two - can be different at training vs inference time.
-                    "batch_size",
-                    "bfloat16",
-                    "gradient_accumulation_steps",  # It does not matter after training.
-                },
-            ).encode()
-        ).hexdigest()
-
-        subdirectory_name = f"modernbert-{training_config_hash}-{self._dataset.version}"
+        subdirectory_name = (
+            f"modernbert-{self._training_config.retrain_if_changed_fingerprint()}"
+            f"-{self._dataset.version}"
+        )
         return (
             config.data_directory
             / config.model_subdirectory
@@ -110,10 +109,6 @@ class ModernBertFramer(ArgumentFramer):
     @property
     def _max_sequence_length(self) -> int:
         return getattr(self._tokeniser, "model_max_length", 8192)
-
-    @property
-    def _max_samples_per_split(self) -> int:
-        return 100 if self._proof_of_concept_mode else 0
 
     @override
     def frame(self, arguments: Iterable[Argument]) -> Collection[FramedArgument]:
@@ -230,7 +225,6 @@ class ModernBertFramer(ArgumentFramer):
             classes_count=labels_count,
             dataset=self._dataset,
             training_directory=self._training_directory,
-            max_samples_per_split=self._max_samples_per_split,
         )
         return await trainer()
 
@@ -269,6 +263,59 @@ class ModernBertFramer(ArgumentFramer):
             evaluation_metrics,
         )
 
+    def _load_remote_training_metadata(
+        self,
+    ) -> RemoteTrainingMetadata | None:
+        try:
+            metadata_path = Path(
+                hf_hub_download(
+                    repo_id=self.HUGGING_FACE_MODEL_ID,
+                    filename="training_config.json",
+                    revision=self.HUGGING_FACE_MODEL_REVISION,
+                )
+            )
+            return RemoteTrainingMetadata.model_validate_json(
+                metadata_path.read_text(encoding="utf-8")
+            )
+        except (EntryNotFoundError, OSError, ValueError) as e:
+            logger.warning(
+                "Could not verify the training configuration of the remote "
+                f"ModernBERT model ({e}); falling back to local training."
+            )
+            return None
+
+    def _is_remote_training_config_compatible(
+        self,
+        metadata: RemoteTrainingMetadata,
+    ) -> bool:
+        if metadata.dataset_version != self._dataset.version:
+            logger.warning(
+                "The remote ModernBERT model was trained on dataset version "
+                f"{metadata.dataset_version!r}, but version "
+                f"{self._dataset.version!r} was requested. "
+                "Falling back to local training."
+            )
+            return False
+
+        requested_fingerprint = self._training_config.retrain_if_changed_fingerprint()
+        remote_fingerprint = metadata.training_config.retrain_if_changed_fingerprint()
+        if requested_fingerprint == remote_fingerprint:
+            return True
+
+        differences = retrain_if_changed_differences(
+            requested=self._training_config,
+            remote=metadata.training_config,
+        )
+        details = "\n".join(
+            f"  {name}: requested={requested!r}, remote={remote!r}"
+            for name, (requested, remote) in differences.items()
+        )
+        logger.warning(
+            "The remote ModernBERT model training configuration is incompatible "
+            f"with the requested one:\n{details}\nFalling back to local training."
+        )
+        return False
+
     def _load_from_hugging_face(
         self,
     ) -> tuple[
@@ -276,14 +323,23 @@ class ModernBertFramer(ArgumentFramer):
         ModernBertForSequenceClassification | None,
         EvaluationMetrics | None,
     ]:
-        tokeniser = AutoTokenizer.from_pretrained(self.HUGGING_FACE_MODEL_ID)
+        metadata = self._load_remote_training_metadata()
+        if metadata is None or not self._is_remote_training_config_compatible(metadata):
+            return None, None, None
+
+        tokeniser = AutoTokenizer.from_pretrained(
+            self.HUGGING_FACE_MODEL_ID,
+            revision=self.HUGGING_FACE_MODEL_REVISION,
+        )
         model = ModernBertForSequenceClassification.from_pretrained(
-            self.HUGGING_FACE_MODEL_ID
+            self.HUGGING_FACE_MODEL_ID,
+            revision=self.HUGGING_FACE_MODEL_REVISION,
         )
         metrics_path = Path(
             hf_hub_download(
                 repo_id=self.HUGGING_FACE_MODEL_ID,
                 filename="evaluation_metrics.json",
+                revision=self.HUGGING_FACE_MODEL_REVISION,
             )
         )
         try:
@@ -324,7 +380,6 @@ class ModernBertFramer(ArgumentFramer):
         return {
             "proof_of_concept_mode": self._proof_of_concept_mode,
             "max_sequence_length": self._max_sequence_length,
-            "max_samples_per_split": self._max_samples_per_split,
             "metrics_on_test_set": cast("ConfigurationValue", self._evaluation),
             **self._training_config.model_dump(),
         }

@@ -19,6 +19,7 @@ from transformers import (
 
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.modernbert_framer.config import (
+    RemoteTrainingMetadata,
     TrainingConfig,
     TrainingStrategy,
 )
@@ -44,7 +45,6 @@ class ModernBertTrainer:
         dataset: ArgumentFramingDataset,
         training_directory: Path,
         training_config: TrainingConfig,
-        max_samples_per_split: int,
     ) -> None:
         """
         Initialise ModernBERT training configuration.
@@ -58,8 +58,6 @@ class ModernBertTrainer:
                 and - later on - loaded from.
             training_config (TrainingConfig): Configuration for fine-tuning of
                 ModernBERT.
-            max_samples_per_split (int): A maximum number of samples per subset of
-                the dataset.
 
         Raises:
             ValueError: Raised if a number of classes was smaller or equal to one.
@@ -123,7 +121,7 @@ class ModernBertTrainer:
 
         self._dataset_wrapper = dataset
         self._config = training_config
-        self._max_samples = max_samples_per_split
+        self._max_samples = training_config.max_samples_per_split
 
     def _adjust_model_to_training_strategy(self, strategy: TrainingStrategy) -> None:
         n_layers = self._pretrained_model.config.num_hidden_layers
@@ -266,6 +264,15 @@ class ModernBertTrainer:
 
         metrics_path = self._training_directory / "evaluation_metrics.json"
         metrics_path.write_text(json.dumps(evaluation, indent=2))
+
+        metadata_path = self._training_directory / "training_config.json"
+        metadata_path.write_text(
+            RemoteTrainingMetadata(
+                training_config=self._config,
+                dataset_version=self._dataset_wrapper.version,
+            ).model_dump_json(indent=2),
+            encoding="utf-8",
+        )
 
         logger.info(
             f"Fine-tuning {self.MODEL_NAME} has succeeded. Training output:\n\n"

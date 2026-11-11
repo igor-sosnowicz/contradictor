@@ -27,6 +27,7 @@ retrieved_at
 status_code
 content_type
 cleaning
+schema_version
 
 # Populated from the NLI model's output score in _perform_inference.
 confidence
