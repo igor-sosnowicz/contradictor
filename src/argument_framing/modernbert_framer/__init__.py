@@ -1,1 +1,1 @@
-"""Package implementing framing detection with fine-tuned ModerBERT."""
+"""Package implementing framing detection with fine-tuned ModernBERT."""

@@ -38,7 +38,7 @@ def build_argument_framer(
                 proof_of_concept_mode=proof_of_concept_mode,
             )
 
-        case ArgumentFramerImplementation.MODERBERT:
+        case ArgumentFramerImplementation.MODERNBERT:
             # Allow for lazy loading so it is imported only when necessary.
             # pylint: disable-next=import-outside-toplevel
             from src.argument_framing.modernbert_framer.modernbert_framer import (

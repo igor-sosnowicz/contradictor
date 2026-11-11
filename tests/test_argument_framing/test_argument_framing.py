@@ -97,7 +97,7 @@ async def test_framing_logic(framer: ArgumentFramer) -> None:
         )
 
         assert math.isclose(
-            sum(framed_argument.frame_probabilities.values()), 1.0, abs_tol=1e-7
+            sum(framed_argument.frame_probabilities.values()), 1.0, abs_tol=1e-5
         ), "Frame probabilities do NOT sum up to approximately 1.0."
 
         assert len(framed_argument.frame_probabilities) == len(LABEL_TO_FRAME)

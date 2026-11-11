@@ -24,6 +24,7 @@ from src.argument_framing.modernbert_framer.config import (
     TrainingStrategy,
 )
 from src.argument_framing.modernbert_framer.utils import (
+    MODERNBERT_MAX_CONTEXT_LENGTH,
     EvaluationMetrics,
     calculate_evaluation_metrics,
 )
@@ -190,7 +191,9 @@ class ModernBertTrainer:
         return tokeniser(
             examples["text"],
             truncation=True,
-            max_length=getattr(tokeniser, "model_max_length", 8192),
+            max_length=getattr(
+                tokeniser, "model_max_length", MODERNBERT_MAX_CONTEXT_LENGTH
+            ),
         )
 
     async def _prepare_dataset(

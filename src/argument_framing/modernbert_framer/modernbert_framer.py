@@ -25,7 +25,10 @@ from src.argument_framing.modernbert_framer.config import (
     retrain_if_changed_differences,
 )
 from src.argument_framing.modernbert_framer.trainer import ModernBertTrainer
-from src.argument_framing.modernbert_framer.utils import EvaluationMetrics
+from src.argument_framing.modernbert_framer.utils import (
+    MODERNBERT_MAX_CONTEXT_LENGTH,
+    EvaluationMetrics,
+)
 from src.configuration import config
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
@@ -106,7 +109,9 @@ class ModernBertFramer(ArgumentFramer):
 
     @property
     def _max_sequence_length(self) -> int:
-        return getattr(self._tokeniser, "model_max_length", 8192)
+        return getattr(
+            self._tokeniser, "model_max_length", MODERNBERT_MAX_CONTEXT_LENGTH
+        )
 
     @override
     def frame(self, arguments: Iterable[Argument]) -> Collection[FramedArgument]:

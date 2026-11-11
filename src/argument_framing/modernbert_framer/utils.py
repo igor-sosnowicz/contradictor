@@ -1,7 +1,7 @@
 """Module with utilities for ModernBERT framing detection."""
 
 from collections.abc import Callable
-from typing import cast
+from typing import Final, cast
 
 import numpy as np
 from sklearn.metrics import (
@@ -17,6 +17,8 @@ from src.data_models.data_models import InterpretativeFrame
 
 type MetricValue = float | int | dict[str, "MetricValue"]
 type EvaluationMetrics = dict[str, MetricValue]
+
+MODERNBERT_MAX_CONTEXT_LENGTH: Final[int] = 8192
 
 
 def calculate_evaluation_metrics(
