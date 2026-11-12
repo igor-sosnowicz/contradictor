@@ -1,7 +1,8 @@
 """Module for providing files from a local source."""
 
 from pathlib import Path
-from typing import override
+from types import TracebackType
+from typing import Self, override
 
 from src.benchmark.golden_dataset import GoldenDataset
 from src.data_models.abstract.configuration import ConfigurationValue
@@ -22,7 +23,7 @@ class LocalDownloader(Downloader):
         self._dataset = dataset
 
     @override
-    def download(
+    async def download(
         self,
         url: str,
     ) -> str:
@@ -33,3 +34,17 @@ class LocalDownloader(Downloader):
         return {
             "implementation": self.__class__.__name__,
         }
+
+    @override
+    async def __aenter__(self) -> Self:
+        return self
+
+    @override
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        _tb: TracebackType | None,
+    ) -> bool | None:
+        """Close the asynchronous HTTP client."""
+        return None

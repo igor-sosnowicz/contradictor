@@ -63,7 +63,7 @@ class BaseXGBoostExtractor[ModelType](ConfigurationProvider):  # pylint: disable
             exist_ok=True,
         )
 
-        self._max_samples = self._get_max_samples() if proof_of_concept_mode else None
+        self._max_samples = self._get_max_samples() if proof_of_concept_mode else 0
 
     def _get_model_path(self) -> Path:
         """Generate path to the model file dynamically."""

@@ -20,7 +20,6 @@ async def styled_and_framed_arguments() -> list[StyledFramedArgument]:
     return await get_random_styled_and_framed_texts(n=5)
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "target_dimensions",
     [None, 5, 100],
@@ -50,7 +49,6 @@ async def test_encoder_output_matches_expected_dimensions(
             )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("target_dimensions", [-100, 0])
 async def test_encoder_output_for_invalid_output_shape(
     target_dimensions: int | None,
