@@ -1,7 +1,6 @@
 """Integration tests for the claim-evidence extraction pipeline."""
 
 import pandas as pd
-import pytest
 import pytest_asyncio
 from xgboost import XGBClassifier
 
@@ -160,7 +159,6 @@ async def pipeline() -> ClaimEvidenceExtractor:
     )
 
 
-@pytest.mark.asyncio
 async def test_pipeline_extracts_claim_evidence_pairs(
     pipeline: ClaimEvidenceExtractor,
 ) -> None:

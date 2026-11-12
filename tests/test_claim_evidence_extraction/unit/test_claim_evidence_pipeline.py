@@ -25,7 +25,6 @@ def mock_pipeline() -> ClaimEvidenceExtractor:
     )
 
 
-@pytest.mark.asyncio
 async def test_pipeline_extracts_pairs(
     mock_pipeline: ClaimEvidenceExtractor,
 ) -> None:
@@ -54,7 +53,6 @@ async def test_pipeline_extracts_pairs(
     )
 
 
-@pytest.mark.asyncio
 async def test_pipeline_returns_empty_when_no_claims(
     mock_pipeline: ClaimEvidenceExtractor,
 ) -> None:

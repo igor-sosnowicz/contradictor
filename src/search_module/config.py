@@ -21,6 +21,31 @@ class DownloadConfig(BaseModel):
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/130.0.0.0 Safari/537.36"
     )
+    max_connections: int = Field(
+        default=100,
+        ge=1,
+        description=(
+            "The pool can have up to that many connections open at once. "
+            "If all are busy, additional requests may have to wait for one to free up."
+        ),
+    )
+    max_keepalive_connections: int = Field(
+        default=20,
+        ge=0,
+        description=(
+            "Of `max_connections`, up to that many idle connections can be kept around "
+            "for reuse. It does not reserve those connections but only caps how many "
+            "idle ones the pool retains."
+        ),
+    )
+    keepalive_expiry: float = Field(
+        default=30.0,
+        gt=0.0,
+        description=(
+            "An idle keep-alive connection can stay available for reuse for up to "
+            "that many seconds before expiring. The value is in seconds."
+        ),
+    )
 
 
 class CleaningConfig(BaseModel):
@@ -96,3 +121,10 @@ class SearchModuleConfig(BaseModel):
     download: DownloadConfig = Field(default_factory=DownloadConfig)
     cleaning: CleaningConfig = Field(default_factory=CleaningConfig)
     cache: CacheConfig = Field(default_factory=CacheConfig)
+
+
+class ConcurrencyConfig(BaseModel):
+    """Configuration of concurrent operations."""
+
+    max_workers: int = Field(default=5, ge=1)
+    max_concurrent_searches: int = Field(default=2, ge=1)

@@ -5,10 +5,13 @@ from pathlib import Path
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
-from src.search_module.config import SearchModuleConfig
-from src.search_module.downloaders.request_downloader import RequestsDownloader
+from src.search_module.config import ConcurrencyConfig, SearchModuleConfig
+from src.search_module.downloaders.httpx_downloader import HttpxDownloader
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
-from src.search_module.pipeline import SearchPipeline
+from src.search_module.pipeline import (
+    SearchPipeline,
+    SearchPipelineDependencies,
+)
 from src.search_module.search_engines.ddg import DDGSearchEngine
 from src.utils.tokenisers.tokeniser import Tokeniser
 
@@ -57,7 +60,7 @@ class BenchmarkTokeniser(Tokeniser):
         return re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
 
 
-def test_pipeline_ngram_and_readability_real_integration(
+async def test_pipeline_ngram_and_readability_real_integration(
     tmp_path: Path,
 ) -> None:
     """Perform an integration test of the search pipeline with internet components."""
@@ -75,21 +78,24 @@ def test_pipeline_ngram_and_readability_real_integration(
         tokeniser=tokeniser,
     )
     search_engine = DDGSearchEngine(config=config.search)
-    downloader = RequestsDownloader(config=config.download)
+    downloader = HttpxDownloader(config=config.download)
     readability_cleaner = ReadabilityCleaner(config=config.cleaning)
 
     with DiskCacheBackend(config=config.cache) as cache:
         pipeline = SearchPipeline(
-            keyword_extractor=keyword_extractor,
-            search_engine=search_engine,
-            downloader=downloader,
-            cleaner=readability_cleaner,
-            cache=cache,
+            SearchPipelineDependencies(
+                keyword_extractor=keyword_extractor,
+                search_engine=search_engine,
+                downloader=downloader,
+                cleaner=readability_cleaner,
+                cache=cache,
+                concurrency=ConcurrencyConfig(),
+            )
         )
 
         search_phrase = "quantum computing breakthrough 2026"
 
-        documents = pipeline.search(search_phrase)
+        documents = await pipeline.search(search_phrase)
 
         assert isinstance(documents, list)
         assert len(documents) > 0, (
@@ -105,14 +111,17 @@ def test_pipeline_ngram_and_readability_real_integration(
         assert "<body>" not in document.text
 
         second_pipeline = SearchPipeline(
-            keyword_extractor=keyword_extractor,
-            search_engine=search_engine,
-            downloader=downloader,
-            cleaner=readability_cleaner,
-            cache=cache,
+            SearchPipelineDependencies(
+                keyword_extractor=keyword_extractor,
+                search_engine=search_engine,
+                downloader=downloader,
+                cleaner=readability_cleaner,
+                cache=cache,
+                concurrency=ConcurrencyConfig(),
+            )
         )
 
-        cached_documents = second_pipeline.search(search_phrase)
+        cached_documents = await second_pipeline.search(search_phrase)
 
         assert len(cached_documents) == len(documents)
         assert cached_documents[0].text == document.text

@@ -24,7 +24,6 @@ def test_argument_framing_dataset_prepare_error() -> None:
         _ = dataset.get_split(SubsetName.TRAINING)
 
 
-@pytest.mark.asyncio
 async def test_xgboost_framer_initialization() -> None:
     """Test if XGBoost framer sets up defaults correctly."""
     mock_dataset = ArgumentFramingDataset()

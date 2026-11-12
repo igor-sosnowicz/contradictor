@@ -1,7 +1,5 @@
 """Module for testing the high-level functionality of Contradictor."""
 
-import pytest
-
 from src.data_models.data_models import ArgumentWithCounterarguments
 from src.pipeline.config import PipelineConfiguration
 from src.pipeline.contradictor_pipeline import ContradictorPipeline
@@ -43,7 +41,6 @@ async def initialise_pipeline(
     return pipeline
 
 
-@pytest.mark.asyncio
 async def test_contradictor_pipeline() -> None:
     """Test running the entire Contradictor pipeline."""
     text = """

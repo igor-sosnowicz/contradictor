@@ -96,10 +96,9 @@ class ContradictorPipeline:
     async def _get_potential_counterarguments(
         self, reference_text: str
     ) -> list[Argument]:
-        other_texts = [
-            document.text
-            for document in self._pipes.search_pipeline.search(reference_text)
-        ]
+        documents = await self._pipes.search_pipeline.search(reference_text)
+
+        other_texts = [document.text for document in documents]
 
         # Flatten the list of counterarguments.
         counterarguments = [
