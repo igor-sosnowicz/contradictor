@@ -6,13 +6,13 @@ using Mozilla Readability and validates it against quality thresholds.
 from typing import override
 
 from bs4 import BeautifulSoup
-from loguru import logger
 from readability import parse
 
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import CleaningConfig
 from src.search_module.interfaces import Cleaner
 from src.search_module.models import Document
+from src.utils.logger import logger
 
 
 class ReadabilityCleaner(Cleaner):

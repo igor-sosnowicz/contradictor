@@ -4,8 +4,8 @@ import time
 import warnings
 
 import pytest
-from loguru import logger
 
+from src.utils.logger import logger
 from src.vector_search.vector_search import VectorSearch
 from tests.test_vector_search.utils import (
     get_random_vectors,
