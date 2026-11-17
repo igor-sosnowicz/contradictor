@@ -3,13 +3,13 @@
 from typing import NamedTuple
 
 import torch
-from loguru import logger
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
 from src.argument_encoding.mlp_encoder.config import MLPConfig, TrainingConfig
 from src.argument_encoding.mlp_encoder.utils import cosine_distance
 from src.utils.errors import DatasetError
+from src.utils.logger import logger
 
 
 class MLP(torch.nn.Module):

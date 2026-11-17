@@ -76,3 +76,5 @@ requires_grad
 # Type-only import used exclusively in string-based `cast()` calls that Vulture
 # cannot detect statically.
 Any
+check_health
+find_contradictions

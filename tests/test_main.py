@@ -1,5 +1,6 @@
 """Module for testing the high-level functionality of Contradictor."""
 
+from src.data_models.api import ContradictOutput
 from src.data_models.data_models import ArgumentWithCounterarguments
 from src.pipeline.config import PipelineConfiguration
 from src.pipeline.contradictor_pipeline import ContradictorPipeline
@@ -54,7 +55,7 @@ async def test_contradictor_pipeline() -> None:
 
     pipeline = await initialise_pipeline()
     results = await pipeline(text)
-    assert isinstance(results, list)
+    assert isinstance(results, ContradictOutput)
     if results:
-        for result in results:
+        for result in results.pairs:
             assert result is ArgumentWithCounterarguments

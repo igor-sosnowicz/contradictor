@@ -10,13 +10,13 @@ import numpy as np
 import spacy
 import textstat_rs
 import transformers
-from loguru import logger
 from transformers import logging as transformers_logging
 from transformers import pipeline
 
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.style_extraction.style_extractor import StyleExtractor
 from src.utils.errors import NotPreparedError
+from src.utils.logger import logger
 from src.utils.timer import Timer
 
 type SpacyModel = Literal[
