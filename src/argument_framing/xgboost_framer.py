@@ -164,14 +164,14 @@ class XGBoostFrameClassifier(ArgumentFramer):
         framed_arguments: list[FramedArgument] = []
         for argument, row_probabilities in zip(arguments, probabilities, strict=True):
             frame_probabilities = {
-                LABEL_TO_FRAME[label + 1]: float(probability)
+                LABEL_TO_FRAME[label]: float(probability)
                 for label, probability in enumerate(row_probabilities)
             }
             framed_arguments.append(
                 FramedArgument(
                     claim=argument.claim,
                     evidence=argument.evidence,
-                    primary_frame=LABEL_TO_FRAME[int(row_probabilities.argmax()) + 1],
+                    primary_frame=LABEL_TO_FRAME[int(row_probabilities.argmax())],
                     frame_probabilities=frame_probabilities,
                 )
             )
