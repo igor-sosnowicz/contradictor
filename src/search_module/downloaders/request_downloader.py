@@ -3,11 +3,11 @@
 from typing import override
 
 import requests
-from loguru import logger
 
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.config import DownloadConfig
 from src.search_module.interfaces import Downloader
+from src.utils.logger import logger
 
 
 class RequestsDownloader(Downloader):

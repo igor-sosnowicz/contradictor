@@ -5,10 +5,9 @@ import random
 from collections.abc import Collection, Iterable
 from dataclasses import fields
 
-from loguru import logger
-
 from src.configuration import config
 from src.data_models.abstract.configuration import ConfigurationValue
+from src.data_models.api import ContradictOutput
 from src.data_models.data_models import (
     Argument,
     ArgumentWithCounterarguments,
@@ -18,6 +17,7 @@ from src.data_models.data_models import (
     StyledFramedArgument,
 )
 from src.pipeline.config import PipelineConfiguration
+from src.utils.logger import logger
 
 
 class ContradictorPipeline:
@@ -45,7 +45,7 @@ class ContradictorPipeline:
     async def __call__(
         self,
         reference_text: str,
-    ) -> list[ArgumentWithCounterarguments]:
+    ) -> ContradictOutput:
         """
         Pass a reference text through the pipeline.
 
@@ -54,7 +54,7 @@ class ContradictorPipeline:
                 arguments found in the text.
 
         Returns:
-            list[ArgumentWithCounterarguments]: A list of arguments and
+            ContradictOutput: A list of arguments and
                 matching counterarguments.
 
         Raises:
@@ -86,7 +86,7 @@ class ContradictorPipeline:
             framed_counterarguments=framed_potential_counterarguments,
         )
         logger.info("Matching counterarguments to arguments completed.")
-        return matched_arguments
+        return ContradictOutput(pairs=matched_arguments)
 
     async def _get_arguments(self, reference_text: str) -> list[Argument]:
         arguments = (await self._pipes.argument_extractor([reference_text]))[0]

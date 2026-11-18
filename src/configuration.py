@@ -2,7 +2,7 @@
 
 import tomllib
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import pydantic
 import torch
@@ -100,6 +100,15 @@ class Configuration(BaseModel):
             "A maximum number of counterargument candidates considered by the pipeline."
         ),
         gt=0,
+    )
+
+    log_level: Literal["debug", "info", "warning", "error", "critical"] = "debug"
+
+    api_host: str = Field("127.0.0.1", min_length=3)
+    api_port: int = Field(5555, ge=0, le=65_535)
+    reference_text_max_characters: int = Field(
+        50_000,
+        gt=1,
     )
 
 

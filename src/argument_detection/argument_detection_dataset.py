@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import override
 
 import pandas as pd
-from loguru import logger
 from sklearn.model_selection import GroupShuffleSplit
 
 from src.configuration import config
@@ -14,6 +13,7 @@ from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
 from src.utils.dataset import filter_empty_rows, to_raw_dataset_path
 from src.utils.errors import DatasetError
+from src.utils.logger import logger
 
 MIN_CLAIM_WORDS = 4
 

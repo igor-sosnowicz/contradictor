@@ -2,8 +2,6 @@
 
 from typing import override
 
-from loguru import logger
-
 from src.data_models.abstract.configurable import ConfigurationProvider
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.search_module.interfaces import (
@@ -16,6 +14,7 @@ from src.search_module.interfaces import (
 from src.search_module.models import Document
 from src.search_module.utils.cache_keys import create_cache_key
 from src.utils.errors import ContradictorError
+from src.utils.logger import logger
 
 
 class SearchPipeline(ConfigurationProvider):

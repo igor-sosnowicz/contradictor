@@ -10,7 +10,10 @@ cli_app = typer.Typer(name="Contradictor", no_args_is_help=True)
 @cli_app.command(name="api")
 def start_api() -> None:
     """Start the Web API."""
-    raise NotImplementedError("Start the FastAPI Web API.")
+    # pylint: disable-next=import-outside-toplevel
+    from src.api.main import run_api
+
+    run_api()
 
 
 @cli_app.command(name="benchmark")

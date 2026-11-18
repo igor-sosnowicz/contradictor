@@ -234,3 +234,10 @@ class VectorSearchImplementation(StrEnum):
     """Name of vector search implementation."""
 
     NUMPY_BASED = auto()
+
+
+class ContradictorPipelinePreset(StrEnum):
+    """Predefined configuration for the main Contradictor piepline."""
+
+    FOR_BENCHMARK = auto()
+    FOR_API = auto()

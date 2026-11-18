@@ -8,7 +8,6 @@ import numpy as np
 import optuna
 import pandas as pd
 import torch
-from loguru import logger
 from optuna.samplers import TPESampler
 from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
@@ -34,6 +33,7 @@ from src.data_models.data_models import (
     SubsetName,
 )
 from src.utils.errors import NotPreparedError
+from src.utils.logger import logger
 from src.utils.timer import Timer
 
 
