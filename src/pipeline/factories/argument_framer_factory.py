@@ -23,17 +23,29 @@ def build_argument_framer(
     Returns:
         ArgumentFramer: An initialised instance of the argument framer.
     """
-    # Local imports for lazy loading prevent importing heavy implementation
-    # modules when they are not requested.
-    # pylint: disable=import-outside-toplevel
-    from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
-    # pylint: enable=import-outside-toplevel
-
     framer_implementation = framer_implementation or config.argument_framer
+    dataset = ArgumentFramingDataset()
 
     match framer_implementation:
         case ArgumentFramerImplementation.XGBOOST:
+            # Local imports for lazy loading prevent importing heavy implementation
+            # modules when they are not requested.
+            # pylint: disable-next=import-outside-toplevel
+            from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
+
             return XGBoostFrameClassifier(
-                dataset=ArgumentFramingDataset(),
+                dataset=dataset,
+                proof_of_concept_mode=proof_of_concept_mode,
+            )
+
+        case ArgumentFramerImplementation.MODERNBERT:
+            # Allow for lazy loading so it is imported only when necessary.
+            # pylint: disable-next=import-outside-toplevel
+            from src.argument_framing.modernbert_framer.modernbert_framer import (
+                ModernBertFramer,
+            )
+
+            return ModernBertFramer(
+                dataset=dataset,
                 proof_of_concept_mode=proof_of_concept_mode,
             )
