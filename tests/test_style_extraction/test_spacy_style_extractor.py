@@ -32,7 +32,6 @@ def sentences() -> list[str]:
     ]
 
 
-@pytest.mark.asyncio
 async def test_unprepared_extraction_raises_error(
     spacy_extractor: StyleExtractor, sentences: list[str]
 ) -> None:
@@ -41,7 +40,6 @@ async def test_unprepared_extraction_raises_error(
         await spacy_extractor.extract(texts=sentences)
 
 
-@pytest.mark.asyncio
 async def test_reproducible_extraction(
     spacy_extractor: StyleExtractor, sentences: list[str]
 ) -> None:
@@ -57,7 +55,6 @@ async def test_reproducible_extraction(
         assert np.allclose(representation_1, representation_2)
 
 
-@pytest.mark.asyncio
 async def test_reproducible_extraction_with_different_instances(
     sentences: list[str],
 ) -> None:

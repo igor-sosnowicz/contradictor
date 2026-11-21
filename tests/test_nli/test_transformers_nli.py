@@ -69,7 +69,6 @@ def test_max_workers_parameter_validation(
         TransformersNLI(max_workers=max_workers)
 
 
-@pytest.mark.asyncio
 async def test_nli_inference_returns_valid_result(
     transformer_nli: TransformersNLI,
 ) -> None:
@@ -84,7 +83,6 @@ async def test_nli_inference_returns_valid_result(
     assert isinstance(output[0][0], NLIPrediction)  # A result is an NLI prediction.
 
 
-@pytest.mark.asyncio
 async def test_output_shape(transformer_nli: TransformersNLI) -> None:
     """Test if shape of the output of the model is valid."""
     reference_texts = ["Contradictor here", "It works.", "It's the best."]

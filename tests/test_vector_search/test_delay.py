@@ -13,7 +13,6 @@ from tests.test_vector_search.utils import (
 )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 @pytest.mark.parametrize(
     ("other_vectors", "reference_vectors"),

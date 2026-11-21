@@ -104,7 +104,6 @@ def low_threshold_extractor(
     return evidence_extractor
 
 
-@pytest.mark.asyncio
 async def test_evidence_extractor_returns_evidence(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
@@ -118,7 +117,6 @@ async def test_evidence_extractor_returns_evidence(
     assert "Cats learn quickly." in result
 
 
-@pytest.mark.asyncio
 async def test_evidence_extractor_filters_non_evidence_candidates(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
@@ -132,7 +130,6 @@ async def test_evidence_extractor_filters_non_evidence_candidates(
     assert "Cars need fuel." not in result
 
 
-@pytest.mark.asyncio
 async def test_evidence_extractor_excludes_claim(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
@@ -146,7 +143,6 @@ async def test_evidence_extractor_excludes_claim(
     assert "Cats learn quickly." in result
 
 
-@pytest.mark.asyncio
 async def test_evidence_extractor_returns_empty_list_when_text_contains_only_claim(
     low_threshold_extractor: XGBoostEvidenceExtractor,
 ) -> None:
@@ -159,7 +155,6 @@ async def test_evidence_extractor_returns_empty_list_when_text_contains_only_cla
     assert result == []
 
 
-@pytest.mark.asyncio
 async def test_evidence_extractor_respects_classification_threshold(
     evidence_extractor: XGBoostEvidenceExtractor,
 ) -> None:

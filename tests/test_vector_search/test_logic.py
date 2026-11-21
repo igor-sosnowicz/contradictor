@@ -11,7 +11,6 @@ from tests.test_vector_search.utils import (
 )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 async def test_empty_other_yields_preserves_length(db_instance: VectorSearch) -> None:
     """Test if empty `other` preserves length of the results."""
@@ -29,7 +28,6 @@ async def test_empty_other_yields_preserves_length(db_instance: VectorSearch) ->
     assert len(results) == vectors
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 async def test_empty_references_yields_empty_result(db_instance: VectorSearch) -> None:
     """Test if empty `references` vectors yield the empty result."""
@@ -47,7 +45,6 @@ async def test_empty_references_yields_empty_result(db_instance: VectorSearch) -
     assert not results
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 @pytest.mark.parametrize(
     ("references_count", "other_count", "max_candidates", "expected_results"),
@@ -78,7 +75,6 @@ async def test_respecting_max_candidates_parameter(
         assert len(vector_indices) == expected_results
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 # 1 ref, 1 other
 async def test_finding_farthest_among_one_reference_and_one_other_vector(
@@ -101,7 +97,6 @@ async def test_finding_farthest_among_one_reference_and_one_other_vector(
     assert results[0][0] == 0  # The index of other vector is 0.
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 # 1 ref, 1000 other
 async def test_finding_farthest_among_one_reference_and_1000_other_vectors(
@@ -141,7 +136,6 @@ async def test_finding_farthest_among_one_reference_and_1000_other_vectors(
     )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 # 1000 ref, 1 other
 async def test_finding_farthest_among_1000_reference_and_one_other_vector(
@@ -174,7 +168,6 @@ async def test_finding_farthest_among_1000_reference_and_one_other_vector(
         )
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("db_instance", get_vector_search_instances())
 # 1000 ref, 1000 other
 async def test_finding_farthest_among_1000_reference_and_1000_other_vectors(

@@ -8,12 +8,16 @@ from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
 from src.search_module.config import (
     CacheConfig,
     CleaningConfig,
+    ConcurrencyConfig,
     SearchConfig,
     SearchModuleConfig,
 )
-from src.search_module.downloaders.request_downloader import RequestsDownloader
+from src.search_module.downloaders.httpx_downloader import HttpxDownloader
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
-from src.search_module.pipeline import SearchPipeline
+from src.search_module.pipeline import (
+    SearchPipeline,
+    SearchPipelineDependencies,
+)
 from src.search_module.search_engines.ddg import DDGSearchEngine
 from src.utils.tokenisers.tokeniser import Tokeniser
 
@@ -62,7 +66,7 @@ class BenchmarkTokeniser(Tokeniser):
         return re.findall(r"\b[a-zA-Z]{2,}\b", text.lower())
 
 
-def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
+async def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
     """
     Execute a complete end-to-end integration test for the search pipeline.
 
@@ -89,20 +93,22 @@ def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
         tokeniser=tokeniser,
     )
     search_engine = DDGSearchEngine(config=config.search)
-    downloader = RequestsDownloader(config=config.download)
+    downloader = HttpxDownloader(config=config.download)
     cleaner = ReadabilityCleaner(config=config.cleaning)
 
     with DiskCacheBackend(config=config.cache) as cache:
         pipeline = SearchPipeline(
-            keyword_extractor=keyword_extractor,
-            search_engine=search_engine,
-            downloader=downloader,
-            cleaner=cleaner,
-            cache=cache,
+            SearchPipelineDependencies(
+                keyword_extractor=keyword_extractor,
+                search_engine=search_engine,
+                downloader=downloader,
+                cleaner=cleaner,
+                cache=cache,
+                concurrency=ConcurrencyConfig(),
+            )
         )
-
         search_phrase = "quantum computing breakthrough 2026"
-        documents = pipeline.search(search_phrase)
+        documents = await pipeline.search(search_phrase)
 
         assert isinstance(documents, list)
         assert len(documents) > 0, "Pipeline returned no documents from live internet."
@@ -116,14 +122,17 @@ def test_pipeline_complete_e2e_flow(tmp_path: Path) -> None:
         assert "<body>" not in first_doc.text
 
         second_pipeline = SearchPipeline(
-            keyword_extractor=keyword_extractor,
-            search_engine=search_engine,
-            downloader=downloader,
-            cleaner=cleaner,
-            cache=cache,
+            SearchPipelineDependencies(
+                keyword_extractor=keyword_extractor,
+                search_engine=search_engine,
+                downloader=downloader,
+                cleaner=cleaner,
+                cache=cache,
+                concurrency=ConcurrencyConfig(),
+            )
         )
 
-        cached_documents = second_pipeline.search(search_phrase)
+        cached_documents = await second_pipeline.search(search_phrase)
 
         assert len(cached_documents) == len(documents)
         assert cached_documents[0].text == first_doc.text

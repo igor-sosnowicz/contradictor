@@ -108,7 +108,6 @@ def isolated_ml_env(
     return tmp_path
 
 
-@pytest.mark.asyncio
 async def test_claim_extractor_e2e_flow(isolated_ml_env: Path) -> None:
     """
     Verify the complete claim extraction flow without mocks.
@@ -140,7 +139,6 @@ async def test_claim_extractor_e2e_flow(isolated_ml_env: Path) -> None:
     ), f"Expected the claim sentence to be extracted. Actual claims: {extracted_claims}"
 
 
-@pytest.mark.asyncio
 async def test_claim_extractor_training_flow(isolated_ml_env: Path) -> None:
     """Verify model training and persistence without mocks."""
     dataset = MiniIntegrationDataset()

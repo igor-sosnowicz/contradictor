@@ -1,6 +1,8 @@
 """Module with search module interfaces."""
 
 from abc import abstractmethod
+from types import TracebackType
+from typing import Self
 
 from src.data_models.abstract.configurable import ConfigurationProvider
 from src.search_module.models import Document, SearchQuery, SearchResult
@@ -47,7 +49,39 @@ class Downloader(ConfigurationProvider):
     """Interface for downloading raw web page content."""
 
     @abstractmethod
-    def download(self, url: str) -> str:
+    async def __aenter__(self) -> Self:
+        """
+        Reserve access to resource or create a resource pool.
+
+        Returns:
+            Self: The instance of a downloader.
+        """
+
+    @abstractmethod
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        _tb: TracebackType | None,
+    ) -> bool | None:
+        """
+        Release access to the resource or shut down the resource pool.
+
+        Args:
+            exc_type (type[BaseException] | None): Exception type, if an exception was
+                raised in the context. Otherwise, None.
+            exc (BaseException | None): Exception instance, if one was raised.
+                Otherwise, None.
+            _tb (TracebackType | None): Traceback, if an exception was raised.
+                Otherwise, None.
+
+        Returns:
+            bool | None: Return True to suppress the exception; otherwise, return
+            False or None.
+        """
+
+    @abstractmethod
+    async def download(self, url: str) -> str:
         """
         Download raw HTML content from the specified URL.
 
