@@ -4,7 +4,7 @@ import time
 from types import TracebackType
 from typing import Self
 
-from loguru import logger
+from src.utils.logger import logger
 
 
 class Timer:

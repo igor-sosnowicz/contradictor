@@ -1,10 +1,10 @@
 """Module for benchmarking Contradictor on the Golden Dataset."""
 
-from loguru import logger
 from pydantic import BaseModel, Field
 
 from src.benchmark.golden_dataset import GoldenDataset
 from src.data_models.data_models import Argument, FramedArgument
+from src.utils.logger import logger
 
 
 class BenchmarkMetrics(BaseModel):

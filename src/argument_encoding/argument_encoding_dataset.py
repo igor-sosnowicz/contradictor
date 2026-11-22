@@ -8,7 +8,6 @@ from typing import cast, override
 import numpy as np
 import pandas as pd
 from datasets import load_dataset
-from loguru import logger
 from sentence_transformers import SentenceTransformer
 from sklearn.model_selection import train_test_split
 
@@ -28,6 +27,7 @@ from src.nli.transformers_nli import TransformersNLI
 from src.pipeline.factories.argument_framer_factory import build_argument_framer
 from src.style_extraction.spacy_style_extractor import SpacyStyleExtractor
 from src.utils.errors import NotPreparedError
+from src.utils.logger import logger
 
 
 class ArgumentEncodingDataset(Dataset):

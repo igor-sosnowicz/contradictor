@@ -7,11 +7,11 @@ from pathlib import Path
 
 import httpx
 import pandas as pd
-from loguru import logger
 
 from src.configuration import config
 from src.data_models.abstract.dataset import Dataset
 from src.data_models.data_models import SubsetName
+from src.utils.logger import logger
 
 
 class UrlDataset(Dataset):
