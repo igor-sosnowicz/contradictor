@@ -4,10 +4,11 @@ import tempfile
 import tomllib
 from getpass import getuser
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import pydantic
 import torch
+from loguru import logger
 from platformdirs import PlatformDirs
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
@@ -58,7 +59,7 @@ class Configuration(BaseModel):
     dataset_download_timeout: int = 300
 
     reference_text_max_length: int = Field(
-        default=10_000,
+        10_000,
         ge=1,
         description="A maximum number of characters a reference text can have.",
     )
@@ -131,20 +132,25 @@ def load_configuration(file: Path | None) -> Configuration:
     Raises:
         ConfigurationError: Raised if there is a configuration error.
     """
+    config_data: dict[str, Any] = {}
+
     if file is None:
-        log.info("No configuration file provided, using default configuration.")
-        return Configuration()
+        logger.warning("No configuration file found, using default configuration.")
+    else:
+        try:
+            with file.open("rb") as f:
+                config_data = tomllib.load(f)
+        except FileNotFoundError as e:
+            raise ConfigurationError(
+                f"The configuration file is missing: {file.resolve()}"
+            ) from e
+        except ValueError as e:
+            raise ConfigurationError(str(e)) from e
 
     try:
-        with file.open("rb") as f:
-            config_data = tomllib.load(f)
         return Configuration(**config_data)
     except (ValueError, KeyError, pydantic.ValidationError) as e:
         raise ConfigurationError(str(e)) from e
-    except FileNotFoundError as e:
-        raise ConfigurationError(
-            f"The configuration file is missing: {file.resolve()}"
-        ) from e
 
 
 def _resolve_configuration_file() -> Path | None:

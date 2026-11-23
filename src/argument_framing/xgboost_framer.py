@@ -14,7 +14,6 @@ from xgboost import XGBClassifier
 from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.configuration import XGBoostConfig
-from src.configuration import config
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.data_models import (
     LABEL_TO_FRAME,
@@ -299,6 +298,6 @@ class XGBoostFrameClassifier(ArgumentFramer):
             **self._dataset.get_configuration(),
             "max_samples": self.max_samples,
             "num_classes": self.NUM_CLASSES,
-            "model_path": self.PATH_TO_MODEL,
-            "vectorizer_path": self.PATH_TO_VECTORIZER,
+            "model_path": self.path_to_model,
+            "vectorizer_path": self.path_to_vectorizer,
         }

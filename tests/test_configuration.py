@@ -12,6 +12,8 @@ from src.configuration import Configuration, load_configuration
 from src.utils.errors import ConfigurationError
 
 FAKE_CONFIGURATION_PATH = "./random_dir123"
+DEFAULT_REFERENCE_TEXT_MAX_LENGTH = 10_000
+OVERRIDDEN_REFERENCE_TEXT_MAX_LENGTH = 42
 
 
 @pytest.fixture
@@ -60,6 +62,17 @@ def test_loading_no_file_returns_defaults() -> None:
     assert isinstance(config, Configuration)
     assert config.data_directory == src.configuration.directories.user_data_path
     assert config.cache_directory == src.configuration.directories.user_cache_path
+
+
+def test_reference_text_max_length_accepts_default_and_override() -> None:
+    """Test if the field works with its default and with an explicit value."""
+    assert (
+        Configuration().reference_text_max_length == DEFAULT_REFERENCE_TEXT_MAX_LENGTH
+    )
+    overridden = Configuration(
+        reference_text_max_length=OVERRIDDEN_REFERENCE_TEXT_MAX_LENGTH
+    )
+    assert overridden.reference_text_max_length == OVERRIDDEN_REFERENCE_TEXT_MAX_LENGTH
 
 
 def test_resolve_configuration_file_without_any_file(

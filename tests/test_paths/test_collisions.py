@@ -116,6 +116,37 @@ def test_dynamic_dir_name_claims_the_directory_itself() -> None:
     assert paths.raw_dataset_path("mp_frame_corpus") == resolved
 
 
+def test_model_directory_resolves_under_the_shared_models_tree() -> None:
+    """`model_directory` claims `<data>/models/<name>[/<subpath>]` as `shared`."""
+    resolved = paths.model_directory("ModernBertFramer", "modernbert-fingerprint-0.1")
+
+    assert resolved == (
+        paths.data_root / "models" / "ModernBertFramer" / "modernbert-fingerprint-0.1"
+    )
+    assert resolved.is_dir()
+    assert paths.ledger[-1].module_slice == SHARED
+    # A second shared claim on the same directory must not raise.
+    assert (
+        paths.model_directory("ModernBertFramer", "modernbert-fingerprint-0.1")
+        == resolved
+    )
+
+
+def test_model_directory_sanitises_the_family_name_but_not_the_subpath() -> None:
+    """Family names are sanitised; subpaths are validated verbatim."""
+    family = paths.model_directory("my model-family")
+    versioned = paths.model_directory("my model-family", "modernbert-abc-0.1")
+
+    assert family == paths.data_root / "models" / "my_model_family"
+    assert versioned == family / "modernbert-abc-0.1"
+
+
+def test_model_directory_rejects_escaping_subpaths() -> None:
+    """A subpath that steps above its root is refused."""
+    with pytest.raises(ValueError, match="stay inside its root"):
+        paths.model_directory("ModernBertFramer", "../escape")
+
+
 def test_cross_slice_sliced_getters_never_collide() -> None:
     """Different module slices resolve to different directories by construction."""
     first = paths.get_cache_path("shared.bin", target_module="slice_a")

@@ -2,7 +2,6 @@
 
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
 from subprocess import Popen
 from unittest.mock import AsyncMock, MagicMock
 
@@ -10,6 +9,7 @@ import pytest
 from anyio import Path as AsyncPath
 
 from src.benchmark.benchmark import BenchmarkMetrics
+from src.paths import paths
 from tests.test_benchmark.utils import load_latest_benchmark_result, validate_result
 
 
@@ -28,13 +28,9 @@ def _make_metrics() -> BenchmarkMetrics:
 _TEST_DATASET_VERSION = "0.1"
 
 
-def test_save_results_writes_expected_keys(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_save_results_writes_expected_keys() -> None:
     """Test that `_save_results` writes a result file with the expected structure."""
     import src.benchmark.command as command_module
-
-    monkeypatch.setattr(command_module, "BENCHMARK_RESULTS_DIR", tmp_path)
 
     pipeline = MagicMock()
     pipeline.get_configuration.return_value = {"search_pipeline": "LOCAL_DATASET"}
@@ -48,7 +44,8 @@ def test_save_results_writes_expected_keys(
         start_datetime=datetime.now().astimezone(),
     )
 
-    files = list(tmp_path.iterdir())
+    # Same slice and subpath the command writes to.
+    files = list(paths.get_data_path("benchmark_results", "benchmark").iterdir())
     assert len(files) == 1
 
     result = json.loads(files[0].read_text())
@@ -58,12 +55,10 @@ def test_save_results_writes_expected_keys(
 
 
 async def test_perform_benchmark_returns_metrics(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test `perform_benchmark` orchestrates pipeline and metrics without heavy ML."""
     import src.benchmark.command as command_module
-
-    monkeypatch.setattr(command_module, "BENCHMARK_RESULTS_DIR", tmp_path)
 
     expected_metrics = _make_metrics()
 
@@ -81,8 +76,12 @@ async def test_perform_benchmark_returns_metrics(
     mock_benchmark = MagicMock()
     mock_benchmark.calculate_metrics.return_value = expected_metrics
 
+    # Patch the factory: `perform_benchmark` builds the pipeline through it,
+    # so patching the `ContradictorPipeline` class never took effect.
     monkeypatch.setattr(
-        command_module, "ContradictorPipeline", lambda pipes: mock_pipeline
+        command_module,
+        "get_contradictor_pipeline",
+        lambda pipeline_preset: mock_pipeline,
     )
     monkeypatch.setattr(
         command_module.GoldenDatasetLoader, "load", lambda self: mock_dataset
@@ -95,7 +94,8 @@ async def test_perform_benchmark_returns_metrics(
 
     assert metrics == expected_metrics
 
-    files = [f async for f in AsyncPath(tmp_path).iterdir()]
+    results_directory = paths.get_data_path("benchmark_results", "benchmark")
+    files = [f async for f in AsyncPath(results_directory).iterdir()]
     assert len(files) == 1
     result = json.loads(await files[0].read_text())
     validate_result(result)
@@ -104,13 +104,9 @@ async def test_perform_benchmark_returns_metrics(
     assert result["metadata"]["duration"] >= 0
 
 
-def test_save_results_requires_all_metadata_fields(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_save_results_requires_all_metadata_fields() -> None:
     """Test that `_save_results` writes all required metadata fields."""
     import src.benchmark.command as command_module
-
-    monkeypatch.setattr(command_module, "BENCHMARK_RESULTS_DIR", tmp_path)
 
     pipeline = MagicMock()
     pipeline.get_configuration.return_value = {"search_pipeline": "LOCAL_DATASET"}
@@ -125,7 +121,7 @@ def test_save_results_requires_all_metadata_fields(
         start_datetime=start_datetime,
     )
 
-    files = list(tmp_path.iterdir())
+    files = list(paths.get_data_path("benchmark_results", "benchmark").iterdir())
     assert len(files) == 1
 
     result = json.loads(files[0].read_text())

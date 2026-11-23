@@ -59,7 +59,6 @@ class BaseXGBoostExtractor[ModelType](ConfigurationProvider):  # pylint: disable
         self._embedder = SpacyEmbedder()
         self._model_name = model_name
 
-        self._cache = Cache(paths.cache_path(cache_name))
         self._max_samples = self._get_max_samples() if proof_of_concept_mode else 0
 
     def _get_model_path(self) -> Path:

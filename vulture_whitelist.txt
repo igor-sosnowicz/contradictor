@@ -35,6 +35,7 @@ confidence
 # Pytest fixtures used implicitly by the framework (autouse/argument injection).
 isolated_path_roots
 fresh_router
+fresh_benchmark_roots
 
 # Pytorch's `forward` is called implicitly.
 MLPEncoder.forward

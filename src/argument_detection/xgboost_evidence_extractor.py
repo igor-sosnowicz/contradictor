@@ -281,7 +281,7 @@ class XGBoostEvidenceExtractor(BaseXGBoostExtractor):
 
     @override
     def _load_model(self) -> XGBClassifier | None:
-        if self.PATH_TO_MODEL.exists():
-            with self.PATH_TO_MODEL.open("rb") as file:
+        if self.path_to_model.exists():
+            with self.path_to_model.open("rb") as file:
                 return pickle.load(file)  # noqa: S301, Loaded only from trusted sources.
         return super()._load_model()

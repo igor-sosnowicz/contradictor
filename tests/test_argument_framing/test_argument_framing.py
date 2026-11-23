@@ -4,7 +4,6 @@ import math
 
 import pytest
 
-from src.argument_framing.argument_framer import ArgumentFramer
 from src.argument_framing.argument_framing_dataset import ArgumentFramingDataset
 from src.argument_framing.xgboost_framer import XGBoostFrameClassifier
 from src.data_models.data_models import (
@@ -16,20 +15,6 @@ from src.data_models.data_models import (
 )
 from src.pipeline.factories.argument_framer_factory import build_argument_framer
 from src.utils.errors import ModelNotTrainedError, NotPreparedError
-
-
-def get_argument_framers() -> list[ArgumentFramer]:
-    """
-    Provide instances of all argument framers, unprepared and in the PoC mode.
-
-    Returns:
-        list[ArgumentFramer]: List of all available argument framer instances,
-            Each of them is initialised but unprepared and in the PoC mode.
-    """
-    return [
-        build_argument_framer(implementation, proof_of_concept_mode=True)
-        for implementation in ArgumentFramerImplementation
-    ]
 
 
 def test_argument_framing_dataset_initialisation() -> None:
@@ -63,9 +48,13 @@ async def test_xgboost_framer_initialization() -> None:
         await framer.perform_tuning()
 
 
-@pytest.mark.parametrize("framer", get_argument_framers())
-async def test_framing_logic(framer: ArgumentFramer) -> None:
+@pytest.mark.parametrize("implementation", ArgumentFramerImplementation)
+async def test_framing_logic(implementation: ArgumentFramerImplementation) -> None:
     """Test if an argument framer detects interpretative frame."""
+    # Build the framer here, not at collection time: the path roots are
+    # redirected by a fixture that runs after collection, so anything created
+    # earlier would keep pointing at the real machine.
+    framer = build_argument_framer(implementation, proof_of_concept_mode=True)
     await framer.prepare()
     arguments = [
         Argument(

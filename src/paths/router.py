@@ -148,7 +148,7 @@ class PathRouter:
             ValueError: If `subpath` or `target_module` is not one portable
                 path segment, or the target directory is claimed by another
                 module slice and `force` is False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._resolve(
             PathRoot.DATA, subpath, target_module, is_file=is_file, force=force
         )
@@ -182,7 +182,7 @@ class PathRouter:
             ValueError: If `subpath` or `target_module` is not one portable
                 path segment, or the target directory is claimed by another
                 module slice and `force` is False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._resolve(
             PathRoot.CACHE, subpath, target_module, is_file=is_file, force=force
         )
@@ -216,7 +216,7 @@ class PathRouter:
             ValueError: If `subpath` or `target_module` is not one portable
                 path segment, or the target directory is claimed by another
                 module slice and `force` is False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._resolve(
             PathRoot.TMP, subpath, target_module, is_file=is_file, force=force
         )
@@ -244,13 +244,54 @@ class PathRouter:
             ValueError: If `name` does not reduce to one portable path segment,
                 or `models` belongs to another module slice and `force` is
                 False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._dynamic(
             PathRoot.DATA,
             (config.model_subdirectory, "model_subdirectory"),
             (name, "model name"),
             is_file=True,
             force=force,
+        )
+
+    def model_directory(
+        self,
+        name: str,
+        subpath: str = "",
+        *,
+        force: bool = False,
+    ) -> Path:
+        """
+        Resolve a directory under the shared `<data>/models` tree.
+
+        Models that persist a directory of artefacts (trainer outputs,
+        tokeniser and weights) name their family with `name` and address
+        the versioned directory with `subpath`, which is validated but
+        never rewritten so existing artefact layouts survive migration.
+
+        Args:
+            name (str): Model family directory name; spaces and hyphens
+                become underscores before the name is validated.
+            subpath (str): '/'-separated path inside the family directory;
+                empty names the family directory itself.
+            force (bool): Allow the claim when the directory is already
+                claimed by another module slice.
+
+        Returns:
+            Path: `<data_root>/models/<name>[/<subpath>]`, created on access.
+
+        Raises:
+            ValueError: If `name` or `subpath` is not portable, or the
+                directory belongs to another module slice and `force` is
+                False.
+        """  # noqa: DOC502, Raised by the internal resolver.
+        single_segment(config.model_subdirectory, label="model_subdirectory")
+        name_segment = self._sanitised(name, "model directory name")
+        segments = portable_segments(subpath, label="subpath")
+        resolved = self._root_for(PathRoot.DATA).joinpath(
+            config.model_subdirectory, name_segment, *segments
+        )
+        return self._grant(
+            PathRoot.DATA, SHARED_SLICE, resolved, is_file=False, force=force
         )
 
     def raw_dataset_path(self, name: str, *, force: bool = False) -> Path:
@@ -273,7 +314,7 @@ class PathRouter:
             ValueError: If `name` does not reduce to one portable path segment,
                 or the dataset directory belongs to another module slice and
                 `force` is False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._dynamic(
             PathRoot.DATA,
             (config.raw_dataset_subdirectory, "raw_dataset_subdirectory"),
@@ -302,7 +343,7 @@ class PathRouter:
             ValueError: If `name` does not reduce to one portable path segment,
                 or the dataset directory belongs to another module slice and
                 `force` is False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._dynamic(
             PathRoot.DATA,
             (
@@ -334,7 +375,7 @@ class PathRouter:
             ValueError: If `name` does not reduce to one portable path segment,
                 or the directory belongs to another module slice and `force` is
                 False.
-        """
+        """  # noqa: DOC502, Raised by the internal resolver.
         return self._dynamic(
             PathRoot.CACHE,
             None,
@@ -473,7 +514,6 @@ class PathRouter:
 
 
 # --- Singleton facade ---
-"""Singleton router instance."""
 paths = PathRouter()
 
 
@@ -523,7 +563,7 @@ def get_data_path(
         ValueError: If `subpath` or `target_module` is not one portable path
             segment, or the target directory belongs to another module slice and
             `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.get_data_path(subpath, target_module, is_file=is_file, force=force)
 
 
@@ -551,7 +591,7 @@ def get_cache_path(
         ValueError: If `subpath` or `target_module` is not one portable path
             segment, or the target directory belongs to another module slice and
             `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.get_cache_path(subpath, target_module, is_file=is_file, force=force)
 
 
@@ -579,7 +619,7 @@ def get_tmp_path(
         ValueError: If `subpath` or `target_module` is not one portable path
             segment, or the target directory belongs to another module slice and
             `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.get_tmp_path(subpath, target_module, is_file=is_file, force=force)
 
 
@@ -597,8 +637,33 @@ def model_path(name: str, *, force: bool = False) -> Path:
     Raises:
         ValueError: If `name` is not portable, or `models` belongs to another
             module slice and `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.model_path(name, force=force)
+
+
+def model_directory(
+    name: str,
+    subpath: str = "",
+    *,
+    force: bool = False,
+) -> Path:
+    """
+    Resolve a model directory under the shared `<data>/models` tree.
+
+    Args:
+        name (str): Model family directory name.
+        subpath (str): '/'-separated path inside the family directory.
+        force (bool): Allow a claim already owned by another module slice.
+
+    Returns:
+        Path: `<data_root>/models/<name>[/<subpath>]`; see
+            `PathRouter.model_directory`.
+
+    Raises:
+        ValueError: If `name` or `subpath` is not portable, or the directory
+            belongs to another module slice and `force` is False.
+    """  # noqa: DOC502, Raised by the internal resolver.
+    return paths.model_directory(name, subpath, force=force)
 
 
 def raw_dataset_path(name: str, *, force: bool = False) -> Path:
@@ -616,7 +681,7 @@ def raw_dataset_path(name: str, *, force: bool = False) -> Path:
     Raises:
         ValueError: If `name` is not portable, or the directory belongs to
             another module slice and `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.raw_dataset_path(name, force=force)
 
 
@@ -635,7 +700,7 @@ def processed_dataset_path(name: str, *, force: bool = False) -> Path:
     Raises:
         ValueError: If `name` is not portable, or the directory belongs to
             another module slice and `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.processed_dataset_path(name, force=force)
 
 
@@ -653,5 +718,5 @@ def cache_path(name: str, *, force: bool = False) -> Path:
     Raises:
         ValueError: If `name` is not portable, or the directory belongs to
             another module slice and `force` is False.
-    """
+    """  # noqa: DOC502, Raised by the internal resolver.
     return paths.cache_path(name, force=force)

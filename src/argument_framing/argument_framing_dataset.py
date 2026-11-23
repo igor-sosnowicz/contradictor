@@ -53,7 +53,7 @@ class ArgumentFramingDataset(UrlDataset):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        dataset_path = to_raw_dataset_path("mp_frame_corpus")
+        dataset_path = paths.raw_dataset_path("mp_frame_corpus")
 
         hasher = hashlib.sha256()
 

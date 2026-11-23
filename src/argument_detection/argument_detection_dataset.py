@@ -481,7 +481,7 @@ class ArgumentDetectionDataset(UrlDataset):
         Args:
             split (SubsetName): Dataset subset to retrieve.
             max_samples (int | None): Optional maximum number of rows to
-                return.
+                return. 0 or None means no limit.
 
         Returns:
             pd.DataFrame: Claim extraction dataframe.
@@ -503,7 +503,7 @@ class ArgumentDetectionDataset(UrlDataset):
             )
         df = filter_empty_rows(df, "sentence")
 
-        if max_samples is not None:
+        if max_samples:
             df = df.iloc[:max_samples]
         return df.reset_index(drop=True)
 
@@ -518,7 +518,7 @@ class ArgumentDetectionDataset(UrlDataset):
         Args:
             split (SubsetName): Dataset subset to retrieve.
             max_samples (int | None): Optional maximum number of rows to
-                return.
+                return. 0 or None means no limit.
 
         Returns:
             pd.DataFrame: Evidence extraction dataframe.
@@ -553,7 +553,7 @@ class ArgumentDetectionDataset(UrlDataset):
             & (df["evidence"].astype(str).str.strip() != "")
         ]
 
-        if max_samples is not None:
+        if max_samples:
             df = df.iloc[:max_samples]
         return df.reset_index(drop=True)
 

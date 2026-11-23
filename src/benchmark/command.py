@@ -3,22 +3,19 @@
 import json
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 from src.benchmark.benchmark import Benchmark, BenchmarkMetrics
 from src.benchmark.golden_dataset import GoldenDatasetLoader
-from src.configuration import config
 from src.data_models.data_models import (
     ContradictorPipelinePreset,
     FramedArgument,
 )
+from src.paths import paths
 from src.pipeline.contradictor_pipeline import ContradictorPipeline
 from src.pipeline.factories.contradictor_pipeline_factory import (
     get_contradictor_pipeline,
 )
 from src.utils.logger import logger
-
-BENCHMARK_RESULTS_DIR: Path = config.data_directory / "benchmark_results"
 
 
 async def perform_benchmark() -> BenchmarkMetrics:
@@ -78,8 +75,8 @@ def _save_results(
     datetime_string = finish_datetime.strftime("%H_%M_%S_%d_%m_%Y")
     _uuid = str(uuid.uuid4())
     filename = f"{datetime_string}_{_uuid}.json"
-    path = (BENCHMARK_RESULTS_DIR / filename).expanduser().resolve()
-    path.parent.mkdir(parents=True, exist_ok=True)
+    # File claim: the router creates the parent directory.
+    path = paths.get_data_path(f"benchmark_results/{filename}", is_file=True)
 
     results = {
         "metrics": metrics.model_dump(),

@@ -5,7 +5,14 @@ from pathlib import Path
 
 from src.search_module.cache import DiskCacheBackend
 from src.search_module.cleaners.readability_cleaner import ReadabilityCleaner
-from src.search_module.config import ConcurrencyConfig, SearchModuleConfig
+from src.search_module.config import (
+    CacheConfig,
+    CleaningConfig,
+    ConcurrencyConfig,
+    KeywordConfig,
+    SearchConfig,
+    SearchModuleConfig,
+)
 from src.search_module.downloaders.httpx_downloader import HttpxDownloader
 from src.search_module.keyword_extraction.ngram import NGramKeywordExtractor
 from src.search_module.pipeline import (
@@ -64,13 +71,22 @@ async def test_pipeline_ngram_and_readability_real_integration(
     tmp_path: Path,
 ) -> None:
     """Perform an integration test of the search pipeline with internet components."""
-    config = SearchModuleConfig()
-    config.cache.directory = str(tmp_path)
-    config.cache.enabled = True
-    config.search.max_results = 2
-    config.cleaning.min_text_length = 150
-    config.keyword.min_ngram_size = 2
-    config.keyword.max_ngram_size = 3
+    config = SearchModuleConfig(
+        cache=CacheConfig(
+            directory=str(tmp_path),
+            enabled=True,
+        ),
+        search=SearchConfig(
+            max_results=2,
+        ),
+        cleaning=CleaningConfig(
+            min_text_length=150,
+        ),
+        keyword=KeywordConfig(
+            min_ngram_size=2,
+            max_ngram_size=3,
+        ),
+    )
 
     tokeniser = BenchmarkTokeniser()
     keyword_extractor = NGramKeywordExtractor(

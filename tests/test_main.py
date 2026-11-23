@@ -56,6 +56,5 @@ async def test_contradictor_pipeline() -> None:
     pipeline = await initialise_pipeline()
     results = await pipeline(text)
     assert isinstance(results, ContradictOutput)
-    if results:
-        for result in results.pairs:
-            assert result is ArgumentWithCounterarguments
+    for result in results.pairs:
+        assert isinstance(result, ArgumentWithCounterarguments)

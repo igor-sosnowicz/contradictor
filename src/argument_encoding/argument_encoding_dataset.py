@@ -24,6 +24,7 @@ from src.data_models.data_models import (
 )
 from src.nli.nli import NLI
 from src.nli.transformers_nli import TransformersNLI
+from src.paths import paths
 from src.pipeline.factories.argument_framer_factory import build_argument_framer
 from src.style_extraction.spacy_style_extractor import SpacyStyleExtractor
 from src.utils.errors import NotPreparedError
@@ -307,11 +308,7 @@ class ArgumentEncodingDataset(Dataset):
         Returns:
             bool: True if the dataset was loaded from disk.
         """
-        candidate_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / self.processed_folder_name
-        )
+        candidate_path = paths.processed_dataset_path(self.processed_folder_name)
 
         for required_file in (
             candidate_path / "style_vectors.npz",
@@ -352,12 +349,7 @@ class ArgumentEncodingDataset(Dataset):
         if await self._load_from_disk():
             return cast("Path", self._splits_path)
 
-        self._splits_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / self.processed_folder_name
-        )
-        self._splits_path.mkdir(parents=True, exist_ok=True)
+        self._splits_path = paths.processed_dataset_path(self.processed_folder_name)
 
         (
             styled_arguments,

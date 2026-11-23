@@ -32,6 +32,7 @@ from src.data_models.data_models import (
     StyledFramedArgument,
     SubsetName,
 )
+from src.paths import paths
 from src.utils.errors import NotPreparedError
 from src.utils.logger import logger
 from src.utils.timer import Timer
@@ -47,8 +48,6 @@ class _MLPConfigs(NamedTuple):
 
 class MLPEncoder(ArgumentEncoder):
     """Implementation of an argument encoder as a Multi-Layer Perceptron."""
-
-    MODEL_DIR: Path = global_config.data_directory / global_config.model_subdirectory
 
     def __init__(
         self,
@@ -85,7 +84,6 @@ class MLPEncoder(ArgumentEncoder):
             )
         self._output_dimensions = output_dimensions
         self._input_dimensions: int | None = None
-        self.MODEL_DIR.mkdir(exist_ok=True, parents=True)
         self._model: torch.nn.Module | None = None
         self._dataset = dataset
         self._configs = _MLPConfigs(
@@ -112,8 +110,8 @@ class MLPEncoder(ArgumentEncoder):
         """Path to the saved encoder for the current input/output dimensionality."""
         if self._input_dimensions is None:
             return None
-        return self.MODEL_DIR / mlp_encoder_filename(
-            self._input_dimensions, self._output_dimensions
+        return paths.model_path(
+            mlp_encoder_filename(self._input_dimensions, self._output_dimensions)
         )
 
     @override
