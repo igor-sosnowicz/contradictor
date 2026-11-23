@@ -11,7 +11,8 @@ from src.configuration import config
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
-from src.utils.dataset import filter_empty_rows, to_raw_dataset_path
+from src.paths import paths
+from src.utils.dataset import filter_empty_rows
 from src.utils.errors import DatasetError
 from src.utils.logger import logger
 
@@ -63,7 +64,7 @@ class ArgumentDetectionDataset(UrlDataset):
         super().__init__()
 
         self._datasets = {
-            to_raw_dataset_path("persuade"): [
+            paths.raw_dataset_path("persuade"): [
                 (
                     "https://www.kaggle.com/api/v1/datasets/download/"
                     "julesking/tla-lab-persuade-dataset"
@@ -133,7 +134,7 @@ class ArgumentDetectionDataset(UrlDataset):
         Raises:
             DatasetError: If the PERSUADE CSV file does not exist.
         """
-        dataset_directory = to_raw_dataset_path("persuade")
+        dataset_directory = paths.raw_dataset_path("persuade")
         archive_path = dataset_directory / "tla-lab-persuade-dataset"
 
         if archive_path.exists() and zipfile.is_zipfile(archive_path):
@@ -253,16 +254,8 @@ class ArgumentDetectionDataset(UrlDataset):
 
     def _transform(self) -> dict:
         """Create two processed datasets for claim-evidence extraction."""
-        claim_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "claim_extraction"
-        )
-        evidence_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "evidence_extraction"
-        )
+        claim_path = paths.get_data_path("claim_extraction")
+        evidence_path = paths.get_data_path("evidence_extraction")
 
         if (
             claim_path.exists()
@@ -488,7 +481,7 @@ class ArgumentDetectionDataset(UrlDataset):
         Args:
             split (SubsetName): Dataset subset to retrieve.
             max_samples (int | None): Optional maximum number of rows to
-                return.
+                return. 0 or None means no limit.
 
         Returns:
             pd.DataFrame: Claim extraction dataframe.
@@ -497,11 +490,7 @@ class ArgumentDetectionDataset(UrlDataset):
             DatasetError: If the dataset split does not exist or does not
                 contain the required columns.
         """
-        dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "claim_extraction"
-        )
+        dataset_path = paths.get_data_path("claim_extraction")
         subset_file = dataset_path / f"{split.value}.csv"
 
         if not subset_file.exists():
@@ -514,7 +503,7 @@ class ArgumentDetectionDataset(UrlDataset):
             )
         df = filter_empty_rows(df, "sentence")
 
-        if max_samples is not None:
+        if max_samples:
             df = df.iloc[:max_samples]
         return df.reset_index(drop=True)
 
@@ -529,7 +518,7 @@ class ArgumentDetectionDataset(UrlDataset):
         Args:
             split (SubsetName): Dataset subset to retrieve.
             max_samples (int | None): Optional maximum number of rows to
-                return.
+                return. 0 or None means no limit.
 
         Returns:
             pd.DataFrame: Evidence extraction dataframe.
@@ -538,11 +527,7 @@ class ArgumentDetectionDataset(UrlDataset):
             DatasetError: If the dataset split does not exist or required
                 columns are missing.
         """
-        dataset_path = (
-            config.data_directory
-            / config.preprocessed_dataset_subdirectory
-            / "evidence_extraction"
-        )
+        dataset_path = paths.get_data_path("evidence_extraction")
         subset_file = dataset_path / f"{split.value}.csv"
 
         if not subset_file.exists():
@@ -568,7 +553,7 @@ class ArgumentDetectionDataset(UrlDataset):
             & (df["evidence"].astype(str).str.strip() != "")
         ]
 
-        if max_samples is not None:
+        if max_samples:
             df = df.iloc[:max_samples]
         return df.reset_index(drop=True)
 

@@ -11,7 +11,7 @@ from src.configuration import config
 from src.data_models.abstract.configuration import ConfigurationValue
 from src.data_models.abstract.url_dataset import UrlDataset
 from src.data_models.data_models import SubsetName
-from src.utils.dataset import to_raw_dataset_path
+from src.paths import paths
 from src.utils.logger import logger
 
 
@@ -40,7 +40,7 @@ class ArgumentFramingDataset(UrlDataset):
         super().__init__()
         self.random_seed = random_seed
         self._datasets = {
-            to_raw_dataset_path("mp_frame_corpus"): [
+            paths.raw_dataset_path("mp_frame_corpus"): [
                 "https://huggingface.co/datasets/jmLuis/"
                 "MediaFrameCorpus-PhilippineFrameCorpus-Combined/"
                 f"resolve/{self.SOURCE_REVISION}/combined_train.csv",
@@ -53,7 +53,7 @@ class ArgumentFramingDataset(UrlDataset):
 
     @override
     def get_configuration(self) -> dict[str, ConfigurationValue]:
-        dataset_path = to_raw_dataset_path("mp_frame_corpus")
+        dataset_path = paths.raw_dataset_path("mp_frame_corpus")
 
         hasher = hashlib.sha256()
 
@@ -82,7 +82,7 @@ class ArgumentFramingDataset(UrlDataset):
     def _transform(self) -> dict[Path, dict[SubsetName, pd.DataFrame]]:
         """Transform raw csv datasets into standardized split formats."""
         transformed_data = {}
-        dataset_path = to_raw_dataset_path("mp_frame_corpus")
+        dataset_path = paths.raw_dataset_path("mp_frame_corpus")
 
         if dataset_path.exists():
             transformed_data[dataset_path] = self._load_and_split_mfc()
@@ -111,7 +111,7 @@ class ArgumentFramingDataset(UrlDataset):
 
     def _load_and_split_mfc(self) -> dict[SubsetName, pd.DataFrame]:
         """Load CSV files and split the validation file into val and test sets."""
-        dataset_path = to_raw_dataset_path("mp_frame_corpus")
+        dataset_path = paths.raw_dataset_path("mp_frame_corpus")
         train_file = dataset_path / "combined_train.csv"
         val_file = dataset_path / "combined_validation.csv"
 

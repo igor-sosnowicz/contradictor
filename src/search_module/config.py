@@ -2,8 +2,6 @@
 
 from pydantic import BaseModel, Field
 
-from src.configuration import config
-
 
 class SearchConfig(BaseModel):
     """Search engine configuration."""
@@ -80,7 +78,11 @@ class CacheConfig(BaseModel):
 
     enabled: bool = True
     ttl_seconds: int = Field(default=7 * 24 * 60 * 60, ge=1)
-    directory: str = str(config.cache_directory / "search")
+    # No default on purpose: Caller decides where the cache lives.
+    # Src (or prod) passes `paths.get_cache_path()` at the composition root,
+    # Tests pass their own directory, so this model never reads global state.
+    directory: str
+    version: str = "v1"
 
 
 class KeywordConfig(BaseModel):
@@ -116,11 +118,13 @@ class KeywordConfig(BaseModel):
 class SearchModuleConfig(BaseModel):
     """Complete configuration of the search module."""
 
+    # `cache` is required: it has no default because the cache directory
+    # must be chosen by the caller (see CacheConfig).
+    cache: CacheConfig
     keyword: KeywordConfig = Field(default_factory=KeywordConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     download: DownloadConfig = Field(default_factory=DownloadConfig)
     cleaning: CleaningConfig = Field(default_factory=CleaningConfig)
-    cache: CacheConfig = Field(default_factory=CacheConfig)
 
 
 class ConcurrencyConfig(BaseModel):

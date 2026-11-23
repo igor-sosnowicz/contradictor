@@ -3,6 +3,7 @@
 from src.benchmark.golden_dataset import GoldenDatasetLoader
 from src.configuration import config
 from src.data_models.data_models import SearchPipelineImplementation
+from src.paths import paths
 from src.search_module.cleaners import NullCleaner, ReadabilityCleaner
 from src.search_module.config import (
     CacheConfig,
@@ -52,7 +53,9 @@ def build_search_pipeline(
                     search_engine=DDGSearchEngine(config=SearchConfig()),
                     cleaner=ReadabilityCleaner(config=CleaningConfig()),
                     downloader=HttpxDownloader(config=DownloadConfig()),
-                    cache=DiskCacheBackend(config=CacheConfig()),
+                    cache=DiskCacheBackend(
+                        config=CacheConfig(directory=str(paths.get_cache_path()))
+                    ),
                     concurrency=ConcurrencyConfig(),
                 )
             )
@@ -65,7 +68,9 @@ def build_search_pipeline(
                     search_engine=LocalDatasetSearchEngine(dataset=golden_dataset),
                     cleaner=NullCleaner(),
                     downloader=LocalDownloader(dataset=golden_dataset),
-                    cache=DiskCacheBackend(config=CacheConfig()),
+                    cache=DiskCacheBackend(
+                        config=CacheConfig(directory=str(paths.get_cache_path()))
+                    ),
                     concurrency=ConcurrencyConfig(),
                 )
             )

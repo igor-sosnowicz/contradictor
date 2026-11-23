@@ -1,11 +1,14 @@
 """Module with a project-wide configuration object."""
 
+import tempfile
 import tomllib
+from getpass import getuser
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import pydantic
 import torch
+from loguru import logger
 from platformdirs import PlatformDirs
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
@@ -41,6 +44,9 @@ class Configuration(BaseModel):
 
     # Persistent application data.
     data_directory: Path = directories.user_data_path
+
+    # Ephemeral application files that may be discarded by the OS between runs.
+    tmp_directory: Path = Path(tempfile.gettempdir()) / f"Contradictor-{getuser()}"
 
     # A sub-directory of the data directory storing raw versions of downloaded datasets.
     raw_dataset_subdirectory: str = "raw_datasets"
@@ -112,12 +118,13 @@ class Configuration(BaseModel):
     )
 
 
-def load_configuration(file: Path) -> Configuration:
+def load_configuration(file: Path | None) -> Configuration:
     """
-    Load configuration from a configuration file.
+    Load configuration from a configuration file or
+    return default configuration if no file is provided.
 
     Args:
-        file (Path): Path to a configuration file.
+        file (Path | None): Path to a configuration file.
 
     Returns:
         Configuration: Configuration object read to use.
@@ -125,16 +132,40 @@ def load_configuration(file: Path) -> Configuration:
     Raises:
         ConfigurationError: Raised if there is a configuration error.
     """
+    config_data: dict[str, Any] = {}
+
+    if file is None:
+        logger.warning("No configuration file found, using default configuration.")
+    else:
+        try:
+            with file.open("rb") as f:
+                config_data = tomllib.load(f)
+        except FileNotFoundError as e:
+            raise ConfigurationError(
+                f"The configuration file is missing: {file.resolve()}"
+            ) from e
+        except ValueError as e:
+            raise ConfigurationError(str(e)) from e
+
     try:
-        with file.open("rb") as f:
-            config_data = tomllib.load(f)
         return Configuration(**config_data)
     except (ValueError, KeyError, pydantic.ValidationError) as e:
         raise ConfigurationError(str(e)) from e
-    except FileNotFoundError as e:
-        raise ConfigurationError(
-            f"The configuration file is missing: {file.resolve()}"
-        ) from e
 
 
-config: Configuration = load_configuration(Path("./config.toml"))
+def _resolve_configuration_file() -> Path | None:
+    """
+    Return path to config file to load, or None when none exists.
+
+    Search order:
+    1. Dev worktree (`./config.toml`)
+    2. PlatformDirs (`~/.config/Contradictor/config.toml`)
+    """
+    candidates = (
+        Path("./config.toml"),
+        directories.user_config_path / "config.toml",
+    )
+    return next((candidate for candidate in candidates if candidate.is_file()), None)
+
+
+config: Configuration = load_configuration(_resolve_configuration_file())

@@ -37,6 +37,7 @@ from src.data_models.data_models import (
     FramedArgument,
     InterpretativeFrame,
 )
+from src.paths import paths
 from src.utils.errors import NotPreparedError
 
 
@@ -100,11 +101,9 @@ class ModernBertFramer(ArgumentFramer):
             f"modernbert-{self._training_config.retrain_if_changed_fingerprint()}"
             f"-{self._dataset.version}"
         )
-        return (
-            config.data_directory
-            / config.model_subdirectory
-            / ModernBertFramer.__name__
-            / subdirectory_name
+        return paths.model_directory(
+            ModernBertFramer.__name__,
+            subdirectory_name,
         )
 
     @property
@@ -170,7 +169,11 @@ class ModernBertFramer(ArgumentFramer):
                     ).to(device)
                 ).logits
                 predicted_indices = logits.argmax(dim=-1).tolist()
-                probability_rows = torch.nn.functional.softmax(logits, dim=-1).tolist()
+
+                # Softmax in float32: bf16 rounding breaks probability sums.
+                probability_rows = torch.nn.functional.softmax(
+                    logits.float(), dim=-1
+                ).tolist()
 
                 for argument, predicted_index, probability_row in zip(
                     argument_batch,

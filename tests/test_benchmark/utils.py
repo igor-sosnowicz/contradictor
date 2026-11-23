@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Final
 
-from src.benchmark.command import BENCHMARK_RESULTS_DIR
+from src.paths.router import PathRouter
 
 
 def _to_second_since_unix(filename: str) -> int:
@@ -99,18 +99,23 @@ def validate_result(data: dict) -> None:
 
 
 def load_latest_benchmark_result(
-    results_directory: Path = BENCHMARK_RESULTS_DIR,
+    results_directory: Path | None = None,
 ) -> dict:
     """
     Load the most recent benchmark result file from the results directory.
 
     Args:
-        results_directory (Path): Directory containing benchmark result files.
-            Defaults to `BENCHMARK_RESULTS_DIR`.
+        results_directory (Path | None): Directory containing benchmark result
+            files. Defaults to the production results directory: the CLI test
+            reads output written by a real subprocess whose router resolved
+            the production roots, so a fresh router is used here to ignore
+            any root redirection active in the test process.
 
     Returns:
         dict: Parsed JSON content of the latest benchmark result file.
     """
+    if results_directory is None:
+        results_directory = PathRouter().get_data_path("benchmark_results", "benchmark")
     assert results_directory.is_dir()
 
     latest_timestamp = 0
